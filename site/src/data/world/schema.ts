@@ -355,6 +355,15 @@ export const WeaponCustom = z
   .strict();
 
 export type WeaponCustom = z.infer<typeof WeaponCustom>;
+
+/** 不在数据文件里、取自游戏程序的常量（constants.json） */
+export const Constants = z
+  .object({
+    weaponBloat: z.record(z.enum(WEAPON_TYPES), z.number().positive()),
+    _src: z.object({ file: z.literal('exe'), note: z.string() }).strict(),
+  })
+  .strict();
+export type Constants = z.infer<typeof Constants>;
 export type Meta = z.infer<typeof Meta>;
 export type Colors = z.infer<typeof Colors>;
 export type Item = z.infer<typeof Item>;

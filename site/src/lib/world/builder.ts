@@ -170,6 +170,8 @@ export interface BuilderData {
   charms: CharmData[];
   mantles: MantleData[];
   augments: { levels: AugmentLevel[]; effects: AugmentEffects };
+  /** 武器显示倍率（显示攻击力 = 真实攻击力 × 倍率），取自游戏程序，见 data/world/constants.json */
+  bloat: Partial<Record<string, number>>;
 }
 
 export interface Piece {
@@ -228,6 +230,7 @@ export interface Index {
   parts: Map<number, PartData>;
   awakening: Map<number, AwakeningData>;
   effects: AugmentEffects;
+  bloat: Partial<Record<string, number>>;
 }
 
 const EMPTY_PAYLOAD: WeaponPayload = { weapons: [], parts: [], awakening: [] };
@@ -245,6 +248,7 @@ export function makeIndex(data: BuilderData, payload: WeaponPayload = EMPTY_PAYL
     parts: by(payload.parts),
     awakening: by(payload.awakening),
     effects: data.augments.effects,
+    bloat: data.bloat,
   };
 }
 
@@ -474,12 +478,9 @@ export function capFor(skill: SkillData, activeSet: Map<number, number>): number
 export const SKILL_ATTACK = 19;
 export const SKILL_CRITICAL_EYE = 48;
 
-/** 已核对的武器显示倍率（显示攻击力 = 真实攻击力 × 倍率）。其他武器种未核对，不显示换算值 */
-export const VERIFIED_BLOAT: Partial<Record<string, number>> = { 'great-sword': 4.8 };
-
 export interface Stats {
   attack: number;
-  /** 显示攻击力；倍率未核对的武器种为 null */
+  /** 显示攻击力；缺少倍率时为 null */
   attackDisplay: number | null;
   affinity: number;
   element: { type: string; value: number } | null;
@@ -511,7 +512,7 @@ export function computeStats(build: Build, idx: Index, skills: SkillTotal[]): St
     awk('affinity') +
     paramAt(atkSkill, lv(SKILL_ATTACK), 1) +
     paramAt(eyeSkill, lv(SKILL_CRITICAL_EYE), 0);
-  const bloat = VERIFIED_BLOAT[build.weaponType];
+  const bloat = idx.bloat[build.weaponType];
 
   let defense = (weapon?.defense ?? 0) + fx('defense') + awk('defense');
   const el = weapon?.element;

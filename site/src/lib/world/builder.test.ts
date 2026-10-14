@@ -131,6 +131,7 @@ const data: BuilderData = {
       elementMultiplier: { 'great-sword': 1.2 },
     },
   },
+  bloat: { 'great-sword': 4.8, 'long-sword': 3.3 },
 };
 const weapons: WeaponData[] = [
   {
@@ -235,13 +236,15 @@ describe('computeStats', () => {
     expect(st.affinity).toBe(-30);
   });
 
-  it('攻击 4 级：真实攻击 +12、会心 +5；未核对倍率的武器种不给显示值', () => {
+  it('攻击 4 级：真实攻击 +12、会心 +5；按武器种倍率换算显示值，缺倍率时不给显示值', () => {
     const b = emptyBuild('long-sword');
     b.weapon = { id: 239, decos: [901, 901] };
     const st = computeStats(b, idx, computeSkills(b, idx));
     expect(st.attack).toBe(352);
     expect(st.affinity).toBe(-25);
-    expect(st.attackDisplay).toBeNull();
+    expect(st.attackDisplay).toBe(Math.round(352 * 3.3));
+    b.weaponType = 'bow';
+    expect(computeStats(b, idx, computeSkills(b, idx)).attackDisplay).toBeNull();
   });
 
   it('防御与耐性合计', () => {

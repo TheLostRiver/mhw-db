@@ -16,7 +16,6 @@ import {
   fitDecos,
   makeIndex,
   setAugment,
-  VERIFIED_BLOAT,
   weaponSlots,
   type ArmorSlot,
   type Build,
@@ -454,7 +453,7 @@ export default function Builder() {
             <h2 id="gb-stats-h" className="gb-h">
               状态
             </h2>
-            <StatusList stats={stats} weaponType={build.weaponType} />
+            <StatusList stats={stats} />
           </section>
         </aside>
       </div>
@@ -669,7 +668,7 @@ function Detail({
       return (
         <EmptyDetail head={head(null, '未装备武器', null, WEAPON_TYPE_NAMES[build.weaponType] ?? '武器')} />
       );
-    const bloat = VERIFIED_BLOAT[build.weaponType];
+    const bloat = idx.bloat[build.weaponType];
     // 自定义强化后的数值（与游戏的强化画面一样，附上增加量）
     const aug = augmentLevels(build, idx);
     const plus = (key: 'attack' | 'affinity' | 'defense') => {
@@ -873,13 +872,7 @@ function SkillList({ skills, mantleActive }: { skills: SkillTotal[]; mantleActiv
   );
 }
 
-function StatusList({
-  stats,
-  weaponType,
-}: {
-  stats: NonNullable<ReturnType<typeof computeStats>>;
-  weaponType: string;
-}) {
+function StatusList({ stats }: { stats: NonNullable<ReturnType<typeof computeStats>> }) {
   const rows: [string, React.ReactNode, number?][] = [
     ['攻击力', stats.attackDisplay ?? `${stats.attack}（真实值）`, 25],
     ['会心率', `${stats.affinity}%`, 27],
@@ -908,9 +901,7 @@ function StatusList({
           </div>
         ))}
       </dl>
-      {!VERIFIED_BLOAT[weaponType] && (
-        <p className="gb-note">该武器种的显示倍率尚未与游戏核对，攻击力先显示真实值。</p>
-      )}
+      {stats.attackDisplay == null && <p className="gb-note">缺少该武器种的显示倍率，攻击力显示真实值。</p>}
     </>
   );
 }

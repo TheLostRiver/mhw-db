@@ -10,6 +10,7 @@ from pathlib import Path
 
 from mhdb.build.common import Source, src, tr, write_json, write_records
 from mhdb.build.world_custom import build_weapon_custom
+from mhdb.games.world import exe as EXE
 from mhdb.games.world import specs as S
 
 PIPELINE_VERSION = 1
@@ -351,6 +352,16 @@ def build(raw: Path, out: Path, log=print) -> dict:
     for key, rows in weapons.items():
         write_records(out / "weapons" / f"{key}.json", "weapons", rows)
     write_json(out / "weapon-custom.json", custom)
+    write_json(
+        out / "constants.json",
+        {
+            "weaponBloat": dict(zip([k for _, k, _, _ in S.WEAPON_TYPES], EXE.WEAPON_BLOAT, strict=True)),
+            "_src": {
+                "file": "exe",
+                "note": f"exe 内存 {EXE.WEAPON_BLOAT_OFFSET:#x}（构建 {EXE.DUMP_BUILD_ID}），见 mhdb/games/world/exe.py",
+            },
+        },
+    )
 
     counts = {
         "items": len(items),

@@ -7,6 +7,7 @@ import type {
   Armor,
   Charm,
   Colors,
+  Constants,
   Decoration,
   Item,
   Lang,
@@ -43,6 +44,7 @@ export const loadCharms = () => read<{ charms: Charm[] }>('charms.json').charms;
 export const loadMantles = () => read<{ mantles: Mantle[] }>('mantles.json').mantles;
 export const loadWeapons = (type: WeaponType) => read<{ weapons: Weapon[] }>(`weapons/${type}.json`).weapons;
 export const loadWeaponCustom = () => read<WeaponCustom>('weapon-custom.json');
+export const loadConstants = () => read<Constants>('constants.json');
 
 /** 取某语言文本，缺失时退回简中 */
 export const pick = (t: { [K in Lang]?: string | undefined } | undefined, lang: Lang): string =>

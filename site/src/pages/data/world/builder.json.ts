@@ -10,6 +10,7 @@ import {
   loadDecorations,
   loadMantles,
   loadMeta,
+  loadConstants,
   loadSkills,
   loadWeaponCustom,
   pick,
@@ -77,6 +78,7 @@ export const GET: APIRoute = () => {
         elementMultiplier: custom.augments.effects.elementMultiplier,
       },
     },
+    bloat: loadConstants().weaponBloat,
   };
   return new Response(JSON.stringify(data), { headers: { 'content-type': 'application/json' } });
 };

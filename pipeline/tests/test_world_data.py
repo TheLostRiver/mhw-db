@@ -149,3 +149,17 @@ def test_awakening_values_by_weapon() -> None:
         "byWeapon": dict.fromkeys([k for k in by_name(aw, "镶嵌槽强化4")["weapons"]], 4),
     }
     assert by_name(aw, "旋律【攻击】1")["value"] is None
+
+
+def test_weapon_bloat_against_exe_dump() -> None:
+    import os
+    from pathlib import Path
+
+    from mhdb.games.world import exe
+
+    dump = os.environ.get("MHDB_EXE_DUMP")
+    if not dump or not Path(dump).is_file():
+        pytest.skip("设置 MHDB_EXE_DUMP 指向本机 exe 内存转储后核对")
+    exe.verify_dump(Path(dump))
+    bloat = json.loads((WORLD / "constants.json").read_text(encoding="utf-8"))["weaponBloat"]
+    assert round(340 * bloat["great-sword"]) == 1632  # 黑龙玄刃，游戏截图
