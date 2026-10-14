@@ -7,6 +7,7 @@ import {
   ARMOR_SLOTS,
   augmentLevels,
   awakeningConflict,
+  awakeningTotal,
   chosenAwakening,
   computeSkills,
   computeStats,
@@ -65,6 +66,7 @@ const ELEMENT_NAMES: Record<string, string> = {
   blast: '爆破',
 };
 const RESIST = ['火', '水', '雷', '冰', '龙'] as const;
+const STATUS_ELEMENTS = new Set(['poison', 'paralysis', 'sleep', 'blast']);
 // 龙封力：3 = 大 已核对；1 / 2 按顺序推断
 const ELDERSEAL = ['—', '小', '中', '大'];
 const STORAGE_KEY = 'mhdb-builder-v0';
@@ -459,8 +461,7 @@ export default function Builder() {
 
       <p className="gb-foot">
         数据版本：Steam 构建 {data.meta.steamBuildId ?? '—'}。状态 v0
-        只计入无条件技能（攻击、看破）与自定义强化的攻击 / 会心 / 防御；挑战者、弱点特效等条件技能、
-        零件强化与觉醒能力的数值尚未计入。
+        只计入无条件技能（攻击、看破）、自定义强化与觉醒能力的数值；挑战者、弱点特效等条件技能与零件强化尚未计入。
       </p>
 
       {picking && (
@@ -673,8 +674,11 @@ function Detail({
     const aug = augmentLevels(build, idx);
     const plus = (key: 'attack' | 'affinity' | 'defense') => {
       const a = aug.get(key);
-      return a ? (idx.effects[key][a.level - 1] ?? 0) : 0;
+      return (a ? (idx.effects[key][a.level - 1] ?? 0) : 0) + awakeningTotal(build, idx, key);
     };
+    const elementPlus = w.element
+      ? awakeningTotal(build, idx, STATUS_ELEMENTS.has(w.element.type) ? 'status' : 'element')
+      : 0;
     const withPlus = (base: number, add: number, fmt: (n: number) => string) => (
       <>
         {fmt(base + add)}
@@ -707,7 +711,14 @@ function Detail({
           )}
           {kv(
             '属性',
-            w.element ? `${ELEMENT_NAMES[w.element.type] ?? w.element.type} ${w.element.value * 10}` : '—',
+            w.element ? (
+              <>
+                {ELEMENT_NAMES[w.element.type] ?? w.element.type}{' '}
+                {withPlus(w.element.value, elementPlus, (n) => `${n * 10}`)}
+              </>
+            ) : (
+              '—'
+            ),
             3,
           )}
           {w.hiddenElement &&

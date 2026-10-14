@@ -9,7 +9,8 @@
  * - 状态：只计入数值来自游戏数据、且无发动条件的技能（攻击、看破）；条件技能待加开关。
  * - 武器客制（docs/DATA.md 3.3）：大师自定义强化每种只取一个等级（⚠ 推断），攻击 / 会心 / 防御加值来自 pl_param；
  *   镶嵌槽强化追加一个等级 = 强化等级的槽；属性强化与零件强化的换算未确认，不计入状态。
- *   冥赤龙觉醒：系列技能能力计 1 件（⚠ 推断，同武器的 skill 字段）；其他能力的数值未找到，不计入状态。
+ *   冥赤龙觉醒：数值取自 em104lbr（攻击、会心、防御、属性 / 状态异常计入状态，镶嵌槽强化追加槽）；
+ *   系列技能能力计 1 件（⚠ 推断，同武器的 skill 字段）。
  */
 
 export const ARMOR_SLOTS = ['head', 'chest', 'arms', 'waist', 'legs'] as const;
@@ -138,7 +139,12 @@ export interface AwakeningData {
   stackable: boolean;
   onePerCategory: boolean;
   setSkill: number | null;
+  /** 在当前武器种上的效果（em104lbr）；单位：攻击 / 属性为真实值，会心为 %，镶嵌槽为追加槽的等级 */
+  effect?: { kind: AwakeningEffectKind; amount: number };
 }
+
+export type AwakeningEffectKind =
+  'attack' | 'defense' | 'affinity' | 'element' | 'slotLevel' | 'sharpness' | 'status' | 'ammo';
 
 /** /data/world/weapons/<种类>.json */
 export interface WeaponPayload {
@@ -284,13 +290,24 @@ export function setAugment(
   return { ...custom, augments: pick ? [...keep, pick.id] : keep };
 }
 
-/** 武器的镶嵌槽（含镶嵌槽强化追加的那一个） */
+/** 武器的镶嵌槽（含自定义强化或觉醒能力追加的那一个） */
 export function weaponSlots(build: Build, idx: Index): number[] {
   const w = weaponOf(build, idx);
   if (!w) return [];
-  const slot = augmentLevels(build, idx).get('slot');
-  return slot && w.slots.length < 3 ? [...w.slots, slot.level] : w.slots;
+  const extra =
+    augmentLevels(build, idx).get('slot')?.level ??
+    chosenAwakening(build, idx).find((a) => a?.effect?.kind === 'slotLevel')?.effect?.amount;
+  return extra && w.slots.length < 3 ? [...w.slots, extra] : w.slots;
 }
+
+/** 觉醒能力某类效果的合计 */
+export function awakeningTotal(build: Build, idx: Index, kind: AwakeningEffectKind): number {
+  let n = 0;
+  for (const a of chosenAwakening(build, idx)) if (a?.effect?.kind === kind) n += a.effect.amount;
+  return n;
+}
+
+const STATUS_TYPES = new Set(['poison', 'paralysis', 'sleep', 'blast']);
 
 /** 当前武器的零件强化选择（只保留阶段对得上的零件） */
 export function chosenParts(build: Build, idx: Index): PartData[] {
@@ -485,15 +502,20 @@ export function computeStats(build: Build, idx: Index, skills: SkillTotal[]): St
     return a ? (idx.effects[key][a.level - 1] ?? 0) : 0;
   };
 
-  const attack = (weapon?.attack ?? 0) + fx('attack') + paramAt(atkSkill, lv(SKILL_ATTACK), 0);
+  const awk = (kind: AwakeningEffectKind) => awakeningTotal(build, idx, kind);
+  const attack =
+    (weapon?.attack ?? 0) + fx('attack') + awk('attack') + paramAt(atkSkill, lv(SKILL_ATTACK), 0);
   const affinity =
     (weapon?.affinity ?? 0) +
     fx('affinity') +
+    awk('affinity') +
     paramAt(atkSkill, lv(SKILL_ATTACK), 1) +
     paramAt(eyeSkill, lv(SKILL_CRITICAL_EYE), 0);
   const bloat = VERIFIED_BLOAT[build.weaponType];
 
-  let defense = (weapon?.defense ?? 0) + fx('defense');
+  let defense = (weapon?.defense ?? 0) + fx('defense') + awk('defense');
+  const el = weapon?.element;
+  const elementPlus = el ? awk(STATUS_TYPES.has(el.type) ? 'status' : 'element') : 0;
   const resist: Stats['resist'] = [0, 0, 0, 0, 0];
   for (const slot of ARMOR_SLOTS) {
     const id = build.armor[slot].id;
@@ -506,7 +528,7 @@ export function computeStats(build: Build, idx: Index, skills: SkillTotal[]): St
     attack,
     attackDisplay: weapon && bloat ? Math.round(attack * bloat) : null,
     affinity: Math.max(-100, Math.min(100, affinity)),
-    element: weapon?.element ? { type: weapon.element.type, value: weapon.element.value * 10 } : null,
+    element: el ? { type: el.type, value: (el.value + elementPlus) * 10 } : null,
     elderseal: weapon?.elderseal ?? 0,
     defense,
     resist,

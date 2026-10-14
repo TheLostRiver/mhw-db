@@ -1,7 +1,7 @@
 /**
  * 构建期读取 data/world/*.json（只在 Astro 的服务端 / 构建期使用）。
  */
-import { readFileSync } from 'node:fs';
+import { readFileSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import type {
   Armor,
@@ -19,11 +19,18 @@ import type {
 } from './schema';
 
 const ROOT = new URL('../../../../data/world/', import.meta.url);
-const cache = new Map<string, unknown>();
+// 按修改时间缓存：开发服务器常驻时，重新运行 mhdb parse 后能读到新数据
+const cache = new Map<string, { mtime: number; data: unknown }>();
 
 function read<T>(rel: string): T {
-  if (!cache.has(rel)) cache.set(rel, JSON.parse(readFileSync(fileURLToPath(new URL(rel, ROOT)), 'utf-8')));
-  return cache.get(rel) as T;
+  const path = fileURLToPath(new URL(rel, ROOT));
+  const mtime = statSync(path).mtimeMs;
+  let hit = cache.get(rel);
+  if (!hit || hit.mtime !== mtime) {
+    hit = { mtime, data: JSON.parse(readFileSync(path, 'utf-8')) };
+    cache.set(rel, hit);
+  }
+  return hit.data as T;
 }
 
 export const loadMeta = () => read<Meta>('meta.json');

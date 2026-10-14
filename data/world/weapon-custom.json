@@ -7828,6 +7828,25 @@
       "onePerCategory": false,
       "setSkill": null,
       "next": 2,
+      "value": {
+        "kind": "attack",
+        "byWeapon": {
+          "great-sword": 2,
+          "sword-and-shield": 2,
+          "dual-blades": 2,
+          "long-sword": 2,
+          "hammer": 2,
+          "hunting-horn": 2,
+          "lance": 2,
+          "gunlance": 2,
+          "switch-axe": 2,
+          "charge-blade": 2,
+          "insect-glaive": 2,
+          "bow": 2,
+          "heavy-bowgun": 2,
+          "light-bowgun": 2
+        }
+      },
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 1
@@ -7869,6 +7888,25 @@
       "onePerCategory": false,
       "setSkill": null,
       "next": 3,
+      "value": {
+        "kind": "attack",
+        "byWeapon": {
+          "great-sword": 4,
+          "sword-and-shield": 4,
+          "dual-blades": 4,
+          "long-sword": 4,
+          "hammer": 4,
+          "hunting-horn": 4,
+          "lance": 4,
+          "gunlance": 4,
+          "switch-axe": 4,
+          "charge-blade": 4,
+          "insect-glaive": 4,
+          "bow": 4,
+          "heavy-bowgun": 4,
+          "light-bowgun": 4
+        }
+      },
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 2
@@ -7910,6 +7948,25 @@
       "onePerCategory": false,
       "setSkill": null,
       "next": 4,
+      "value": {
+        "kind": "attack",
+        "byWeapon": {
+          "great-sword": 6,
+          "sword-and-shield": 6,
+          "dual-blades": 6,
+          "long-sword": 6,
+          "hammer": 6,
+          "hunting-horn": 6,
+          "lance": 6,
+          "gunlance": 6,
+          "switch-axe": 6,
+          "charge-blade": 6,
+          "insect-glaive": 6,
+          "bow": 6,
+          "heavy-bowgun": 6,
+          "light-bowgun": 6
+        }
+      },
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 3
@@ -7951,6 +8008,25 @@
       "onePerCategory": false,
       "setSkill": null,
       "next": 5,
+      "value": {
+        "kind": "attack",
+        "byWeapon": {
+          "great-sword": 8,
+          "sword-and-shield": 8,
+          "dual-blades": 8,
+          "long-sword": 8,
+          "hammer": 8,
+          "hunting-horn": 8,
+          "lance": 8,
+          "gunlance": 8,
+          "switch-axe": 8,
+          "charge-blade": 8,
+          "insect-glaive": 8,
+          "bow": 8,
+          "heavy-bowgun": 8,
+          "light-bowgun": 8
+        }
+      },
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 4
@@ -7992,6 +8068,25 @@
       "onePerCategory": false,
       "setSkill": null,
       "next": 6,
+      "value": {
+        "kind": "attack",
+        "byWeapon": {
+          "great-sword": 9,
+          "sword-and-shield": 10,
+          "dual-blades": 10,
+          "long-sword": 10,
+          "hammer": 9,
+          "hunting-horn": 10,
+          "lance": 10,
+          "gunlance": 10,
+          "switch-axe": 10,
+          "charge-blade": 10,
+          "insect-glaive": 10,
+          "bow": 10,
+          "heavy-bowgun": 10,
+          "light-bowgun": 10
+        }
+      },
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 5
@@ -8033,6 +8128,25 @@
       "onePerCategory": false,
       "setSkill": null,
       "next": null,
+      "value": {
+        "kind": "attack",
+        "byWeapon": {
+          "great-sword": 14,
+          "sword-and-shield": 15,
+          "dual-blades": 15,
+          "long-sword": 15,
+          "hammer": 14,
+          "hunting-horn": 15,
+          "lance": 15,
+          "gunlance": 15,
+          "switch-axe": 15,
+          "charge-blade": 15,
+          "insect-glaive": 15,
+          "bow": 15,
+          "heavy-bowgun": 15,
+          "light-bowgun": 15
+        }
+      },
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 6
@@ -8074,6 +8188,25 @@
       "onePerCategory": false,
       "setSkill": null,
       "next": 8,
+      "value": {
+        "kind": "defense",
+        "byWeapon": {
+          "great-sword": 10,
+          "sword-and-shield": 10,
+          "dual-blades": 10,
+          "long-sword": 10,
+          "hammer": 10,
+          "hunting-horn": 10,
+          "lance": 10,
+          "gunlance": 10,
+          "switch-axe": 10,
+          "charge-blade": 10,
+          "insect-glaive": 10,
+          "bow": 10,
+          "heavy-bowgun": 10,
+          "light-bowgun": 10
+        }
+      },
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 7
@@ -8115,6 +8248,25 @@
       "onePerCategory": false,
       "setSkill": null,
       "next": 9,
+      "value": {
+        "kind": "defense",
+        "byWeapon": {
+          "great-sword": 20,
+          "sword-and-shield": 20,
+          "dual-blades": 20,
+          "long-sword": 20,
+          "hammer": 20,
+          "hunting-horn": 20,
+          "lance": 20,
+          "gunlance": 20,
+          "switch-axe": 20,
+          "charge-blade": 20,
+          "insect-glaive": 20,
+          "bow": 20,
+          "heavy-bowgun": 20,
+          "light-bowgun": 20
+        }
+      },
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 8
@@ -8156,6 +8308,25 @@
       "onePerCategory": false,
       "setSkill": null,
       "next": 10,
+      "value": {
+        "kind": "defense",
+        "byWeapon": {
+          "great-sword": 30,
+          "sword-and-shield": 30,
+          "dual-blades": 30,
+          "long-sword": 30,
+          "hammer": 30,
+          "hunting-horn": 30,
+          "lance": 30,
+          "gunlance": 30,
+          "switch-axe": 30,
+          "charge-blade": 30,
+          "insect-glaive": 30,
+          "bow": 30,
+          "heavy-bowgun": 30,
+          "light-bowgun": 30
+        }
+      },
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 9
@@ -8197,6 +8368,25 @@
       "onePerCategory": false,
       "setSkill": null,
       "next": 11,
+      "value": {
+        "kind": "defense",
+        "byWeapon": {
+          "great-sword": 40,
+          "sword-and-shield": 40,
+          "dual-blades": 40,
+          "long-sword": 40,
+          "hammer": 40,
+          "hunting-horn": 40,
+          "lance": 40,
+          "gunlance": 40,
+          "switch-axe": 40,
+          "charge-blade": 40,
+          "insect-glaive": 40,
+          "bow": 40,
+          "heavy-bowgun": 40,
+          "light-bowgun": 40
+        }
+      },
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 10
@@ -8238,6 +8428,25 @@
       "onePerCategory": false,
       "setSkill": null,
       "next": 12,
+      "value": {
+        "kind": "defense",
+        "byWeapon": {
+          "great-sword": 50,
+          "sword-and-shield": 50,
+          "dual-blades": 50,
+          "long-sword": 50,
+          "hammer": 50,
+          "hunting-horn": 50,
+          "lance": 50,
+          "gunlance": 50,
+          "switch-axe": 50,
+          "charge-blade": 50,
+          "insect-glaive": 50,
+          "bow": 50,
+          "heavy-bowgun": 50,
+          "light-bowgun": 50
+        }
+      },
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 11
@@ -8279,6 +8488,25 @@
       "onePerCategory": false,
       "setSkill": null,
       "next": null,
+      "value": {
+        "kind": "defense",
+        "byWeapon": {
+          "great-sword": 60,
+          "sword-and-shield": 60,
+          "dual-blades": 60,
+          "long-sword": 60,
+          "hammer": 60,
+          "hunting-horn": 60,
+          "lance": 60,
+          "gunlance": 60,
+          "switch-axe": 60,
+          "charge-blade": 60,
+          "insect-glaive": 60,
+          "bow": 60,
+          "heavy-bowgun": 60,
+          "light-bowgun": 60
+        }
+      },
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 12
@@ -8320,6 +8548,25 @@
       "onePerCategory": false,
       "setSkill": null,
       "next": 14,
+      "value": {
+        "kind": "affinity",
+        "byWeapon": {
+          "great-sword": 2,
+          "sword-and-shield": 2,
+          "dual-blades": 2,
+          "long-sword": 2,
+          "hammer": 2,
+          "hunting-horn": 2,
+          "lance": 2,
+          "gunlance": 2,
+          "switch-axe": 2,
+          "charge-blade": 2,
+          "insect-glaive": 2,
+          "bow": 2,
+          "heavy-bowgun": 2,
+          "light-bowgun": 2
+        }
+      },
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 13
@@ -8361,6 +8608,25 @@
       "onePerCategory": false,
       "setSkill": null,
       "next": 15,
+      "value": {
+        "kind": "affinity",
+        "byWeapon": {
+          "great-sword": 4,
+          "sword-and-shield": 4,
+          "dual-blades": 4,
+          "long-sword": 4,
+          "hammer": 4,
+          "hunting-horn": 4,
+          "lance": 4,
+          "gunlance": 4,
+          "switch-axe": 4,
+          "charge-blade": 4,
+          "insect-glaive": 4,
+          "bow": 4,
+          "heavy-bowgun": 4,
+          "light-bowgun": 4
+        }
+      },
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 14
@@ -8402,6 +8668,25 @@
       "onePerCategory": false,
       "setSkill": null,
       "next": 16,
+      "value": {
+        "kind": "affinity",
+        "byWeapon": {
+          "great-sword": 6,
+          "sword-and-shield": 6,
+          "dual-blades": 6,
+          "long-sword": 6,
+          "hammer": 6,
+          "hunting-horn": 6,
+          "lance": 6,
+          "gunlance": 6,
+          "switch-axe": 6,
+          "charge-blade": 6,
+          "insect-glaive": 6,
+          "bow": 6,
+          "heavy-bowgun": 6,
+          "light-bowgun": 6
+        }
+      },
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 15
@@ -8443,6 +8728,25 @@
       "onePerCategory": false,
       "setSkill": null,
       "next": 17,
+      "value": {
+        "kind": "affinity",
+        "byWeapon": {
+          "great-sword": 8,
+          "sword-and-shield": 8,
+          "dual-blades": 8,
+          "long-sword": 8,
+          "hammer": 8,
+          "hunting-horn": 8,
+          "lance": 8,
+          "gunlance": 8,
+          "switch-axe": 8,
+          "charge-blade": 8,
+          "insect-glaive": 8,
+          "bow": 8,
+          "heavy-bowgun": 8,
+          "light-bowgun": 8
+        }
+      },
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 16
@@ -8484,6 +8788,25 @@
       "onePerCategory": false,
       "setSkill": null,
       "next": 18,
+      "value": {
+        "kind": "affinity",
+        "byWeapon": {
+          "great-sword": 10,
+          "sword-and-shield": 10,
+          "dual-blades": 10,
+          "long-sword": 10,
+          "hammer": 10,
+          "hunting-horn": 10,
+          "lance": 10,
+          "gunlance": 10,
+          "switch-axe": 10,
+          "charge-blade": 10,
+          "insect-glaive": 10,
+          "bow": 10,
+          "heavy-bowgun": 10,
+          "light-bowgun": 10
+        }
+      },
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 17
@@ -8525,6 +8848,25 @@
       "onePerCategory": false,
       "setSkill": null,
       "next": null,
+      "value": {
+        "kind": "affinity",
+        "byWeapon": {
+          "great-sword": 15,
+          "sword-and-shield": 15,
+          "dual-blades": 15,
+          "long-sword": 15,
+          "hammer": 15,
+          "hunting-horn": 15,
+          "lance": 15,
+          "gunlance": 15,
+          "switch-axe": 15,
+          "charge-blade": 15,
+          "insect-glaive": 15,
+          "bow": 15,
+          "heavy-bowgun": 15,
+          "light-bowgun": 15
+        }
+      },
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 18
@@ -8564,6 +8906,23 @@
       "onePerCategory": false,
       "setSkill": null,
       "next": 20,
+      "value": {
+        "kind": "element",
+        "byWeapon": {
+          "great-sword": 2,
+          "sword-and-shield": 1,
+          "dual-blades": 2,
+          "long-sword": 1,
+          "hammer": 2,
+          "hunting-horn": 2,
+          "lance": 1,
+          "gunlance": 2,
+          "switch-axe": 1,
+          "charge-blade": 2,
+          "insect-glaive": 1,
+          "bow": 1
+        }
+      },
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 19
@@ -8603,6 +8962,23 @@
       "onePerCategory": false,
       "setSkill": null,
       "next": 21,
+      "value": {
+        "kind": "element",
+        "byWeapon": {
+          "great-sword": 4,
+          "sword-and-shield": 2,
+          "dual-blades": 3,
+          "long-sword": 3,
+          "hammer": 4,
+          "hunting-horn": 4,
+          "lance": 3,
+          "gunlance": 4,
+          "switch-axe": 3,
+          "charge-blade": 3,
+          "insect-glaive": 2,
+          "bow": 2
+        }
+      },
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 20
@@ -8642,6 +9018,23 @@
       "onePerCategory": false,
       "setSkill": null,
       "next": 22,
+      "value": {
+        "kind": "element",
+        "byWeapon": {
+          "great-sword": 6,
+          "sword-and-shield": 3,
+          "dual-blades": 4,
+          "long-sword": 5,
+          "hammer": 6,
+          "hunting-horn": 6,
+          "lance": 5,
+          "gunlance": 6,
+          "switch-axe": 5,
+          "charge-blade": 4,
+          "insect-glaive": 3,
+          "bow": 3
+        }
+      },
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 21
@@ -8681,6 +9074,23 @@
       "onePerCategory": false,
       "setSkill": null,
       "next": 23,
+      "value": {
+        "kind": "element",
+        "byWeapon": {
+          "great-sword": 9,
+          "sword-and-shield": 5,
+          "dual-blades": 5,
+          "long-sword": 7,
+          "hammer": 9,
+          "hunting-horn": 8,
+          "lance": 7,
+          "gunlance": 8,
+          "switch-axe": 7,
+          "charge-blade": 5,
+          "insect-glaive": 5,
+          "bow": 5
+        }
+      },
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 22
@@ -8720,6 +9130,23 @@
       "onePerCategory": false,
       "setSkill": null,
       "next": 24,
+      "value": {
+        "kind": "element",
+        "byWeapon": {
+          "great-sword": 12,
+          "sword-and-shield": 7,
+          "dual-blades": 6,
+          "long-sword": 9,
+          "hammer": 12,
+          "hunting-horn": 10,
+          "lance": 9,
+          "gunlance": 10,
+          "switch-axe": 9,
+          "charge-blade": 6,
+          "insect-glaive": 7,
+          "bow": 7
+        }
+      },
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 23
@@ -8759,6 +9186,23 @@
       "onePerCategory": false,
       "setSkill": null,
       "next": null,
+      "value": {
+        "kind": "element",
+        "byWeapon": {
+          "great-sword": 15,
+          "sword-and-shield": 10,
+          "dual-blades": 9,
+          "long-sword": 12,
+          "hammer": 15,
+          "hunting-horn": 15,
+          "lance": 12,
+          "gunlance": 15,
+          "switch-axe": 12,
+          "charge-blade": 9,
+          "insect-glaive": 10,
+          "bow": 10
+        }
+      },
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 24
@@ -8800,6 +9244,25 @@
       "onePerCategory": false,
       "setSkill": null,
       "next": 38,
+      "value": {
+        "kind": "slotLevel",
+        "byWeapon": {
+          "great-sword": 1,
+          "sword-and-shield": 1,
+          "dual-blades": 1,
+          "long-sword": 1,
+          "hammer": 1,
+          "hunting-horn": 1,
+          "lance": 1,
+          "gunlance": 1,
+          "switch-axe": 1,
+          "charge-blade": 1,
+          "insect-glaive": 1,
+          "bow": 1,
+          "heavy-bowgun": 1,
+          "light-bowgun": 1
+        }
+      },
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 37
@@ -8841,6 +9304,25 @@
       "onePerCategory": false,
       "setSkill": null,
       "next": 39,
+      "value": {
+        "kind": "slotLevel",
+        "byWeapon": {
+          "great-sword": 2,
+          "sword-and-shield": 2,
+          "dual-blades": 2,
+          "long-sword": 2,
+          "hammer": 2,
+          "hunting-horn": 2,
+          "lance": 2,
+          "gunlance": 2,
+          "switch-axe": 2,
+          "charge-blade": 2,
+          "insect-glaive": 2,
+          "bow": 2,
+          "heavy-bowgun": 2,
+          "light-bowgun": 2
+        }
+      },
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 38
@@ -8882,6 +9364,25 @@
       "onePerCategory": false,
       "setSkill": null,
       "next": 40,
+      "value": {
+        "kind": "slotLevel",
+        "byWeapon": {
+          "great-sword": 3,
+          "sword-and-shield": 3,
+          "dual-blades": 3,
+          "long-sword": 3,
+          "hammer": 3,
+          "hunting-horn": 3,
+          "lance": 3,
+          "gunlance": 3,
+          "switch-axe": 3,
+          "charge-blade": 3,
+          "insect-glaive": 3,
+          "bow": 3,
+          "heavy-bowgun": 3,
+          "light-bowgun": 3
+        }
+      },
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 39
@@ -8923,6 +9424,25 @@
       "onePerCategory": false,
       "setSkill": null,
       "next": null,
+      "value": {
+        "kind": "slotLevel",
+        "byWeapon": {
+          "great-sword": 4,
+          "sword-and-shield": 4,
+          "dual-blades": 4,
+          "long-sword": 4,
+          "hammer": 4,
+          "hunting-horn": 4,
+          "lance": 4,
+          "gunlance": 4,
+          "switch-axe": 4,
+          "charge-blade": 4,
+          "insect-glaive": 4,
+          "bow": 4,
+          "heavy-bowgun": 4,
+          "light-bowgun": 4
+        }
+      },
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 40
@@ -8961,6 +9481,22 @@
       "onePerCategory": false,
       "setSkill": null,
       "next": 42,
+      "value": {
+        "kind": "sharpness",
+        "byWeapon": {
+          "great-sword": 1,
+          "sword-and-shield": 1,
+          "dual-blades": 1,
+          "long-sword": 1,
+          "hammer": 1,
+          "hunting-horn": 1,
+          "lance": 1,
+          "gunlance": 1,
+          "switch-axe": 1,
+          "charge-blade": 1,
+          "insect-glaive": 1
+        }
+      },
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 41
@@ -8999,6 +9535,22 @@
       "onePerCategory": false,
       "setSkill": null,
       "next": 43,
+      "value": {
+        "kind": "sharpness",
+        "byWeapon": {
+          "great-sword": 2,
+          "sword-and-shield": 2,
+          "dual-blades": 2,
+          "long-sword": 2,
+          "hammer": 2,
+          "hunting-horn": 2,
+          "lance": 2,
+          "gunlance": 2,
+          "switch-axe": 2,
+          "charge-blade": 2,
+          "insect-glaive": 2
+        }
+      },
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 42
@@ -9037,6 +9589,22 @@
       "onePerCategory": false,
       "setSkill": null,
       "next": 44,
+      "value": {
+        "kind": "sharpness",
+        "byWeapon": {
+          "great-sword": 3,
+          "sword-and-shield": 3,
+          "dual-blades": 3,
+          "long-sword": 3,
+          "hammer": 3,
+          "hunting-horn": 3,
+          "lance": 3,
+          "gunlance": 3,
+          "switch-axe": 3,
+          "charge-blade": 3,
+          "insect-glaive": 3
+        }
+      },
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 43
@@ -9075,6 +9643,22 @@
       "onePerCategory": false,
       "setSkill": null,
       "next": 45,
+      "value": {
+        "kind": "sharpness",
+        "byWeapon": {
+          "great-sword": 4,
+          "sword-and-shield": 4,
+          "dual-blades": 4,
+          "long-sword": 4,
+          "hammer": 4,
+          "hunting-horn": 4,
+          "lance": 4,
+          "gunlance": 4,
+          "switch-axe": 4,
+          "charge-blade": 4,
+          "insect-glaive": 4
+        }
+      },
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 44
@@ -9113,6 +9697,22 @@
       "onePerCategory": false,
       "setSkill": null,
       "next": 46,
+      "value": {
+        "kind": "sharpness",
+        "byWeapon": {
+          "great-sword": 5,
+          "sword-and-shield": 5,
+          "dual-blades": 5,
+          "long-sword": 5,
+          "hammer": 5,
+          "hunting-horn": 5,
+          "lance": 5,
+          "gunlance": 5,
+          "switch-axe": 5,
+          "charge-blade": 5,
+          "insect-glaive": 5
+        }
+      },
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 45
@@ -9151,6 +9751,22 @@
       "onePerCategory": false,
       "setSkill": null,
       "next": null,
+      "value": {
+        "kind": "sharpness",
+        "byWeapon": {
+          "great-sword": 7,
+          "sword-and-shield": 7,
+          "dual-blades": 7,
+          "long-sword": 7,
+          "hammer": 7,
+          "hunting-horn": 7,
+          "lance": 7,
+          "gunlance": 7,
+          "switch-axe": 7,
+          "charge-blade": 7,
+          "insect-glaive": 7
+        }
+      },
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 46
@@ -9179,6 +9795,7 @@
       "onePerCategory": true,
       "setSkill": null,
       "next": null,
+      "value": null,
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 47
@@ -9207,6 +9824,7 @@
       "onePerCategory": true,
       "setSkill": null,
       "next": null,
+      "value": null,
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 48
@@ -9235,6 +9853,7 @@
       "onePerCategory": true,
       "setSkill": null,
       "next": 50,
+      "value": null,
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 49
@@ -9263,6 +9882,7 @@
       "onePerCategory": true,
       "setSkill": null,
       "next": 51,
+      "value": null,
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 50
@@ -9291,6 +9911,7 @@
       "onePerCategory": true,
       "setSkill": null,
       "next": 52,
+      "value": null,
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 51
@@ -9319,6 +9940,7 @@
       "onePerCategory": true,
       "setSkill": null,
       "next": null,
+      "value": null,
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 52
@@ -9347,6 +9969,7 @@
       "onePerCategory": true,
       "setSkill": null,
       "next": 54,
+      "value": null,
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 53
@@ -9375,6 +9998,7 @@
       "onePerCategory": true,
       "setSkill": null,
       "next": 55,
+      "value": null,
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 54
@@ -9403,6 +10027,7 @@
       "onePerCategory": true,
       "setSkill": null,
       "next": 56,
+      "value": null,
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 55
@@ -9431,6 +10056,7 @@
       "onePerCategory": true,
       "setSkill": null,
       "next": null,
+      "value": null,
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 56
@@ -9459,6 +10085,7 @@
       "onePerCategory": true,
       "setSkill": null,
       "next": 58,
+      "value": null,
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 57
@@ -9487,6 +10114,7 @@
       "onePerCategory": true,
       "setSkill": null,
       "next": 59,
+      "value": null,
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 58
@@ -9515,6 +10143,7 @@
       "onePerCategory": true,
       "setSkill": null,
       "next": 60,
+      "value": null,
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 59
@@ -9543,6 +10172,7 @@
       "onePerCategory": true,
       "setSkill": null,
       "next": null,
+      "value": null,
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 60
@@ -9571,6 +10201,7 @@
       "onePerCategory": true,
       "setSkill": null,
       "next": 62,
+      "value": null,
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 61
@@ -9599,6 +10230,7 @@
       "onePerCategory": true,
       "setSkill": null,
       "next": null,
+      "value": null,
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 62
@@ -9627,6 +10259,7 @@
       "onePerCategory": true,
       "setSkill": null,
       "next": 64,
+      "value": null,
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 63
@@ -9655,6 +10288,7 @@
       "onePerCategory": true,
       "setSkill": null,
       "next": null,
+      "value": null,
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 64
@@ -9683,6 +10317,7 @@
       "onePerCategory": true,
       "setSkill": null,
       "next": 67,
+      "value": null,
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 66
@@ -9711,6 +10346,7 @@
       "onePerCategory": true,
       "setSkill": null,
       "next": null,
+      "value": null,
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 67
@@ -9739,6 +10375,7 @@
       "onePerCategory": true,
       "setSkill": null,
       "next": null,
+      "value": null,
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 69
@@ -9767,6 +10404,7 @@
       "onePerCategory": true,
       "setSkill": null,
       "next": null,
+      "value": null,
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 70
@@ -9796,6 +10434,13 @@
       "onePerCategory": false,
       "setSkill": null,
       "next": 72,
+      "value": {
+        "kind": "ammo",
+        "byWeapon": {
+          "heavy-bowgun": 1,
+          "light-bowgun": 1
+        }
+      },
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 71
@@ -9825,6 +10470,13 @@
       "onePerCategory": false,
       "setSkill": null,
       "next": 73,
+      "value": {
+        "kind": "ammo",
+        "byWeapon": {
+          "heavy-bowgun": 2,
+          "light-bowgun": 2
+        }
+      },
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 72
@@ -9854,6 +10506,13 @@
       "onePerCategory": false,
       "setSkill": null,
       "next": null,
+      "value": {
+        "kind": "ammo",
+        "byWeapon": {
+          "heavy-bowgun": 3,
+          "light-bowgun": 3
+        }
+      },
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 73
@@ -9883,6 +10542,13 @@
       "onePerCategory": false,
       "setSkill": null,
       "next": 76,
+      "value": {
+        "kind": "ammo",
+        "byWeapon": {
+          "heavy-bowgun": 1,
+          "light-bowgun": 1
+        }
+      },
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 75
@@ -9912,6 +10578,13 @@
       "onePerCategory": false,
       "setSkill": null,
       "next": 77,
+      "value": {
+        "kind": "ammo",
+        "byWeapon": {
+          "heavy-bowgun": 2,
+          "light-bowgun": 2
+        }
+      },
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 76
@@ -9941,6 +10614,13 @@
       "onePerCategory": false,
       "setSkill": null,
       "next": null,
+      "value": {
+        "kind": "ammo",
+        "byWeapon": {
+          "heavy-bowgun": 3,
+          "light-bowgun": 3
+        }
+      },
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 77
@@ -9970,6 +10650,13 @@
       "onePerCategory": false,
       "setSkill": null,
       "next": 80,
+      "value": {
+        "kind": "ammo",
+        "byWeapon": {
+          "heavy-bowgun": 1,
+          "light-bowgun": 1
+        }
+      },
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 79
@@ -9999,6 +10686,13 @@
       "onePerCategory": false,
       "setSkill": null,
       "next": 81,
+      "value": {
+        "kind": "ammo",
+        "byWeapon": {
+          "heavy-bowgun": 2,
+          "light-bowgun": 2
+        }
+      },
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 80
@@ -10028,6 +10722,13 @@
       "onePerCategory": false,
       "setSkill": null,
       "next": null,
+      "value": {
+        "kind": "ammo",
+        "byWeapon": {
+          "heavy-bowgun": 3,
+          "light-bowgun": 3
+        }
+      },
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 81
@@ -10057,6 +10758,13 @@
       "onePerCategory": false,
       "setSkill": null,
       "next": 84,
+      "value": {
+        "kind": "ammo",
+        "byWeapon": {
+          "heavy-bowgun": 1,
+          "light-bowgun": 1
+        }
+      },
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 83
@@ -10086,6 +10794,13 @@
       "onePerCategory": false,
       "setSkill": null,
       "next": 85,
+      "value": {
+        "kind": "ammo",
+        "byWeapon": {
+          "heavy-bowgun": 2,
+          "light-bowgun": 2
+        }
+      },
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 84
@@ -10115,6 +10830,13 @@
       "onePerCategory": false,
       "setSkill": null,
       "next": null,
+      "value": {
+        "kind": "ammo",
+        "byWeapon": {
+          "heavy-bowgun": 3,
+          "light-bowgun": 3
+        }
+      },
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 85
@@ -10143,6 +10865,7 @@
       "onePerCategory": true,
       "setSkill": null,
       "next": null,
+      "value": null,
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 86
@@ -10171,6 +10894,7 @@
       "onePerCategory": true,
       "setSkill": null,
       "next": 88,
+      "value": null,
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 87
@@ -10199,6 +10923,7 @@
       "onePerCategory": true,
       "setSkill": null,
       "next": 89,
+      "value": null,
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 88
@@ -10227,6 +10952,7 @@
       "onePerCategory": true,
       "setSkill": null,
       "next": 90,
+      "value": null,
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 89
@@ -10255,6 +10981,7 @@
       "onePerCategory": true,
       "setSkill": null,
       "next": 91,
+      "value": null,
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 90
@@ -10283,6 +11010,7 @@
       "onePerCategory": true,
       "setSkill": null,
       "next": 92,
+      "value": null,
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 91
@@ -10311,6 +11039,7 @@
       "onePerCategory": true,
       "setSkill": null,
       "next": null,
+      "value": null,
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 92
@@ -10339,6 +11068,7 @@
       "onePerCategory": false,
       "setSkill": null,
       "next": null,
+      "value": null,
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 93
@@ -10367,6 +11097,7 @@
       "onePerCategory": false,
       "setSkill": null,
       "next": 95,
+      "value": null,
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 94
@@ -10395,6 +11126,7 @@
       "onePerCategory": false,
       "setSkill": null,
       "next": 96,
+      "value": null,
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 95
@@ -10423,6 +11155,7 @@
       "onePerCategory": false,
       "setSkill": null,
       "next": null,
+      "value": null,
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 96
@@ -10462,6 +11195,7 @@
       "onePerCategory": true,
       "setSkill": 188,
       "next": null,
+      "value": null,
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 97
@@ -10503,6 +11237,7 @@
       "onePerCategory": true,
       "setSkill": 189,
       "next": null,
+      "value": null,
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 98
@@ -10544,6 +11279,7 @@
       "onePerCategory": true,
       "setSkill": 190,
       "next": null,
+      "value": null,
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 99
@@ -10572,6 +11308,7 @@
       "onePerCategory": true,
       "setSkill": 191,
       "next": null,
+      "value": null,
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 100
@@ -10610,6 +11347,7 @@
       "onePerCategory": true,
       "setSkill": 192,
       "next": null,
+      "value": null,
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 101
@@ -10643,6 +11381,7 @@
       "onePerCategory": true,
       "setSkill": 193,
       "next": null,
+      "value": null,
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 102
@@ -10684,6 +11423,7 @@
       "onePerCategory": true,
       "setSkill": 194,
       "next": null,
+      "value": null,
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 103
@@ -10725,6 +11465,7 @@
       "onePerCategory": true,
       "setSkill": 195,
       "next": null,
+      "value": null,
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 104
@@ -10766,6 +11507,7 @@
       "onePerCategory": true,
       "setSkill": 196,
       "next": null,
+      "value": null,
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 105
@@ -10804,6 +11546,7 @@
       "onePerCategory": true,
       "setSkill": 143,
       "next": null,
+      "value": null,
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 106
@@ -10845,6 +11588,7 @@
       "onePerCategory": true,
       "setSkill": 144,
       "next": null,
+      "value": null,
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 107
@@ -10886,6 +11630,7 @@
       "onePerCategory": true,
       "setSkill": 169,
       "next": null,
+      "value": null,
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 108
@@ -10927,6 +11672,7 @@
       "onePerCategory": true,
       "setSkill": 170,
       "next": null,
+      "value": null,
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 109
@@ -10968,6 +11714,7 @@
       "onePerCategory": true,
       "setSkill": 171,
       "next": null,
+      "value": null,
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 110
@@ -11009,6 +11756,7 @@
       "onePerCategory": true,
       "setSkill": 172,
       "next": null,
+      "value": null,
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 111
@@ -11050,6 +11798,7 @@
       "onePerCategory": true,
       "setSkill": 173,
       "next": null,
+      "value": null,
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 112
@@ -11091,6 +11840,7 @@
       "onePerCategory": true,
       "setSkill": 174,
       "next": null,
+      "value": null,
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 113
@@ -11132,6 +11882,7 @@
       "onePerCategory": true,
       "setSkill": 175,
       "next": null,
+      "value": null,
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 114
@@ -11173,6 +11924,7 @@
       "onePerCategory": true,
       "setSkill": 176,
       "next": null,
+      "value": null,
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 115
@@ -11214,6 +11966,7 @@
       "onePerCategory": true,
       "setSkill": 177,
       "next": null,
+      "value": null,
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 116
@@ -11255,6 +12008,7 @@
       "onePerCategory": true,
       "setSkill": 178,
       "next": null,
+      "value": null,
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 117
@@ -11296,6 +12050,7 @@
       "onePerCategory": true,
       "setSkill": 179,
       "next": null,
+      "value": null,
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 118
@@ -11337,6 +12092,7 @@
       "onePerCategory": true,
       "setSkill": 180,
       "next": null,
+      "value": null,
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 119
@@ -11378,6 +12134,7 @@
       "onePerCategory": true,
       "setSkill": 182,
       "next": null,
+      "value": null,
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 120
@@ -11419,6 +12176,7 @@
       "onePerCategory": true,
       "setSkill": 183,
       "next": null,
+      "value": null,
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 121
@@ -11460,6 +12218,7 @@
       "onePerCategory": true,
       "setSkill": 199,
       "next": null,
+      "value": null,
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 122
@@ -11491,6 +12250,7 @@
       "onePerCategory": true,
       "setSkill": 201,
       "next": null,
+      "value": null,
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 123
@@ -11532,6 +12292,7 @@
       "onePerCategory": true,
       "setSkill": 202,
       "next": null,
+      "value": null,
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 124
@@ -11573,6 +12334,7 @@
       "onePerCategory": true,
       "setSkill": 203,
       "next": null,
+      "value": null,
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 125
@@ -11614,6 +12376,7 @@
       "onePerCategory": true,
       "setSkill": 208,
       "next": null,
+      "value": null,
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 126
@@ -11643,6 +12406,7 @@
       "onePerCategory": false,
       "setSkill": null,
       "next": null,
+      "value": null,
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 127
@@ -11672,6 +12436,7 @@
       "onePerCategory": false,
       "setSkill": null,
       "next": null,
+      "value": null,
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 128
@@ -11701,6 +12466,7 @@
       "onePerCategory": false,
       "setSkill": null,
       "next": null,
+      "value": null,
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 129
@@ -11735,6 +12501,18 @@
       "onePerCategory": false,
       "setSkill": null,
       "next": 131,
+      "value": {
+        "kind": "status",
+        "byWeapon": {
+          "great-sword": 1,
+          "hammer": 1,
+          "hunting-horn": 2,
+          "lance": 2,
+          "gunlance": 2,
+          "switch-axe": 1,
+          "charge-blade": 1
+        }
+      },
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 130
@@ -11769,6 +12547,18 @@
       "onePerCategory": false,
       "setSkill": null,
       "next": 132,
+      "value": {
+        "kind": "status",
+        "byWeapon": {
+          "great-sword": 2,
+          "hammer": 2,
+          "hunting-horn": 3,
+          "lance": 3,
+          "gunlance": 3,
+          "switch-axe": 2,
+          "charge-blade": 2
+        }
+      },
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 131
@@ -11803,6 +12593,18 @@
       "onePerCategory": false,
       "setSkill": null,
       "next": 133,
+      "value": {
+        "kind": "status",
+        "byWeapon": {
+          "great-sword": 3,
+          "hammer": 3,
+          "hunting-horn": 4,
+          "lance": 4,
+          "gunlance": 4,
+          "switch-axe": 3,
+          "charge-blade": 3
+        }
+      },
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 132
@@ -11842,6 +12644,23 @@
       "onePerCategory": false,
       "setSkill": null,
       "next": 134,
+      "value": {
+        "kind": "status",
+        "byWeapon": {
+          "great-sword": 4,
+          "sword-and-shield": 2,
+          "dual-blades": 1,
+          "long-sword": 2,
+          "hammer": 4,
+          "hunting-horn": 5,
+          "lance": 5,
+          "gunlance": 5,
+          "switch-axe": 4,
+          "charge-blade": 4,
+          "insect-glaive": 2,
+          "bow": 2
+        }
+      },
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 133
@@ -11881,6 +12700,23 @@
       "onePerCategory": false,
       "setSkill": null,
       "next": 135,
+      "value": {
+        "kind": "status",
+        "byWeapon": {
+          "great-sword": 5,
+          "sword-and-shield": 3,
+          "dual-blades": 2,
+          "long-sword": 3,
+          "hammer": 5,
+          "hunting-horn": 6,
+          "lance": 6,
+          "gunlance": 6,
+          "switch-axe": 5,
+          "charge-blade": 5,
+          "insect-glaive": 3,
+          "bow": 3
+        }
+      },
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 134
@@ -11920,6 +12756,23 @@
       "onePerCategory": false,
       "setSkill": null,
       "next": null,
+      "value": {
+        "kind": "status",
+        "byWeapon": {
+          "great-sword": 7,
+          "sword-and-shield": 5,
+          "dual-blades": 4,
+          "long-sword": 5,
+          "hammer": 7,
+          "hunting-horn": 9,
+          "lance": 9,
+          "gunlance": 9,
+          "switch-axe": 7,
+          "charge-blade": 7,
+          "insect-glaive": 5,
+          "bow": 5
+        }
+      },
       "_src": {
         "file": "common/equip/em104_limit_break.em104lb",
         "row": 135

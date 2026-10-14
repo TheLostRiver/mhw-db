@@ -51,6 +51,7 @@ export const GET: APIRoute = ({ params }) => {
         stackable: a.stackable,
         onePerCategory: a.onePerCategory,
         setSkill: a.setSkill,
+        ...(a.value?.byWeapon[type] ? { effect: { kind: a.value.kind, amount: a.value.byWeapon[type] } } : {}),
       })),
   };
   return new Response(JSON.stringify(payload), { headers: { 'content-type': 'application/json' } });

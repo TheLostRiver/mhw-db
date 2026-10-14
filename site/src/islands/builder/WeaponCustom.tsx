@@ -51,6 +51,30 @@ const PART_LABELS: Record<PartEffectKey, string> = {
 
 export const ROMAN = ['', 'Ⅰ', 'Ⅱ', 'Ⅲ', 'Ⅳ', 'Ⅴ', 'Ⅵ'];
 
+/** 觉醒能力在当前武器种上的效果说明（攻击 / 属性为真实值） */
+export function awakeningEffectText(a: AwakeningData): string | null {
+  const e = a.effect;
+  if (!e) return null;
+  switch (e.kind) {
+    case 'attack':
+      return `攻击 +${e.amount}`;
+    case 'affinity':
+      return `会心 +${e.amount}%`;
+    case 'defense':
+      return `防御 +${e.amount}`;
+    case 'element':
+      return `属性 +${e.amount * 10}`;
+    case 'status':
+      return `状态异常 +${e.amount * 10}`;
+    case 'slotLevel':
+      return `追加 ${e.amount} 级镶嵌槽`;
+    case 'sharpness':
+      return `锐利度 +${e.amount}（单位待确认）`;
+    case 'ammo':
+      return `装填数 +${e.amount}`;
+  }
+}
+
 const partEffectText = (effect: { [K in PartEffectKey]?: number | undefined }) =>
   (Object.entries(effect) as [PartEffectKey, number | undefined][])
     .filter(([, v]) => v)
@@ -262,7 +286,11 @@ function AwakeningPanel({
                 {a ? ROMAN[a.rank] : i + 1}
               </span>
               <span className="gb-awk__name">{a?.name ?? '未设定'}</span>
-              {a && <span className="gb-awk__group">{AWAKENING_GROUPS[a.category] ?? '武器专属'}</span>}
+              {a && (
+                <span className="gb-awk__group">
+                  {awakeningEffectText(a) ?? AWAKENING_GROUPS[a.category] ?? '武器专属'}
+                </span>
+              )}
             </button>
             {a && (
               <button type="button" className="gb-btn gb-btn--ghost gb-awk__clear" onClick={() => clear(i)}>
@@ -273,7 +301,8 @@ function AwakeningPanel({
         ))}
       </ol>
       <p className="gb-note">
-        系列技能能力按 1 件计入；其他觉醒能力的数值没有在数据里找到，暂不计入状态。栏数与搭配规则待确认。
+        数值取自 em104lbr：攻击、会心、防御、属性 / 状态异常已计入状态，镶嵌槽强化会追加一个槽； 系列技能按 1
+        件计入；锐利度未计入。栏数与搭配规则待确认。
       </p>
     </section>
   );
@@ -281,4 +310,11 @@ function AwakeningPanel({
 
 /** 觉醒能力选择器的条目说明 */
 export const awakeningMeta = (a: AwakeningData) =>
-  `${AWAKENING_GROUPS[a.category] ?? '武器专属'} · 等级 ${ROMAN[a.rank]}${a.stackable ? '' : ' · 不可重复'}`;
+  [
+    AWAKENING_GROUPS[a.category] ?? '武器专属',
+    `等级 ${ROMAN[a.rank]}`,
+    awakeningEffectText(a),
+    a.stackable ? null : '不可重复',
+  ]
+    .filter(Boolean)
+    .join(' · ');

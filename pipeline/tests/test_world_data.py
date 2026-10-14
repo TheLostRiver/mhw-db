@@ -134,3 +134,18 @@ def test_awakened_weapons_marked_and_deduplicated() -> None:
     safi = [w for w in gs if w.get("awakened")]
     assert len(safi) == 18
     assert sum(1 for w in safi if "duplicateOf" not in w) == 9
+
+
+def test_awakening_values_by_weapon() -> None:
+    aw = custom()["awakening"]
+    atk6 = by_name(aw, "攻击力强化6")["value"]
+    assert atk6["kind"] == "attack"
+    assert (atk6["byWeapon"]["great-sword"], atk6["byWeapon"]["long-sword"]) == (14, 15)
+    el6 = by_name(aw, "属性强化6")["value"]["byWeapon"]
+    assert (el6["great-sword"], el6["dual-blades"]) == (15, 9)
+    assert "heavy-bowgun" not in el6
+    assert by_name(aw, "镶嵌槽强化4")["value"] == {
+        "kind": "slotLevel",
+        "byWeapon": dict.fromkeys([k for k in by_name(aw, "镶嵌槽强化4")["weapons"]], 4),
+    }
+    assert by_name(aw, "旋律【攻击】1")["value"] is None

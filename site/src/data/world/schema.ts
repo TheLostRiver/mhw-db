@@ -339,6 +339,14 @@ export const WeaponCustom = z
           onePerCategory: z.boolean(),
           setSkill: z.number().int().nullable(),
           next: z.number().int().nullable(),
+          /** 各武器种上的效果值（em104lbr）；旋律、炮击等种类没有加值，为 null */
+          value: z
+            .object({
+              kind: z.enum(['attack', 'defense', 'affinity', 'element', 'slotLevel', 'sharpness', 'status', 'ammo']),
+              byWeapon: z.partialRecord(z.enum(WEAPON_TYPES), z.number().int().positive()),
+            })
+            .strict()
+            .nullable(),
           _src: Src,
         })
         .strict(),

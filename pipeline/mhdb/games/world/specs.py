@@ -106,6 +106,16 @@ AWAKENING = spec(
     """,
 )
 
+# MHW-Editor 称为 recipe，实际是每个觉醒能力在 14 种武器上的效果值（攻击 2/4/6/8/10/15、属性按武器种不同等），
+# 行号与 em104lb 一一对应（id = 行号）
+AWAKENING_VALUES = spec(
+    "em104_limit_break_recipe.em104lbr",
+    """
+    id:H gs:H sns:H db:H ls:H hammer:H hh:H lance:H gl:H sa:H cb:H ig:H bow:H hbg:H lbg:H
+    unk_1:B unk_2:B unk_3:B unk_4:B
+    """,
+)
+
 AUGMENT = spec(
     "new_limit_break.new_lb",
     # category：0 扩充自定义栏 1 攻击 2 会心 3 防御 4 镶嵌槽 5 回复能力 6 属性·状态异常；slot_cost 为该等级的总占用

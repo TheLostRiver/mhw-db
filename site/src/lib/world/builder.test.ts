@@ -152,8 +152,10 @@ weapons.push(
   { ...weapons[0]!, id: 301, name: '上位大剑', rarity: 8, slots: [1] },
 );
 const awakening = [
-  awk(1, {}),
-  awk(6, { rank: 6, stackable: false }),
+  awk(1, { effect: { kind: 'attack', amount: 2 } }),
+  awk(6, { rank: 6, stackable: false, effect: { kind: 'attack', amount: 14 } }),
+  awk(24, { category: 'element', rank: 6, stackable: false, effect: { kind: 'element', amount: 15 } }),
+  awk(37, { category: 'slot', rank: 3, stackable: false, effect: { kind: 'slotLevel', amount: 1 } }),
   awk(97, { category: 'setBonus', rank: 3, stackable: false, onePerCategory: true, setSkill: 222 }),
   awk(98, { category: 'setBonus', rank: 3, stackable: false, onePerCategory: true, setSkill: 62 }),
 ];
@@ -309,12 +311,13 @@ describe('零件强化', () => {
 
 describe('冥赤龙觉醒', () => {
   it('不可重复的能力、同种类限一个的能力会被拒绝', () => {
-    const chosen = [awakening[1]!, awakening[2]!, null, null, null];
-    expect(awakeningConflict(chosen, 2, awakening[0]!)).toBeNull();
-    expect(awakeningConflict(chosen, 2, awakening[1]!)).toBe('此能力不能重复设定');
-    expect(awakeningConflict(chosen, 0, awakening[1]!)).toBeNull();
-    expect(awakeningConflict(chosen, 2, awakening[3]!)).toBe('无法设定复数系列技能');
-    expect(awakeningConflict(chosen, 1, awakening[3]!)).toBeNull();
+    const [atk1, atk6, , , set1, set2] = awakening;
+    const chosen = [atk6!, set1!, null, null, null];
+    expect(awakeningConflict(chosen, 2, atk1!)).toBeNull();
+    expect(awakeningConflict(chosen, 2, atk6!)).toBe('此能力不能重复设定');
+    expect(awakeningConflict(chosen, 0, atk6!)).toBeNull();
+    expect(awakeningConflict(chosen, 2, set2!)).toBe('无法设定复数系列技能');
+    expect(awakeningConflict(chosen, 1, set2!)).toBeNull();
   });
 
   it('系列技能能力计 1 件，只对冥赤龙武器生效', () => {
@@ -328,5 +331,15 @@ describe('冥赤龙觉醒', () => {
     expect(set.activeSetLevels).toEqual([2]);
     b.weapon = { id: 239, decos: [] };
     expect(computeSkills(b, idx).find((x) => x.skill.id === 222)?.counted).toBe(1);
+  });
+
+  it('攻击、属性、镶嵌槽按 em104lbr 的值计入', () => {
+    const b = emptyBuild();
+    b.weapon = { id: 300, decos: [] };
+    b.custom.awakening = [6, 1, 24, 37];
+    const st = computeStats(b, idx, computeSkills(b, idx));
+    expect(st.attack).toBe(270 + 14 + 2);
+    expect(st.element).toEqual({ type: 'dragon', value: (18 + 15) * 10 });
+    expect(weaponSlots(b, idx)).toEqual([4, 1]);
   });
 });

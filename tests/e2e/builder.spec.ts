@@ -126,6 +126,8 @@ test('冥赤龙觉醒：不可重复的能力在选择器里禁用', async ({ pa
   await pick(page, '.gb-row__piece[aria-label^="武器"]', '赤龙断绝剑·火');
   await pick(page, '.gb-awk__slot >> nth=0', '攻击力强化6');
   await expect(page.locator('.gb-awk li').first()).toContainText('攻击力强化6');
+  // 赤龙断绝剑 270 + 攻击力强化6（大剑 +14）= 284 → ×4.8 = 1363
+  await expect(page.locator('section[aria-labelledby="gb-stats-h"]')).toContainText('1363');
   await page.locator('.gb-awk__slot').nth(1).click();
   const dialog = page.getByRole('dialog');
   await dialog.getByRole('searchbox').fill('攻击力强化6');

@@ -165,9 +165,27 @@ def build_parts(s: Source) -> dict[str, list[dict]]:
     return out
 
 
+# 效果值的含义（单位为推断，见 docs/DATA.md 3.3）；其他种类的值是旋律 / 炮击 / 瓶等的编号，不是加值
+VALUE_KINDS = {
+    "attack": "attack",
+    "defense": "defense",
+    "affinity": "affinity",
+    "element": "element",
+    "slot": "slotLevel",
+    "sharpness": "sharpness",
+    "status": "status",
+    "ammoNormal": "ammo",
+    "ammoPierce": "ammo",
+    "ammoSpread": "ammo",
+    "ammoElement": "ammo",
+}
+
+
 def build_awakening(s: Source) -> list[dict]:
     rel = "common/equip/em104_limit_break.em104lb"
+    vrel = "common/equip/em104_limit_break_recipe.em104lbr"
     texts = s.text("common/text/vfont/ew_limit_break")
+    values = s.table(vrel, S.AWAKENING_VALUES)
     out = []
     for row, r in enumerate(s.table(rel, S.AWAKENING)):
         weapons = [WEAPON_KEYS[i] for i, f in enumerate(WEAPON_FLAGS) if r[f]]
@@ -177,6 +195,18 @@ def build_awakening(s: Source) -> list[dict]:
         if not name:
             continue
         category = AWAKENING_CATEGORIES[r["category"]]
+        v = values[row]
+        if v["id"] != row:
+            raise ValueError(f"{vrel} 行 {row} 的 id 为 {v['id']}，与 em104lb 行号不一致")
+        kind = VALUE_KINDS.get(category)
+        value = (
+            {
+                "kind": kind,
+                "byWeapon": {k: v[f] for k, f in zip(WEAPON_KEYS, WEAPON_FLAGS, strict=True) if v[f]},
+            }
+            if kind
+            else None
+        )
         out.append(
             {
                 "id": row,
@@ -190,6 +220,7 @@ def build_awakening(s: Source) -> list[dict]:
                 "onePerCategory": bool(r["unk_2"]),
                 "setSkill": r["skill_id"] or None,
                 "next": r["next"] or None,
+                "value": value,
                 "_src": src(rel, row),
             }
         )
