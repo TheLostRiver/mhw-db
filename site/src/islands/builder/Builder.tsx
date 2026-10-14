@@ -19,7 +19,7 @@ import {
   type SkillTotal,
   type WeaponData,
 } from '../../lib/world/builder';
-import Picker, { type PickerItem } from './Picker';
+import Picker from './Picker';
 import { GameIcon, iconUrl, LevelBoxes } from './icons';
 import './builder.css';
 
@@ -179,22 +179,40 @@ export default function Builder() {
 
   const pickerFor = (
     pk: NonNullable<Picking>,
-  ): { title: string; items: PickerItem[]; current: number | null; minRarity?: number } => {
+  ): Omit<React.ComponentProps<typeof Picker>, 'onPick' | 'onClose'> => {
     const t = pk.target;
     if (pk.deco != null) {
       const size = slotsOf(t)[pk.deco] ?? 0;
+      const deco = (id: number) => idx.decorations.get(id);
+      const sizes = [1, 2, 3, 4].filter((n) => n <= size);
       return {
         title: `选择饰品（${size} 级槽）`,
+        layout: 'grid',
+        placeholder: '饰品名或技能',
         current: pieceOf(t)?.decos[pk.deco] ?? null,
+        filters: [
+          { key: 'all', label: '全部', test: () => true },
+          { key: 'single', label: '单技能', test: (id) => deco(id)?.skills.length === 1 },
+          { key: 'combo', label: '复合珠', test: (id) => (deco(id)?.skills.length ?? 0) > 1 },
+          ...(sizes.length > 1
+            ? sizes.map((n) => ({
+                key: `size-${n}`,
+                title: `${n} 级饰品`,
+                label: <GameIcon src={iconUrl.socket(n)} size={18} alt="" />,
+                test: (id: number) => deco(id)?.size === n,
+              }))
+            : []),
+        ],
         items: data.decorations
           .filter((d) => d.size <= size)
           .sort((a, b) => b.size - a.size || a.id - b.id)
           .map((d) => ({
             id: d.id,
             name: d.name,
+            rarity: d.rarity,
             search: d.skills.map((s) => idx.skills.get(s.id)?.name ?? '').join(' '),
-            icon: <GameIcon src={iconUrl.deco(d.size, d.iconColor)} size={28} />,
-            meta: <SkillLine refs={d.skills} idx={idx} />,
+            icon: <GameIcon src={iconUrl.deco(d.size, d.iconColor)} size={36} />,
+            meta: <SkillRows refs={d.skills} idx={idx} />,
           })),
       };
     }
@@ -202,6 +220,7 @@ export default function Builder() {
       return {
         title: `选择${WEAPON_TYPE_NAMES[build.weaponType] ?? '武器'}`,
         current: build.weapon.id,
+        rankTabs: true,
         minRarity: 9,
         items: weapons.map((w) => ({
           id: w.id,
@@ -221,6 +240,7 @@ export default function Builder() {
       return {
         title: `选择${SLOT_NAMES[t.slot]}防具`,
         current: build.armor[t.slot].id,
+        rankTabs: true,
         minRarity: 9,
         items: data.armor
           .filter((a) => a.slot === t.slot)
@@ -237,15 +257,17 @@ export default function Builder() {
     if (t.kind === 'charm')
       return {
         title: '选择护石',
+        layout: 'grid',
         current: build.charm,
+        rankTabs: true,
         minRarity: 9,
         items: data.charms.map((c) => ({
           id: c.id,
           name: c.name,
           rarity: c.rarity,
           search: c.skills.map((s) => idx.skills.get(s.id)?.name ?? '').join(' '),
-          icon: <GameIcon src={iconUrl.equip('charm', c.rarity)} size={28} />,
-          meta: <SkillLine refs={c.skills} idx={idx} />,
+          icon: <GameIcon src={iconUrl.equip('charm', c.rarity)} size={36} />,
+          meta: <SkillRows refs={c.skills} idx={idx} />,
         })),
       };
     return {
@@ -400,6 +422,24 @@ function SlotDots({ slots }: { slots: number[] }) {
 
 function SkillLine({ refs, idx }: { refs: { id: number; level: number }[]; idx: Index }) {
   return <>{refs.map((r) => `${idx.skills.get(r.id)?.name ?? `#${r.id}`} ${r.level}`).join(' · ')}</>;
+}
+
+/** 卡片里的技能：每个技能一行，技能图标 + 名称 + 金色等级 */
+function SkillRows({ refs, idx }: { refs: { id: number; level: number }[]; idx: Index }) {
+  return (
+    <>
+      {refs.map((r) => {
+        const sk = idx.skills.get(r.id);
+        return (
+          <span key={r.id} className="gb-skillrow">
+            <GameIcon src={iconUrl.skill(sk?.iconColor ?? 0)} size={18} />
+            <span>{sk?.name ?? `#${r.id}`}</span>
+            <b>Lv{r.level}</b>
+          </span>
+        );
+      })}
+    </>
+  );
 }
 
 interface RowProps {

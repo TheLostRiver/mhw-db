@@ -92,3 +92,20 @@ test('衣装上的饰品只在衣装生效时计入', async ({ page }) => {
   await expect(challenger.locator('.gb-skills__lv b')).toHaveText('1');
   await expect(challenger).toContainText('生效中');
 });
+
+test('饰品选择器：卡片网格，按单技能 / 复合珠筛选', async ({ page }) => {
+  await open(page);
+  await pick(page, '.gb-row__piece[aria-label^="武器"]', '黑龙玄刃');
+  await page.locator('.gb-slot').first().click();
+  const dialog = page.getByRole('dialog');
+  await expect(dialog.locator('.gb-picker__list--grid')).toBeVisible();
+  await dialog.getByRole('radio', { name: '复合珠' }).click();
+  const cards = dialog.getByRole('option');
+  await expect(cards.first()).toBeVisible();
+  for (const n of await cards
+    .locator('.gb-picker__meta')
+    .evaluateAll((els) => els.map((e) => e.querySelectorAll('.gb-skillrow').length)))
+    expect(n).toBeGreaterThanOrEqual(2);
+  await dialog.getByRole('radio', { name: '单技能' }).click();
+  await expect(cards.first().locator('.gb-skillrow')).toHaveCount(1);
+});
