@@ -455,24 +455,39 @@
 /* ---------- 装备一览（游戏式：左装备、右镶嵌槽） ---------- */
 
 .gb-equip {
+  --gb-slot-h: 28px;
+  --gb-slot-gap: 3px;
   display: grid;
-  gap: 4px;
 }
 
+/* 每栏高度固定为 --lines 个镶嵌槽的高度（武器 / 防具 3、衣装 2、护石 1），栏与栏之间用虚线分隔 */
 .gb-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
   align-items: stretch;
   gap: 4px;
-  border-radius: var(--gb-radius);
+  padding-block: 6px;
   transition: background-color var(--dur-fast);
+}
+
+.gb-row + .gb-row {
+  border-top: 1px dashed var(--c-line-strong);
+}
+
+.gb-row:first-child {
+  padding-top: 0;
+}
+
+.gb-row:last-child {
+  padding-bottom: 0;
 }
 
 .gb-row__piece {
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  min-height: 52px;
+  min-width: 0;
+  min-height: calc(var(--lines) * var(--gb-slot-h) + (var(--lines) - 1) * var(--gb-slot-gap));
   padding: 4px 10px 4px 4px;
   border-radius: var(--gb-radius);
   background: linear-gradient(90deg, var(--gb-row), color-mix(in srgb, var(--gb-row) 40%, transparent));
@@ -543,15 +558,18 @@
 
 .gb-row__slots {
   display: grid;
-  align-content: center;
-  gap: 2px;
+  grid-template-rows: repeat(var(--lines), var(--gb-slot-h));
+  align-content: start;
+  gap: var(--gb-slot-gap);
+  min-width: 0;
 }
 
 .gb-slot {
   display: flex;
   align-items: center;
   gap: 6px;
-  height: 26px;
+  min-width: 0;
+  height: var(--gb-slot-h);
   padding: 0 8px 0 4px;
   border-radius: 3px;
   background: var(--gb-slot);
@@ -1120,13 +1138,41 @@
     grid-template-columns: minmax(0, 1fr);
   }
 
+  /* 手机上仍保持左右两列（与游戏一致），装备名允许换行 */
   .gb-row {
-    grid-template-columns: minmax(0, 1fr);
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
   }
 
-  .gb-row__slots {
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    padding-left: 48px;
+  .gb-row__piece {
+    gap: 6px;
+    padding-right: 4px;
+  }
+
+  .gb-row__icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .gb-row__name {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    white-space: normal;
+    font-size: var(--text-xs);
+    line-height: 1.35;
+  }
+
+  .gb-row__rarity {
+    display: none;
+  }
+
+  .gb-slot {
+    gap: 4px;
+    padding-inline: 2px 4px;
+  }
+
+  .gb-slot__name {
+    font-size: 11px;
   }
 
   .gb-switch {

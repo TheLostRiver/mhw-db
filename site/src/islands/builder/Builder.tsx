@@ -559,11 +559,14 @@ function EquipRow({
     decos = p.decos;
   }
   const empty = icon == null;
+  // 与游戏一样，每一栏的高度固定（按这类装备最多的镶嵌槽数），槽少的装备下方留空，便于区分上下两件
+  const lines = target.kind === 'charm' ? 1 : target.kind === 'mantle' ? 2 : 3;
   return (
     <div
       className="gb-row"
       data-selected={selected ? '' : undefined}
       data-empty={empty ? '' : undefined}
+      style={{ ['--lines' as string]: lines }}
       onClick={onSelect}
     >
       <button
