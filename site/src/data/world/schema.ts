@@ -360,6 +360,8 @@ export type WeaponCustom = z.infer<typeof WeaponCustom>;
 export const Constants = z
   .object({
     weaponBloat: z.record(z.enum(WEAPON_TYPES), z.number().positive()),
+    critMultiplier: z.number().positive(),
+    badCritMultiplier: z.number().positive(),
     _src: z.object({ file: z.literal('exe'), note: z.string() }).strict(),
   })
   .strict();

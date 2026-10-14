@@ -6,7 +6,9 @@
  * - 等级上限：baseMaxLevel；更高等级的 unlockedBy 中任一套装技能等级已发动时，上限提高到该等级。
  * - 武器的 skill 字段计 1 点（Kulve 武器计入「绚辉龙的真髓」件数；皇金武器为会心攻击【特殊】等）。⚠ 计 1 点为推断
  * - 衣装镶嵌的饰品只在「衣装生效」时计入。
- * - 状态：只计入数值来自游戏数据、且无发动条件的技能（攻击、看破）；条件技能待加开关。
+ * - 状态：技能数值全部取自 skill_data 的参数（与技能说明文本逐条对得上）；有发动条件的技能由用户打开开关后计入。
+ *   ⚠ 推断：倍率类（火场怪力、攻击守势）乘在武器攻击力（含客制）上，再加上「基础攻击力 +N」类加值；
+ *   属性强化为 基础属性 × 倍率 + 加值，未计属性上限；状态异常强化的「+10」不在参数里，暂不计入。
  * - 武器客制（docs/DATA.md 3.3）：大师自定义强化每种只取一个等级（⚠ 推断），攻击 / 会心 / 防御加值来自 pl_param；
  *   镶嵌槽强化追加一个等级 = 强化等级的槽；属性强化与零件强化的换算未确认，不计入状态。
  *   冥赤龙觉醒：数值取自 em104lbr（攻击、会心、防御、属性 / 状态异常计入状态，镶嵌槽强化追加槽）；
@@ -172,6 +174,8 @@ export interface BuilderData {
   augments: { levels: AugmentLevel[]; effects: AugmentEffects };
   /** 武器显示倍率（显示攻击力 = 真实攻击力 × 倍率），取自游戏程序，见 data/world/constants.json */
   bloat: Partial<Record<string, number>>;
+  /** 会心 / 负会心伤害倍率（pl_param） */
+  crit: { good: number; bad: number };
 }
 
 export interface Piece {
@@ -192,6 +196,8 @@ export interface Build {
   weaponType: string;
   weapon: Piece;
   custom: WeaponCustom;
+  /** 打开的发动条件（CONDITIONS 的 key） */
+  conditions: string[];
   armor: Record<ArmorSlot, Piece>;
   charm: number | null;
   mantles: [Piece, Piece];
@@ -206,6 +212,7 @@ export const emptyBuild = (weaponType = 'great-sword'): Build => ({
   weaponType,
   weapon: emptyPiece(),
   custom: emptyCustom(),
+  conditions: [],
   armor: {
     head: emptyPiece(),
     chest: emptyPiece(),
@@ -231,6 +238,7 @@ export interface Index {
   awakening: Map<number, AwakeningData>;
   effects: AugmentEffects;
   bloat: Partial<Record<string, number>>;
+  crit: { good: number; bad: number };
 }
 
 const EMPTY_PAYLOAD: WeaponPayload = { weapons: [], parts: [], awakening: [] };
@@ -249,6 +257,7 @@ export function makeIndex(data: BuilderData, payload: WeaponPayload = EMPTY_PAYL
     awakening: by(payload.awakening),
     effects: data.augments.effects,
     bloat: data.bloat,
+    crit: data.crit,
   };
 }
 
@@ -477,6 +486,34 @@ export function capFor(skill: SkillData, activeSet: Map<number, number>): number
 
 export const SKILL_ATTACK = 19;
 export const SKILL_CRITICAL_EYE = 48;
+const SKILL_CRITICAL_BOOST = 49;
+/** 火、水、冰、雷、龙属性攻击强化（技能编号顺序与属性编号一致） */
+const ELEMENT_SKILLS: Record<string, number> = { fire: 30, water: 31, ice: 32, thunder: 33, dragon: 34 };
+
+/** 有发动条件的技能：开关打开后才计入状态。标签按技能说明文本写 */
+export interface Condition {
+  key: string;
+  skill: number;
+  label: string;
+}
+
+export const CONDITIONS: Condition[] = [
+  { key: 'agitator', skill: 62, label: '怪物发怒' },
+  { key: 'weakness', skill: 50, label: '攻击有效部位' },
+  { key: 'wound', skill: 50, label: '有效部位已受伤' },
+  { key: 'peak', skill: 63, label: '体力全满' },
+  { key: 'resentment', skill: 66, label: '体力槽有红色部分' },
+  { key: 'latent', skill: 61, label: '力量解放发动中' },
+  { key: 'maxMight', skill: 101, label: '耐力保持全满' },
+  { key: 'heroics', skill: 64, label: '体力 35% 以下' },
+  { key: 'offensiveGuard', skill: 185, label: '抓准时机防御成功后' },
+  { key: 'coalescence', skill: 186, label: '解除异常状态后' },
+  { key: 'critDraw', skill: 55, label: '拔刀攻击' },
+];
+
+/** 当前配装里可用的条件（技能已发动） */
+export const availableConditions = (skills: SkillTotal[]) =>
+  CONDITIONS.filter((c) => skills.some((s) => s.skill.id === c.skill && s.level > 0));
 
 export interface Stats {
   attack: number;
@@ -486,6 +523,12 @@ export interface Stats {
   element: { type: string; value: number } | null;
   elderseal: number;
   defense: number;
+  /** 会心伤害倍率（超会心） */
+  critMultiplier: number;
+  /** 期望攻击力（真实值，未计锐利度与动作值） */
+  effectiveAttack: number;
+  /** 期望攻击力的显示值；缺少倍率时为 null */
+  effectiveDisplay: number | null;
   resist: [number, number, number, number, number];
 }
 
@@ -504,19 +547,46 @@ export function computeStats(build: Build, idx: Index, skills: SkillTotal[]): St
   };
 
   const awk = (kind: AwakeningEffectKind) => awakeningTotal(build, idx, kind);
+  const on = new Set(
+    availableConditions(skills)
+      .filter((c) => build.conditions.includes(c.key))
+      .map((c) => c.key),
+  );
+  // 第 i 个参数；只在技能发动（且需要条件时条件打开）时计入
+  const p = (skill: number, i: number, cond?: string) =>
+    cond && !on.has(cond) ? 0 : paramAt(idx.skills.get(skill), lv(skill), i);
+  const mul = (skill: number, cond: string) => (on.has(cond) && lv(skill) > 0 ? p(skill, 0) / 100 : 1);
+
+  const weaponRaw = (weapon?.attack ?? 0) + fx('attack') + awk('attack');
   const attack =
-    (weapon?.attack ?? 0) + fx('attack') + awk('attack') + paramAt(atkSkill, lv(SKILL_ATTACK), 0);
+    weaponRaw * mul(64, 'heroics') * mul(185, 'offensiveGuard') +
+    paramAt(atkSkill, lv(SKILL_ATTACK), 0) +
+    p(62, 0, 'agitator') +
+    p(63, 0, 'peak') +
+    p(66, 0, 'resentment') +
+    p(186, 0, 'coalescence');
+  const wex = on.has('weakness') ? p(50, on.has('wound') ? 1 : 0) : 0;
   const affinity =
     (weapon?.affinity ?? 0) +
     fx('affinity') +
     awk('affinity') +
     paramAt(atkSkill, lv(SKILL_ATTACK), 1) +
-    paramAt(eyeSkill, lv(SKILL_CRITICAL_EYE), 0);
+    paramAt(eyeSkill, lv(SKILL_CRITICAL_EYE), 0) +
+    p(62, 1, 'agitator') +
+    p(61, 0, 'latent') +
+    p(101, 0, 'maxMight') +
+    p(55, 0, 'critDraw') +
+    wex;
   const bloat = idx.bloat[build.weaponType];
 
-  let defense = (weapon?.defense ?? 0) + fx('defense') + awk('defense');
+  let defense = (weapon?.defense ?? 0) + fx('defense') + awk('defense') + p(64, 1, 'heroics');
   const el = weapon?.element;
   const elementPlus = el ? awk(STATUS_TYPES.has(el.type) ? 'status' : 'element') : 0;
+  let elementTrue = el ? el.value + elementPlus : 0;
+  const elSkill = el ? ELEMENT_SKILLS[el.type] : undefined;
+  if (el && elSkill != null && lv(elSkill) > 0)
+    elementTrue = (elementTrue * p(elSkill, 1)) / 100 + p(elSkill, 0);
+  if (el && !STATUS_TYPES.has(el.type)) elementTrue += p(186, 1, 'coalescence');
   const resist: Stats['resist'] = [0, 0, 0, 0, 0];
   for (const slot of ARMOR_SLOTS) {
     const id = build.armor[slot].id;
@@ -525,11 +595,19 @@ export function computeStats(build: Build, idx: Index, skills: SkillTotal[]): St
     defense += a.defense;
     a.resist.forEach((v, i) => (resist[i] = (resist[i] ?? 0) + v));
   }
+  const aff = Math.max(-100, Math.min(100, affinity));
+  const critMultiplier = lv(SKILL_CRITICAL_BOOST) > 0 ? p(SKILL_CRITICAL_BOOST, 0) / 100 : idx.crit.good;
+  const critFactor =
+    aff >= 0 ? 1 + (aff / 100) * (critMultiplier - 1) : 1 + (-aff / 100) * (idx.crit.bad - 1);
   return {
     attack,
     attackDisplay: weapon && bloat ? Math.round(attack * bloat) : null,
-    affinity: Math.max(-100, Math.min(100, affinity)),
-    element: el ? { type: el.type, value: (el.value + elementPlus) * 10 } : null,
+    // 真实值保留小数（倍率类技能会产生小数），显示时再取整
+    affinity: aff,
+    element: el ? { type: el.type, value: Math.round(elementTrue * 10) } : null,
+    critMultiplier,
+    effectiveAttack: attack * critFactor,
+    effectiveDisplay: weapon && bloat ? Math.round(attack * critFactor * bloat) : null,
     elderseal: weapon?.elderseal ?? 0,
     defense,
     resist,

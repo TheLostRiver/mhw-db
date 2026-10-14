@@ -15,6 +15,8 @@
     "heavy-bowgun": 1.5,
     "light-bowgun": 1.3
   },
+  "critMultiplier": 1.25,
+  "badCritMultiplier": 0.75,
   "_src": {
     "file": "exe",
     "note": "exe 内存 0x33b8890（构建 15539686），见 mhdb/games/world/exe.py"

@@ -8,6 +8,7 @@ import {
   augmentLevels,
   awakeningConflict,
   awakeningTotal,
+  availableConditions,
   chosenAwakening,
   computeSkills,
   computeStats,
@@ -85,7 +86,12 @@ function loadSaved(): Build {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const saved = JSON.parse(raw) as Partial<Build>;
-      return { ...emptyBuild(), ...saved, custom: { ...emptyCustom(), ...saved.custom } };
+      return {
+        ...emptyBuild(),
+        ...saved,
+        custom: { ...emptyCustom(), ...saved.custom },
+        conditions: saved.conditions ?? [],
+      };
     }
   } catch {
     /* 忽略损坏的存档 */
@@ -453,14 +459,27 @@ export default function Builder() {
             <h2 id="gb-stats-h" className="gb-h">
               状态
             </h2>
+            <Conditions
+              skills={skills}
+              on={build.conditions}
+              onToggle={(key) =>
+                update((b) => ({
+                  ...b,
+                  conditions: b.conditions.includes(key)
+                    ? b.conditions.filter((k) => k !== key)
+                    : [...b.conditions, key],
+                }))
+              }
+            />
             <StatusList stats={stats} />
           </section>
         </aside>
       </div>
 
       <p className="gb-foot">
-        数据版本：Steam 构建 {data.meta.steamBuildId ?? '—'}。状态 v0
-        只计入无条件技能（攻击、看破）、自定义强化与觉醒能力的数值；挑战者、弱点特效等条件技能与零件强化尚未计入。
+        {`数据版本：Steam 构建 ${data.meta.steamBuildId ?? '—'}。`}
+        状态按游戏数据计算：技能（有发动条件的需在「发动条件」里打开）、
+        自定义强化与觉醒能力；零件强化、锐利度修正、动作值与道具增益尚未计入。
       </p>
 
       {picking && (
@@ -872,10 +891,55 @@ function SkillList({ skills, mantleActive }: { skills: SkillTotal[]; mantleActiv
   );
 }
 
+/** 发动条件开关：只列出当前配装里已发动、且需要条件的技能 */
+function Conditions({
+  skills,
+  on,
+  onToggle,
+}: {
+  skills: SkillTotal[];
+  on: string[];
+  onToggle: (key: string) => void;
+}) {
+  const list = availableConditions(skills);
+  if (!list.length) return null;
+  const name = (id: number) => skills.find((s) => s.skill.id === id)?.skill.name ?? '';
+  return (
+    <div className="gb-conds" role="group" aria-label="发动条件">
+      <p className="gb-conds__title">发动条件</p>
+      {list.map((c) => {
+        const active = on.includes(c.key);
+        // 「已受伤」依赖「攻击有效部位」
+        const disabled = c.key === 'wound' && !on.includes('weakness');
+        return (
+          <button
+            key={c.key}
+            type="button"
+            className="gb-cond"
+            aria-pressed={active && !disabled}
+            disabled={disabled}
+            onClick={() => onToggle(c.key)}
+          >
+            <span className="gb-cond__skill">{name(c.skill)}</span>
+            <span className="gb-cond__label">{c.label}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 function StatusList({ stats }: { stats: NonNullable<ReturnType<typeof computeStats>> }) {
   const rows: [string, React.ReactNode, number?][] = [
-    ['攻击力', stats.attackDisplay ?? `${stats.attack}（真实值）`, 25],
+    ['攻击力', stats.attackDisplay ?? `${Math.round(stats.attack)}（真实值）`, 25],
     ['会心率', `${stats.affinity}%`, 27],
+    ['会心伤害', `×${stats.critMultiplier}`],
+    [
+      '期望攻击力',
+      <span title="攻击力 ×（1 + 会心率 ×（会心倍率 − 1））；未计锐利度与动作值">
+        {stats.effectiveDisplay ?? `${Math.round(stats.effectiveAttack)}（真实值）`}
+      </span>,
+    ],
     ['属性', stats.element ? `${ELEMENT_NAMES[stats.element.type] ?? ''} ${stats.element.value}` : '—', 3],
     ['龙封力', ELDERSEAL[stats.elderseal] ?? '—'],
     ['防御力', stats.defense, 26],

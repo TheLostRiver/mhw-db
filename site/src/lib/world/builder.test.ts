@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   augmentCost,
+  availableConditions,
   awakeningConflict,
   capFor,
   chosenAwakening,
@@ -71,19 +72,45 @@ const data: BuilderData = {
     skill(19, '攻击', [lv(1, [3, 0]), lv(2, [6, 0]), lv(3, [9, 0]), lv(4, [12, 5])]),
     skill(48, '看破', [lv(1, [5]), lv(2, [10])]),
     skill(62, '挑战者', [
-      lv(1),
-      lv(2),
-      lv(3),
-      lv(4),
-      lv(5),
-      lv(6, undefined, [{ skill: 222, level: 2 }]),
-      lv(7, undefined, [{ skill: 222, level: 2 }]),
+      lv(1, [4, 5]),
+      lv(2, [8, 5]),
+      lv(3, [12, 7]),
+      lv(4, [16, 7]),
+      lv(5, [20, 10]),
+      lv(6, [24, 15], [{ skill: 222, level: 2 }]),
+      lv(7, [28, 20], [{ skill: 222, level: 2 }]),
     ]),
+    skill(50, '弱点特效', [lv(1, [10, 15]), lv(2, [15, 30]), lv(3, [30, 50])]),
+    skill(64, '火场怪力', [lv(1, [100, 50]), lv(2, [105, 50])]),
+    skill(49, '超会心', [lv(1, [130]), lv(2, [135]), lv(3, [140])]),
+    skill(34, '龙属性攻击强化', [lv(1, [3, 100]), lv(4, [10, 105])]),
     skill(222, '黑龙的传说', [lv(2), lv(4)], { setBonus: true }),
   ],
   decorations: [
     { id: 900, name: '挑战珠【2】', size: 2, rarity: 6, skills: [{ id: 62, level: 1 }], iconColor: 0 },
     { id: 901, name: '攻击珠2【4】', size: 4, rarity: 9, skills: [{ id: 19, level: 2 }], iconColor: 0 },
+    {
+      id: 902,
+      name: '测试珠',
+      size: 4,
+      rarity: 9,
+      skills: [
+        { id: 50, level: 3 },
+        { id: 49, level: 3 },
+      ],
+      iconColor: 0,
+    },
+    {
+      id: 903,
+      name: '火场珠',
+      size: 4,
+      rarity: 9,
+      skills: [
+        { id: 64, level: 2 },
+        { id: 34, level: 4 },
+      ],
+      iconColor: 0,
+    },
   ],
   armor: [
     {
@@ -132,6 +159,7 @@ const data: BuilderData = {
     },
   },
   bloat: { 'great-sword': 4.8, 'long-sword': 3.3 },
+  crit: { good: 1.25, bad: 0.75 },
 };
 const weapons: WeaponData[] = [
   {
@@ -344,5 +372,54 @@ describe('冥赤龙觉醒', () => {
     expect(st.attack).toBe(270 + 14 + 2);
     expect(st.element).toEqual({ type: 'dragon', value: (18 + 15) * 10 });
     expect(weaponSlots(b, idx)).toEqual([4, 1]);
+  });
+});
+
+describe('发动条件', () => {
+  it('挑战者只在打开「怪物发怒」后计入；条件只列出已发动的技能', () => {
+    const b = emptyBuild();
+    b.weapon = { id: 239, decos: [] };
+    b.armor.head = { id: 1, decos: [900, null] };
+    b.armor.chest = { id: 2, decos: [] };
+    let st = computeStats(b, idx, computeSkills(b, idx));
+    expect(st.attack).toBe(340);
+    expect(availableConditions(computeSkills(b, idx)).map((c) => c.key)).toEqual(['agitator']);
+    b.conditions = ['agitator'];
+    st = computeStats(b, idx, computeSkills(b, idx));
+    expect([st.attack, st.affinity]).toEqual([340 + 28, -30 + 20]);
+  });
+
+  it('弱点特效：有效部位 / 已受伤分开；超会心改变期望攻击', () => {
+    const b = emptyBuild();
+    b.weapon = { id: 239, decos: [902, null] };
+    b.conditions = ['weakness'];
+    let st = computeStats(b, idx, computeSkills(b, idx));
+    expect(st.affinity).toBe(0); // −30 + 30
+    b.conditions = ['weakness', 'wound'];
+    st = computeStats(b, idx, computeSkills(b, idx));
+    expect(st.affinity).toBe(20); // −30 + 50
+    expect(st.critMultiplier).toBe(1.4);
+    expect(st.effectiveAttack).toBeCloseTo(340 * (1 + 0.2 * 0.4));
+    b.conditions = ['wound']; // 只有「已受伤」不计入
+    expect(computeStats(b, idx, computeSkills(b, idx)).affinity).toBe(-30);
+  });
+
+  it('负会心按 0.75 计期望攻击', () => {
+    const b = emptyBuild();
+    b.weapon = { id: 239, decos: [] };
+    const st = computeStats(b, idx, computeSkills(b, idx));
+    expect(st.effectiveAttack).toBeCloseTo(340 * (1 - 0.3 * 0.25));
+  });
+
+  it('火场怪力乘在武器攻击力上，防御加值；属性强化 = 属性 × 倍率 + 加值', () => {
+    const b = emptyBuild();
+    b.weapon = { id: 239, decos: [903, null] };
+    let st = computeStats(b, idx, computeSkills(b, idx));
+    expect(st.element).toEqual({ type: 'dragon', value: Math.round((18 * 1.05 + 10) * 10) });
+    expect(st.attack).toBe(340);
+    b.conditions = ['heroics'];
+    st = computeStats(b, idx, computeSkills(b, idx));
+    expect(st.attack).toBeCloseTo(340 * 1.05);
+    expect(st.defense).toBe(50);
   });
 });

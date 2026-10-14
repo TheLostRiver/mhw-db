@@ -62,12 +62,18 @@ class PlParamError(ValueError):
     pass
 
 
-def read_augment_effects(data: bytes) -> dict:
+def read_crit(data: bytes) -> tuple[float, float]:
+    """会心伤害倍率与负会心倍率；同时用来校验 plp 的字段布局。"""
     if len(data) != PLP_SIZE or data[:4] != b"PLP\0":
         raise PlParamError(f"pl_param.plp 大小或 magic 不符（{len(data)} 字节）")
     crit, bad = struct.unpack_from("<ff", data, PLP_CRIT_OFFSET)
     if (round(crit, 4), round(bad, 4)) != (1.25, 0.75):
         raise PlParamError(f"会心倍率校验失败（{crit}, {bad}），字段布局可能已变化")
+    return round(crit, 4), round(bad, 4)
+
+
+def read_augment_effects(data: bytes) -> dict:
+    read_crit(data)
 
     off = PLP_AUGMENT_OFFSET
 

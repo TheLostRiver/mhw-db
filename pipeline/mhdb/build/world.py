@@ -9,7 +9,8 @@ import time
 from pathlib import Path
 
 from mhdb.build.common import Source, src, tr, write_json, write_records
-from mhdb.build.world_custom import build_weapon_custom
+from mhdb.build.world_custom import PLP_REL, build_weapon_custom, read_crit
+from mhdb.formats import crypto
 from mhdb.games.world import exe as EXE
 from mhdb.games.world import specs as S
 
@@ -340,6 +341,7 @@ def build(raw: Path, out: Path, log=print) -> dict:
     mantles = build_mantles(s, item_map)
     weapons = build_weapons(s)
     custom = build_weapon_custom(s)
+    crit = read_crit(crypto.decrypt_file(PLP_REL, s.path(PLP_REL).read_bytes()))
 
     write_json(out / "meta.json", meta)
     write_json(out / "colors.json", colors)
@@ -356,6 +358,9 @@ def build(raw: Path, out: Path, log=print) -> dict:
         out / "constants.json",
         {
             "weaponBloat": dict(zip([k for _, k, _, _ in S.WEAPON_TYPES], EXE.WEAPON_BLOAT, strict=True)),
+            # 会心 / 负会心倍率取自 pl_param.plp（偏移 672）
+            "critMultiplier": crit[0],
+            "badCritMultiplier": crit[1],
             "_src": {
                 "file": "exe",
                 "note": f"exe 内存 {EXE.WEAPON_BLOAT_OFFSET:#x}（构建 {EXE.DUMP_BUILD_ID}），见 mhdb/games/world/exe.py",

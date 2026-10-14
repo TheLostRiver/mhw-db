@@ -137,3 +137,17 @@ test('冥赤龙觉醒：不可重复的能力在选择器里禁用', async ({ pa
   await expect(dialog).toBeVisible();
   await page.keyboard.press('Escape');
 });
+
+test('发动条件：打开「怪物发怒」后挑战者计入状态', async ({ page }) => {
+  await open(page);
+  await pick(page, '.gb-row__piece[aria-label^="武器"]', '黑龙玄刃');
+  await pick(page, '.gb-slot >> nth=0', '挑战珠2');
+  const stats = page.locator('section[aria-labelledby="gb-stats-h"]');
+  await expect(stats).toContainText('1632');
+  const cond = page.getByRole('button', { name: /挑战者.*怪物发怒/ });
+  await expect(cond).toHaveAttribute('aria-pressed', 'false');
+  await cond.click();
+  await expect(cond).toHaveAttribute('aria-pressed', 'true');
+  // 挑战者 2：基础攻击力 +8 → (340 + 8) × 4.8 = 1670
+  await expect(stats).toContainText('1670');
+});
