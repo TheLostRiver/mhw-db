@@ -362,6 +362,9 @@ export const Constants = z
     weaponBloat: z.record(z.enum(WEAPON_TYPES), z.number().positive()),
     critMultiplier: z.number().positive(),
     badCritMultiplier: z.number().positive(),
+    sharpness: z
+      .object({ raw: z.array(z.number().positive()).length(7), element: z.array(z.number().positive()).length(7) })
+      .strict(),
     _src: z.object({ file: z.literal('exe'), note: z.string() }).strict(),
   })
   .strict();

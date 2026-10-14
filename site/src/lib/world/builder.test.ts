@@ -13,6 +13,7 @@ import {
   partTotals,
   chosenParts,
   setAugment,
+  sharpnessBar,
   weaponSlots,
   type AugmentLevel,
   type AwakeningData,
@@ -84,6 +85,7 @@ const data: BuilderData = {
     skill(64, '火场怪力', [lv(1, [100, 50]), lv(2, [105, 50])]),
     skill(49, '超会心', [lv(1, [130]), lv(2, [135]), lv(3, [140])]),
     skill(34, '龙属性攻击强化', [lv(1, [3, 100]), lv(4, [10, 105])]),
+    skill(54, '匠', [lv(1, [120]), lv(2, [140]), lv(3, [160]), lv(4, [180]), lv(5, [200])]),
     skill(222, '黑龙的传说', [lv(2), lv(4)], { setBonus: true }),
   ],
   decorations: [
@@ -111,6 +113,7 @@ const data: BuilderData = {
       ],
       iconColor: 0,
     },
+    { id: 904, name: '匠珠3', size: 4, rarity: 9, skills: [{ id: 54, level: 3 }], iconColor: 0 },
   ],
   armor: [
     {
@@ -160,6 +163,10 @@ const data: BuilderData = {
   },
   bloat: { 'great-sword': 4.8, 'long-sword': 3.3 },
   crit: { good: 1.25, bad: 0.75 },
+  sharpnessMultiplier: {
+    raw: [0.5, 0.75, 1.0, 1.05, 1.2, 1.32, 1.39],
+    element: [0.25, 0.5, 0.75, 1.0, 1.0625, 1.15, 1.25],
+  },
 };
 const weapons: WeaponData[] = [
   {
@@ -421,5 +428,40 @@ describe('发动条件', () => {
     st = computeStats(b, idx, computeSkills(b, idx));
     expect(st.attack).toBeCloseTo(340 * 1.05);
     expect(st.defense).toBe(50);
+  });
+});
+
+describe('锐利度', () => {
+  // 黑龙玄刃：kireaji 满条 [160, 180, 200, 270, 310, 340, 400]，sharpness_amount 4
+  const ends = [160, 180, 200, 270, 310, 340, 400];
+
+  it('不带匠为 350（紫 10），匠 5 时 400（紫 60）', () => {
+    const base = sharpnessBar(ends, 4, 0);
+    expect(base.length).toBe(350);
+    expect(base.segments).toEqual([160, 20, 20, 70, 40, 30, 10]);
+    expect(base.top).toBe(6);
+    expect(sharpnessBar(ends, 4, 5).segments[6]).toBe(60);
+    expect(sharpnessBar(ends, 4, 3).length).toBe(380);
+  });
+
+  it('sharpness_amount 为 5 时已满条，匠不再延长', () => {
+    expect(sharpnessBar(ends, 5, 0).length).toBe(400);
+    expect(sharpnessBar(ends, 5, 5).length).toBe(400);
+  });
+
+  it('期望攻击按当前最高色计入锐利度倍率', () => {
+    weapons[0]!.sharpness = [100, 150, 200, 250, 300, 350, 400];
+    weapons[0]!.handicraft = 3; // 不带匠 300 → 最高蓝
+    const b = emptyBuild();
+    b.weapon = { id: 239, decos: [] };
+    let st = computeStats(b, idx, computeSkills(b, idx));
+    expect(st.sharpness?.top).toBe(4);
+    expect(st.effectiveAttack).toBeCloseTo(340 * (1 - 0.3 * 0.25) * 1.2);
+    b.weapon.decos = [904, null]; // 匠 3 → 330 → 白
+    st = computeStats(b, idx, computeSkills(b, idx));
+    expect(st.sharpness?.top).toBe(5);
+    expect(st.effectiveAttack).toBeCloseTo(340 * (1 - 0.3 * 0.25) * 1.32);
+    delete weapons[0]!.sharpness;
+    delete weapons[0]!.handicraft;
   });
 });

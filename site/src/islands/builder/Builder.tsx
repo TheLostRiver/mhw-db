@@ -2,13 +2,16 @@
  * 配装器（v0）：布局贴近游戏的装备 / 饰品界面——左侧装备一览（每件装备右侧列出镶嵌槽与已镶饰品），
  * 中间是选中装备的详情，右侧是技能与状态。数据来自 /data/world/*.json，图标来自游戏 UI 贴图。
  */
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ARMOR_SLOTS,
   augmentLevels,
   awakeningConflict,
   awakeningTotal,
   availableConditions,
+  sharpnessBar,
+  SHARPNESS_COLORS,
+  type SharpnessBar as SharpnessBarData,
   chosenAwakening,
   computeSkills,
   computeStats,
@@ -721,7 +724,9 @@ function Detail({
             </>,
             25,
           )}
-          {w.sharpness && kv('锐利度', <Sharpness bars={w.sharpness} />)}
+          {w.sharpness &&
+            w.handicraft != null &&
+            kv('锐利度', <Sharpness bar={sharpnessBar(w.sharpness, w.handicraft, 0)} />)}
           {kv(
             '会心率',
             withPlus(w.affinity, plus('affinity'), (n) => `${n}%`),
@@ -824,18 +829,30 @@ function SkillRefs({ refs, idx }: { refs: { id: number; level: number }[]; idx: 
   );
 }
 
-function Sharpness({ bars }: { bars: number[] }) {
-  const total = bars[bars.length - 1] || 1;
-  const colors = ['red', 'orange', 'yellow', 'green', 'blue', 'white', 'purple'];
-  // 数据是各色的累计长度，转成每段宽度
-  const widths = bars.map((end, i) => Math.max(0, end - Math.max(0, ...bars.slice(0, i))));
+/** 锐利度条：实色为当前长度（含匠），其后的淡色为匠 5 时还能延长的部分 */
+function Sharpness({ bar }: { bar: SharpnessBarData }) {
+  const FULL = 400;
+  const full = sharpnessBar(bar.ends, bar.handicraft, 5);
   return (
-    <span className="gb-sharp" title="锐利度（数据原值；匠的换算未确认）">
-      {widths.map((w, i) =>
-        w ? (
-          <i key={i} style={{ width: `${(w / total) * 100}%`, background: `var(--sharp-${colors[i]})` }} />
-        ) : null,
-      )}
+    <span
+      className="gb-sharp"
+      title={`锐利度 ${bar.length} / 匠 5 时 ${bar.max}（匠的换算为推断，见数据说明）`}
+    >
+      {SHARPNESS_COLORS.map((c, i) => {
+        const now = bar.segments[i] ?? 0;
+        const extra = (full.segments[i] ?? 0) - now;
+        return (
+          <Fragment key={c}>
+            {now > 0 && <i style={{ width: `${(now / FULL) * 100}%`, background: `var(--sharp-${c})` }} />}
+            {extra > 0 && (
+              <i
+                data-extra=""
+                style={{ width: `${(extra / FULL) * 100}%`, background: `var(--sharp-${c})` }}
+              />
+            )}
+          </Fragment>
+        );
+      })}
     </span>
   );
 }
@@ -934,9 +951,12 @@ function StatusList({ stats }: { stats: NonNullable<ReturnType<typeof computeSta
     ['攻击力', stats.attackDisplay ?? `${Math.round(stats.attack)}（真实值）`, 25],
     ['会心率', `${stats.affinity}%`, 27],
     ['会心伤害', `×${stats.critMultiplier}`],
+    ...(stats.sharpness
+      ? ([['锐利度', <Sharpness bar={stats.sharpness} />]] as [string, React.ReactNode][])
+      : []),
     [
       '期望攻击力',
-      <span title="攻击力 ×（1 + 会心率 ×（会心倍率 − 1））；未计锐利度与动作值">
+      <span title="攻击力 ×（1 + 会心率 ×（会心倍率 − 1））× 当前最高色锐利度倍率；未计动作值与肉质">
         {stats.effectiveDisplay ?? `${Math.round(stats.effectiveAttack)}（真实值）`}
       </span>,
     ],

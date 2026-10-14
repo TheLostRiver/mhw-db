@@ -28,7 +28,7 @@ export const GET: APIRoute = ({ params }) => {
     elderseal: w.elderseal,
     slots: w.slots,
     skill: w.skill,
-    ...(w.sharpness ? { sharpness: w.sharpness.bars } : {}),
+    ...(w.sharpness ? { sharpness: w.sharpness.bars, handicraft: w.sharpness.handicraftSteps } : {}),
     ...(w.awakened ? { awakened: true } : {}),
   }));
   const payload: WeaponPayload = {

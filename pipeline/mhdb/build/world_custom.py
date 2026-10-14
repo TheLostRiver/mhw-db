@@ -107,6 +107,27 @@ def read_augment_effects(data: bytes) -> dict:
     return mr
 
 
+# ---------- em_common_param.ecp：锐利度倍率 ----------
+
+ECP_REL = "common/em/em_common_param.ecp"
+# 16 字节文件头之后是 7 张「锐利度 7 色」倍率表（MHW-Editor 的 ecp.bt）；第 1 张是物理、第 3 张是属性
+ECP_SHARPNESS_OFFSET = 16
+
+
+def read_sharpness_multipliers(data: bytes) -> dict:
+    if data[4:8] != b"ECP\0":
+        raise ValueError("em_common_param.ecp 的 magic 不符")
+    tables = [
+        [round(x, 4) for x in struct.unpack_from("<7f", data, ECP_SHARPNESS_OFFSET + 28 * i)]
+        for i in range(7)
+    ]
+    raw, element = tables[0], tables[2]
+    # 布局校验：两张表都应从红到紫递增，且绿色为 1.0 / 黄色为 1.0
+    if raw != sorted(raw) or element != sorted(element) or raw[2] != 1.0 or element[3] != 1.0:
+        raise ValueError(f"锐利度倍率表布局不符：{tables[:3]}")
+    return {"raw": raw, "element": element}
+
+
 # ---------- 构建 ----------
 
 

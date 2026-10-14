@@ -89,7 +89,10 @@ export interface WeaponData {
   elderseal: number;
   slots: number[];
   skill: number | null;
+  /** 锐利度：7 色的累计结束位置（满条为 400） */
   sharpness?: number[];
+  /** wp_dat 的 sharpness_amount：决定不带匠时的长度（见 sharpnessBar） */
+  handicraft?: number;
   /** 冥赤龙武器：用觉醒能力代替自定义强化 */
   awakened?: boolean;
 }
@@ -176,6 +179,8 @@ export interface BuilderData {
   bloat: Partial<Record<string, number>>;
   /** 会心 / 负会心伤害倍率（pl_param） */
   crit: { good: number; bad: number };
+  /** 锐利度倍率（红 → 紫），em_common_param.ecp */
+  sharpnessMultiplier: { raw: number[]; element: number[] };
 }
 
 export interface Piece {
@@ -239,6 +244,7 @@ export interface Index {
   effects: AugmentEffects;
   bloat: Partial<Record<string, number>>;
   crit: { good: number; bad: number };
+  sharpnessMultiplier: { raw: number[]; element: number[] };
 }
 
 const EMPTY_PAYLOAD: WeaponPayload = { weapons: [], parts: [], awakening: [] };
@@ -258,6 +264,7 @@ export function makeIndex(data: BuilderData, payload: WeaponPayload = EMPTY_PAYL
     effects: data.augments.effects,
     bloat: data.bloat,
     crit: data.crit,
+    sharpnessMultiplier: data.sharpnessMultiplier,
   };
 }
 
@@ -484,6 +491,45 @@ export function capFor(skill: SkillData, activeSet: Map<number, number>): number
 
 // ---------- 状态 ----------
 
+// ---------- 锐利度 ----------
+
+export const SHARPNESS_COLORS = ['red', 'orange', 'yellow', 'green', 'blue', 'white', 'purple'] as const;
+const SHARPNESS_FULL = 400;
+const SKILL_HANDICRAFT = 54;
+
+export interface SharpnessBar {
+  ends: number[];
+  handicraft: number;
+  /** 每色当前长度 */
+  segments: number[];
+  /** 当前总长度（含匠） */
+  length: number;
+  /** 匠 5 时的总长度 */
+  max: number;
+  /** 当前最高色的序号（0 红 … 6 紫）；没有锐利度时为 -1 */
+  top: number;
+}
+
+/**
+ * 锐利度条：kireaji 给出满条（400）时各色的结束位置。⚠ 推断（与 MHWorldData 的解读一致，未与游戏核对）：
+ * 不带匠的长度 = 150 + 50 × handicraft（handicraft 为 5 时已满条），匠每级 +10（技能说明「锐利度+10」…「+50」），不超过 400。
+ */
+export function sharpnessBar(ends: number[], handicraft: number, handicraftLevel: number): SharpnessBar {
+  const base = Math.min(SHARPNESS_FULL, 150 + 50 * handicraft);
+  const max = Math.min(SHARPNESS_FULL, base + 50);
+  const length = Math.min(max, base + 10 * handicraftLevel);
+  let prev = 0;
+  let top = -1;
+  const segments = ends.map((end, i) => {
+    const from = Math.min(prev, length);
+    const to = Math.min(Math.max(end, prev), length);
+    prev = Math.max(prev, end);
+    if (to > from) top = i;
+    return to - from;
+  });
+  return { ends, handicraft, segments, length, max, top };
+}
+
 export const SKILL_ATTACK = 19;
 export const SKILL_CRITICAL_EYE = 48;
 const SKILL_CRITICAL_BOOST = 49;
@@ -525,7 +571,9 @@ export interface Stats {
   defense: number;
   /** 会心伤害倍率（超会心） */
   critMultiplier: number;
-  /** 期望攻击力（真实值，未计锐利度与动作值） */
+  /** 当前锐利度（含匠）；远程武器为 null */
+  sharpness: SharpnessBar | null;
+  /** 期望攻击力（真实值，计入会心与当前最高色锐利度，未计动作值与肉质） */
   effectiveAttack: number;
   /** 期望攻击力的显示值；缺少倍率时为 null */
   effectiveDisplay: number | null;
@@ -599,6 +647,11 @@ export function computeStats(build: Build, idx: Index, skills: SkillTotal[]): St
   const critMultiplier = lv(SKILL_CRITICAL_BOOST) > 0 ? p(SKILL_CRITICAL_BOOST, 0) / 100 : idx.crit.good;
   const critFactor =
     aff >= 0 ? 1 + (aff / 100) * (critMultiplier - 1) : 1 + (-aff / 100) * (idx.crit.bad - 1);
+  const sharpness =
+    weapon?.sharpness && weapon.handicraft != null
+      ? sharpnessBar(weapon.sharpness, weapon.handicraft, lv(SKILL_HANDICRAFT))
+      : null;
+  const sharpRaw = sharpness && sharpness.top >= 0 ? (idx.sharpnessMultiplier.raw[sharpness.top] ?? 1) : 1;
   return {
     attack,
     attackDisplay: weapon && bloat ? Math.round(attack * bloat) : null,
@@ -606,8 +659,9 @@ export function computeStats(build: Build, idx: Index, skills: SkillTotal[]): St
     affinity: aff,
     element: el ? { type: el.type, value: Math.round(elementTrue * 10) } : null,
     critMultiplier,
-    effectiveAttack: attack * critFactor,
-    effectiveDisplay: weapon && bloat ? Math.round(attack * critFactor * bloat) : null,
+    sharpness,
+    effectiveAttack: attack * critFactor * sharpRaw,
+    effectiveDisplay: weapon && bloat ? Math.round(attack * critFactor * sharpRaw * bloat) : null,
     elderseal: weapon?.elderseal ?? 0,
     defense,
     resist,

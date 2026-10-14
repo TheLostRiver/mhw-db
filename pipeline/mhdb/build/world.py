@@ -9,7 +9,13 @@ import time
 from pathlib import Path
 
 from mhdb.build.common import Source, src, tr, write_json, write_records
-from mhdb.build.world_custom import PLP_REL, build_weapon_custom, read_crit
+from mhdb.build.world_custom import (
+    ECP_REL,
+    PLP_REL,
+    build_weapon_custom,
+    read_crit,
+    read_sharpness_multipliers,
+)
 from mhdb.formats import crypto
 from mhdb.games.world import exe as EXE
 from mhdb.games.world import specs as S
@@ -361,6 +367,8 @@ def build(raw: Path, out: Path, log=print) -> dict:
             # 会心 / 负会心倍率取自 pl_param.plp（偏移 672）
             "critMultiplier": crit[0],
             "badCritMultiplier": crit[1],
+            # 锐利度倍率（红 → 紫）取自 em_common_param.ecp
+            "sharpness": read_sharpness_multipliers(s.path(ECP_REL).read_bytes()),
             "_src": {
                 "file": "exe",
                 "note": f"exe 内存 {EXE.WEAPON_BLOAT_OFFSET:#x}（构建 {EXE.DUMP_BUILD_ID}），见 mhdb/games/world/exe.py",

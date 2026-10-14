@@ -163,3 +163,10 @@ def test_weapon_bloat_against_exe_dump() -> None:
     exe.verify_dump(Path(dump))
     bloat = json.loads((WORLD / "constants.json").read_text(encoding="utf-8"))["weaponBloat"]
     assert round(340 * bloat["great-sword"]) == 1632  # 黑龙玄刃，游戏截图
+
+
+def test_sharpness_multipliers() -> None:
+    c = json.loads((WORLD / "constants.json").read_text(encoding="utf-8"))
+    assert c["sharpness"]["raw"] == [0.5, 0.75, 1.0, 1.05, 1.2, 1.32, 1.39]
+    assert c["sharpness"]["element"][6] == 1.25
+    assert (c["critMultiplier"], c["badCritMultiplier"]) == (1.25, 0.75)

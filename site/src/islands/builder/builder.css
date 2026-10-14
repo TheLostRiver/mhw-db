@@ -747,6 +747,11 @@
   height: 100%;
 }
 
+/* 匠 5 时还能延长的部分 */
+.gb-sharp i[data-extra] {
+  opacity: 0.28;
+}
+
 .gb-skillrefs {
   display: grid;
   gap: 4px;

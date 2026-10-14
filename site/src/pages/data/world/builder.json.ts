@@ -80,6 +80,7 @@ export const GET: APIRoute = () => {
     },
     bloat: loadConstants().weaponBloat,
     crit: { good: loadConstants().critMultiplier, bad: loadConstants().badCritMultiplier },
+    sharpnessMultiplier: loadConstants().sharpness,
   };
   return new Response(JSON.stringify(data), { headers: { 'content-type': 'application/json' } });
 };
