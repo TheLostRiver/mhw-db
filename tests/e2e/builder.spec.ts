@@ -1,0 +1,94 @@
+import { expect, test, type Page } from '@playwright/test';
+
+/**
+ * 配装器 v0：页面能加载、选择器可用、数值与游戏截图一致、配装能保存、衣装开关生效。
+ */
+
+const watchErrors = (page: Page) => {
+  const errors: string[] = [];
+  page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
+  page.on('pageerror', (e) => errors.push(String(e)));
+  return errors;
+};
+
+const open = async (page: Page) => {
+  await page.goto('/world/builder/', { waitUntil: 'networkidle' });
+  await expect(page.locator('.gb-equip')).toBeVisible();
+};
+
+/** 点栏位 → 搜索 → 回车 */
+const pick = async (page: Page, trigger: string, query: string) => {
+  await page.locator(trigger).first().click();
+  const dialog = page.getByRole('dialog');
+  await expect(dialog).toBeVisible();
+  await dialog.getByRole('searchbox').fill(query);
+  await page.keyboard.press('Enter');
+  await expect(dialog).toBeHidden();
+};
+
+for (const theme of ['light', 'dark'] as const) {
+  test(`空配装加载 · ${theme}`, async ({ page }, info) => {
+    const errors = watchErrors(page);
+    await page.emulateMedia({ colorScheme: theme, reducedMotion: 'reduce' });
+    await open(page);
+    await page.evaluate(() => document.fonts.ready);
+    // 武器、5 件防具、护石、2 件衣装
+    await expect(page.locator('.gb-row')).toHaveCount(9);
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+    expect(overflow, '页面不应横向溢出').toBeLessThanOrEqual(1);
+    expect(errors, '不应有控制台错误').toEqual([]);
+    await page.screenshot({
+      path: info.outputPath(`builder-${theme}-${info.project.name}.png`),
+      fullPage: true,
+    });
+  });
+}
+
+test('选武器与饰品：黑龙玄刃 1632、龙 180；饰品技能计入', async ({ page }) => {
+  const errors = watchErrors(page);
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await open(page);
+
+  await pick(page, '.gb-row__piece[aria-label^="武器"]', '黑龙玄刃');
+  const detail = page.locator('.gb-detail');
+  await expect(detail.locator('.gb-detail__name')).toHaveText('黑龙玄刃');
+  await expect(detail).toContainText('1632');
+  await expect(detail).toContainText('180');
+
+  await pick(page, '.gb-slot[aria-label^="4 级镶嵌槽"]', '攻击珠2');
+  const attack = page.locator('.gb-skills li', { hasText: '攻击' }).first();
+  await expect(attack.locator('.gb-skills__lv b')).toHaveText('2');
+
+  // 刷新后配装仍在
+  await page.reload({ waitUntil: 'networkidle' });
+  await expect(page.locator('.gb-row').first()).toContainText('黑龙玄刃');
+  await expect(page.locator('.gb-skills')).toContainText('攻击');
+  expect(errors).toEqual([]);
+});
+
+test('选择器：Esc 关闭，方向键移动选中项', async ({ page }) => {
+  await open(page);
+  await page.locator('.gb-row__piece[aria-label^="头部"]').click();
+  const dialog = page.getByRole('dialog');
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByRole('searchbox')).toBeFocused();
+  const first = dialog.getByRole('option').first();
+  await expect(first).toHaveAttribute('aria-selected', 'true');
+  await page.keyboard.press('ArrowDown');
+  await expect(first).toHaveAttribute('aria-selected', 'false');
+  await page.keyboard.press('Escape');
+  await expect(dialog).toBeHidden();
+});
+
+test('衣装上的饰品只在衣装生效时计入', async ({ page }) => {
+  await open(page);
+  await pick(page, '.gb-row__piece[aria-label^="衣装 1"]', '隐身衣装');
+  await pick(page, '.gb-row:has([aria-label^="衣装 1"]) .gb-slot', '挑战珠');
+  const challenger = page.locator('.gb-skills li', { hasText: '挑战者' });
+  await expect(challenger).toContainText('衣装生效时');
+  await expect(challenger.locator('.gb-skills__lv b')).toHaveText('0');
+
+  await page.locator('.gb-switch').click();
+  await expect(challenger.locator('.gb-skills__lv b')).toHaveText('1');
+  await expect(challenger).toContainText('生效中');
+});

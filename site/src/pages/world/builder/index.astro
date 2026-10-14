@@ -1,0 +1,33 @@
+---
+import SiteLayout from '../../../layouts/SiteLayout.astro';
+import Builder from '../../../islands/builder/Builder';
+---
+
+<SiteLayout title="配装器" current="builder" wide>
+  <div class="page-head">
+    <h1>
+      配装器 <span class="b-label">v0 · 手动配装</span>
+    </h1>
+    <p>布局贴近游戏装备界面：左侧点装备名更换装备，点右侧的镶嵌槽放入饰品。配装自动保存在本机浏览器。</p>
+  </div>
+  <Builder client:only="react" />
+</SiteLayout>
+
+<style>
+  .page-head {
+    margin-bottom: var(--space-4);
+  }
+
+  .page-head h1 {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-3);
+    font-size: var(--text-2xl);
+    font-weight: 800;
+  }
+
+  .page-head p {
+    margin-top: var(--space-1);
+    color: var(--c-text-2);
+  }
+</style>

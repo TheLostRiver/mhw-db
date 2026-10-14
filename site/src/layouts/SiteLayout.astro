@@ -1,0 +1,89 @@
+---
+/** 正式站点外壳：B「导虫」方向的顶栏与页脚。 */
+import '@fontsource-variable/noto-sans-sc';
+import '@fontsource-variable/martian-mono/wdth.css';
+import '../styles/tokens.css';
+import '../styles/base.css';
+import '../styles/directions/b.css';
+import ThemeScript from '../components/design/ThemeScript.astro';
+import ThemeToggle from '../components/design/ThemeToggle.astro';
+import { loadMeta } from '../data/world/load';
+
+interface Props {
+  title: string;
+  description?: string;
+  current?: 'home' | 'builder';
+  wide?: boolean;
+}
+
+const {
+  title,
+  description = '怪物猎人：世界 冰原 资料站与配装工具（非官方）',
+  current,
+  wide = false,
+} = Astro.props;
+const meta = loadMeta();
+const nav = [
+  { key: 'home', label: '首页', href: '/' },
+  { key: 'builder', label: '配装', href: '/world/builder/' },
+  { key: 'design', label: '设计稿', href: '/design/' },
+] as const;
+---
+
+<!doctype html>
+<html lang="zh-CN" data-direction="b">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <title>{title} — mhw-db</title>
+    <ThemeScript />
+  </head>
+  <body>
+    <header class="b-head">
+      <a class="b-logo" href="/">
+        <span class="b-logo__mark"></span>mhw·db
+      </a>
+      <nav class="b-nav" aria-label="主导航">
+        {nav.map((n) => (
+          <a href={n.href} aria-current={n.key === current ? 'page' : undefined}>
+            {n.label}
+          </a>
+        ))}
+      </nav>
+      <div class="b-head__right">
+        <ThemeToggle />
+      </div>
+    </header>
+    <main class:list={['site-main', { 'site-main--wide': wide }]}>
+      <slot />
+    </main>
+    <footer class="b-foot">
+      <p>
+        本站为个人非官方项目，与 CAPCOM 无关。游戏名称、商标、图标与数据版权归 CAPCOM CO., LTD. 所有；
+        如需下架请通过 GitHub Issues 联系，收到后会尽快处理。
+      </p>
+      <div class="b-foot__meta b-label">
+        <span>数据版本 · Steam 构建 {meta.steamBuildId ?? '—'}</span>
+        <a href="https://github.com/TheLostRiver/mhw-db/issues">反馈</a>
+      </div>
+    </footer>
+    <style is:global>
+      .site-main {
+        max-width: 1400px;
+        margin-inline: auto;
+        padding: var(--space-5) var(--space-5) var(--space-10);
+      }
+
+      .site-main--wide {
+        max-width: 1680px;
+      }
+
+      @media (max-width: 700px) {
+        .site-main {
+          padding: var(--space-3) var(--space-3) var(--space-8);
+        }
+      }
+    </style>
+  </body>
+</html>
