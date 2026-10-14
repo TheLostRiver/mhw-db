@@ -1,6 +1,6 @@
 # mhw-db 规划
 
-> 状态：**方案待用户确认**。确认前不写功能代码。最后一节是需要用户拍板的事项。
+> 状态：方案已确认（2026-10-14）。视觉方向已选定：外层框架用 **B「导虫」**，配装器内部贴近游戏 UI。
 
 ## 1. 技术选型
 
@@ -102,14 +102,31 @@ mhw-db/
 - [x] 1.1 本地仓库初始化，关联 `origin`（远程为空仓库）
 - [x] 1.2 `.claude/settings.json` 署名置空；`.githooks/commit-msg` + `core.hooksPath`，已自测拒绝 / 放行
 - [x] 1.3 `CLAUDE.md`、`.gitignore`（含游戏原始格式扩展名兜底）
-- [ ] 1.4 `README.md`、`THIRD_PARTY.md`（暂不放 `LICENSE`）、`.editorconfig`、`.gitattributes`（统一 LF，二进制标记）
-- [ ] 1.5 pnpm workspace + Astro + React + TS 严格模式；ESLint、Prettier；`pnpm verify` 一键跑类型检查、单测、构建、数据校验
-- [ ] 1.6 Python 管线骨架：uv 项目、ruff、pytest、`mhdb` 命令行入口
-- [ ] 1.7 设计令牌 `tokens.css`：颜色（原始色板 → 语义令牌）、字号阶梯、4px 间距体系、圆角、阴影层级、动效时长与缓动；深浅主题（跟随系统 + 手动切换，切换时颜色平滑过渡）；`prefers-reduced-motion` 降级
-- [ ] 1.8 字体：自托管思源 / Noto，子集化脚本（fonttools，MIT）
-- [ ] 1.9 3 个视觉方向静态稿：每个方向做「首页 + 配装器」，深浅两套，桌面 + 手机；路由 `/_design/a|b|c/`；Playwright 截图交给你挑
-- [ ] 1.10 Playwright 基础设施（截图基线、多视口）
+- [x] 1.4 `README.md`、`THIRD_PARTY.md`（暂不放 `LICENSE`）、`.editorconfig`、`.gitattributes`（统一 LF，二进制标记）
+- [x] 1.5 pnpm workspace + Astro + React + TS 严格模式；ESLint、Prettier；`pnpm verify` 一键跑格式、lint、类型检查、单测、构建（数据校验在 2.10 接入）
+- [x] 1.6 Python 管线骨架：uv 项目、ruff、pytest、`mhdb` 命令行入口
+- [x] 1.7 设计令牌 `tokens.css`：颜色（原始色板 → 语义令牌）、字号阶梯、4px 间距体系、圆角、阴影层级、动效时长与缓动；深浅主题（跟随系统 + 手动切换，切换时颜色平滑过渡）；`prefers-reduced-motion` 降级
+- [x] 1.8 字体：Fontsource 自托管思源 / Noto（已按 unicode-range 分片）；`mhdb fonts` 子集化标题字体（得意黑，改名 MHDB Display）
+- [x] 1.9 3 个视觉方向静态稿：每个方向做「首页 + 配装器」，深浅两套，桌面 + 手机；路由 `/design/`、`/design/a|b|c/`（Astro 会忽略下划线开头的路由，故不用 `/_design/`）
+- [x] 1.9b 用户选定：外层框架用 B「导虫」；配装器用游戏图标 + 游戏布局，边框底纹自己画（不用游戏界面的边框贴图）
+- [ ] 1.9c 用真实游戏图标重做配装器静态稿（B 框架内）；A / C 稿保留作参考
+- [x] 1.10 Playwright 基础设施（桌面 + 手机两个视口，每页深浅主题截图，断言无控制台错误、无横向溢出）
 - [ ] 1.11 部署打通：`wrangler.jsonc`、部署占位页到 `mhdb.helsincy.com`
+
+### 配装器方向调整（用户反馈，2026-10-14）
+
+配装器要**贴近游戏 UI**（样子要对，不必一模一样），并补齐以下功能。规则一律以游戏数据为准，取不到的先问用户：
+
+- **游戏图标**：装备类型（按稀有度着色）、饰品与镶嵌槽（含等级）、技能、武器客制等图标从游戏 UI 图集转换。
+  已核实可用：`ui/common/tex/cmn_item00_ID.tex`（64px 网格：防具五部位、14 种武器、饰品宝石、衣装、护石等）、
+  `cmn_status00_ID.tex`（技能图标）、`common00_ID.tex`（镶嵌槽框与宝石）、`equip/equip_menu_ID.tex`、`equip/wp_upgrade_ID.tex`（客制界面装饰）。
+- **衣装**：部分衣装有镶嵌槽；衣装上的饰品技能只在穿上衣装且衣装生效时才计入。配装器提供「衣装生效」开关，
+  技能统计区分常驻技能与衣装生效时的技能。
+- **武器客制（自定义强化）**：攻击力 / 会心率 / 防御力 / 镶嵌槽 / 回复能力 / 属性·状态异常强化、扩充自定义栏；
+  每项有消耗与上限，规则来自数据文件。
+- **零件强化**（Custom Upgrade）。
+- **冥赤龙武器觉醒**：多种觉醒技能，搭配有规则（规则待从数据核实，取不到时问用户）。
+- **自定义外观**（幻化）只影响外观，配装器中可选显示。
 
 ### 里程碑 2：数据管线 v1（详细）
 
@@ -121,9 +138,9 @@ mhw-db/
 - [ ] 2.6 护石 `charm.ch_dat` + `charm.eq_crt`：技能、等级链、打造 / 强化素材
 - [ ] 2.7 饰品 `deco.deco`：槽位等级、技能（含 4 级复合珠）、稀有度、对应物品
 - [ ] 2.8 武器：14 种 `*.wp_dat` / `*.wp_dat_g` + `kireaji.kire`（锐利度）+ `weapon.eq_crt` / `weapon.eq_cus`（打造与派生树）+ 专属参数表（瓶、炮击、笛音、猎虫、弹种 / 装填）；攻击、属性 / 异常、会心、槽位、防御加成、武器树
-- [ ] 2.9 武器扩展：冥赤觉醒与特殊武器强化（`em104_*`、`em117_*`，对应关系待确认）、零件强化（`customParts.*`、`new_limit_break.*`）、自定义外观（`customOuter*.cus_ou`）——配装器需要，放在 2.8 之后
+- [ ] 2.9 武器扩展（配装器必需，优先级提高）：衣装（`a_skill.ask`、`askill_param.asp` 待核实）；冥赤觉醒与特殊武器强化（`em104_*`、`em117_*`，对应关系待确认）、零件强化（`customParts.*`、`new_limit_break.*`）、自定义外观（`customOuter*.cus_ou`）——配装器需要，放在 2.8 之后
 - [ ] 2.10 zod schema、JSON Schema 导出、`pnpm data:check`（引用完整性、四语覆盖率）
-- [ ] 2.11 图片：`.tex` 解析 + BCn 解码；物品 / 装备 / 技能图标裁切与着色；怪物图标；多尺寸 WebP/AVIF
+- [ ] 2.11 图片：~~`.tex` 解析 + BC7 解码~~（已提前完成，`mhdb/formats/tex.py`）；物品 / 装备 / 技能 / 饰品 / 镶嵌槽图标裁切与着色；稀有度色表；怪物图标；多尺寸 WebP/AVIF
 - [ ] 2.12 `meta.json` 数据版本；`mhdb diff` 差异报告
 - [ ] 2.13 对照测试：一组已知值（装备技能、锐利度、饰品技能等），请你在游戏内核对
 - [ ] 2.14 `docs/DATA.md` 补全：每个文件的字段表、解析状态、未确认项

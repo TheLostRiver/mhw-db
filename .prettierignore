@@ -1,0 +1,12 @@
+pnpm-lock.yaml
+dist/
+.astro/
+node_modules/
+data/
+data-raw/
+docs/
+*.md
+pipeline/
+crates/
+playwright-report/
+test-results/

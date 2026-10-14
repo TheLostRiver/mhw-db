@@ -1,0 +1,40 @@
+---
+/**
+ * 首屏前同步执行：读取主题偏好（跟随系统 / 浅色 / 深色），在绘制前写入 data-theme，避免闪烁。
+ * 偏好为「跟随系统」时监听系统切换。
+ */
+---
+
+<script is:inline>
+  (() => {
+    const KEY = 'mhdb-theme';
+    const root = document.documentElement;
+    const media = matchMedia('(prefers-color-scheme: dark)');
+    const read = () => {
+      try {
+        return localStorage.getItem(KEY) || 'system';
+      } catch {
+        return 'system';
+      }
+    };
+    const apply = (pref, animate) => {
+      const dark = pref === 'dark' || (pref === 'system' && media.matches);
+      if (animate) {
+        root.classList.add('theme-switching');
+        setTimeout(() => root.classList.remove('theme-switching'), 420);
+      }
+      root.dataset.theme = dark ? 'dark' : 'light';
+      root.dataset.themePref = pref;
+    };
+    apply(read(), false);
+    media.addEventListener('change', () => read() === 'system' && apply('system', true));
+    window.__mhdbTheme = {
+      set(pref) {
+        try {
+          localStorage.setItem(KEY, pref);
+        } catch {}
+        apply(pref, true);
+      },
+    };
+  })();
+</script>

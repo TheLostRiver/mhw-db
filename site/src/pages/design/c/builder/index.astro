@@ -1,0 +1,406 @@
+---
+import '@fontsource-variable/noto-sans-sc';
+import '@fontsource-variable/bricolage-grotesque';
+import '../../../../styles/directions/c.css';
+import DesignLayout from '../../../../layouts/DesignLayout.astro';
+import ThemeToggle from '../../../../components/design/ThemeToggle.astro';
+import Icon, { type IconName } from '../../../../components/design/Icon.astro';
+import Atmos from '../../../../components/design/Atmos.astro';
+import {
+  additionalSkills,
+  aiMonsters,
+  gear,
+  pickerGroups,
+  searchResults,
+  searchTargets,
+  skills,
+  stats,
+  weapon,
+} from '../../../../data/design-mock';
+
+const partIcon: Record<string, IconName> = {
+  头部: 'head',
+  身体: 'chest',
+  腕部: 'arms',
+  腰部: 'waist',
+  脚部: 'legs',
+  护石: 'charm',
+};
+const target = aiMonsters.find((m) => m.key === 'em124_00')!;
+const sharpTotal = stats.sharpness.reduce((s, x) => s + x.len, 0);
+const ringR = 54;
+const ringLen = 2 * Math.PI * ringR;
+const elColor: Record<string, string> = {
+  冰属性: 'var(--el-ice)',
+  雷属性: 'var(--el-thunder)',
+  无属性: 'var(--c-text-3)',
+};
+---
+
+<DesignLayout title="方向 C · 配装 — mhw-db" direction="c">
+  <Atmos seed={23} />
+
+  <header class="c-nav c-glass">
+    <a class="c-logo" href="/design/c/">
+      <svg
+        width="22"
+        height="22"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.8"
+        aria-hidden="true"
+      >
+        <path d="M12 3c5 0 9 3.6 9 8.2S17.4 21 12 21 3 17.4 3 12.6 7 3 12 3Z" />
+        <path d="M12 7.5c2.8 0 5 2 5 4.6s-2.1 4.9-5 4.9-5-2-5-4.6 2.2-4.9 5-4.9Z" />
+        <circle cx="12" cy="12.2" r="1.4" fill="currentColor" />
+      </svg>
+      mhw·db
+    </a>
+    <nav class="c-nav__links" aria-label="主导航">
+      <a href="/design/c/">百科</a>
+      <a href="#" aria-current="page">
+        配装
+      </a>
+      <a href="#">伤害</a>
+      <a href="#">地图</a>
+      <a href="#">封面</a>
+    </nav>
+    <button class="c-nav__search" type="button" aria-label="搜索">
+      <Icon name="search" size={16} />
+      <span>搜索新大陆</span>
+      <kbd>/</kbd>
+    </button>
+    <ThemeToggle />
+  </header>
+
+  <main class="c-wrap" style={`--accent:${target.tint}`}>
+    <div class="c-bhead">
+      <div>
+        <h1 class="c-reveal">配装</h1>
+        <div class="c-bhead__sub c-reveal" style="--i:1">
+          <span class="c-pill">
+            <i>{target.glyph}</i>目标：{target.name}
+          </span>
+          <span class="c-pill">
+            <i>剑</i>
+            {weapon.type} · {weapon.element.kind}属性
+          </span>
+          <span class="c-pill c-pill--mock">示意数据</span>
+        </div>
+      </div>
+      <div class="c-toolbar c-glass c-reveal" style="--i:2" role="toolbar" aria-label="方案操作">
+        <button class="c-icon-btn" type="button" aria-label="撤销" title="撤销 Ctrl+Z">
+          <Icon name="undo" size={18} />
+        </button>
+        <button class="c-icon-btn" type="button" aria-label="重做" title="重做 Ctrl+Y">
+          <Icon name="redo" size={18} />
+        </button>
+        <span class="c-sep"></span>
+        <div class="c-seg">
+          <button type="button" aria-pressed="true">
+            方案 A
+          </button>
+          <button type="button" aria-pressed="false">
+            方案 B
+          </button>
+        </div>
+        <button class="c-icon-btn" type="button" aria-label="新建方案">
+          <Icon name="plus" size={18} />
+        </button>
+        <span class="c-sep"></span>
+        <button class="c-icon-btn" type="button" aria-label="并排比较">
+          <Icon name="layers" size={18} />
+        </button>
+        <button class="c-icon-btn" type="button" aria-label="导出图片">
+          <Icon name="image" size={18} />
+        </button>
+        <button class="c-btn c-btn--accent" type="button" style="height:38px;padding-inline:16px">
+          <Icon name="share" size={16} />
+          分享
+        </button>
+      </div>
+    </div>
+
+    <div class="c-bgrid">
+      <section class="c-panel c-glass c-reveal" style="--i:2" aria-labelledby="g-h">
+        <div class="c-panel__head">
+          <h2 id="g-h">装备</h2>
+          <span>点击更换 · 7 件</span>
+        </div>
+        <div class="c-gear">
+          <a class="is-weapon" href="#picker">
+            <span class="c-gear__icon">
+              <Icon name="weapon" size={22} />
+            </span>
+            <span>
+              <span class="c-gear__name">{weapon.name}</span>
+              <span class="c-gear__stats">
+                <span>
+                  攻击<b>{weapon.attack}</b>
+                </span>
+                <span>
+                  会心<b>{weapon.affinity}%</b>
+                </span>
+                <span>
+                  {weapon.element.kind}
+                  <b>{weapon.element.value}</b>
+                </span>
+              </span>
+            </span>
+            <span class="b-decos">
+              {weapon.decoSlots.map((l) => (
+                <span class="deco-slot" data-lv={l} data-filled>
+                  {l}
+                </span>
+              ))}
+            </span>
+          </a>
+          {gear.map((g) => (
+            <a href="#picker">
+              <span class="c-gear__icon">
+                <Icon name={partIcon[g.slot] ?? 'gem'} size={22} />
+              </span>
+              <span>
+                <span class="c-gear__name">{g.name}</span>
+                <span class="c-gear__meta" style="display:block">
+                  {g.slot} · {g.skills}
+                </span>
+              </span>
+              <span class="b-decos">
+                {g.decoSlots.map((l, i) => (
+                  <span class="deco-slot" data-lv={l} data-filled={i < g.decos.length ? '' : undefined}>
+                    {l || ''}
+                  </span>
+                ))}
+              </span>
+            </a>
+          ))}
+        </div>
+      </section>
+
+      <section class="c-panel c-glass c-reveal" style="--i:3" aria-labelledby="s-h">
+        <div class="c-panel__head">
+          <h2 id="s-h">技能</h2>
+          <span>{skills.length} 项 · 4 项已满</span>
+        </div>
+        <div class="c-skills">
+          {skills.map((s, i) => (
+            <div class="c-skill" data-maxed={s.level >= s.max ? '' : undefined}>
+              <div class="c-skill__row">
+                <span>{s.name}</span>
+                <span>
+                  <b>{s.level}</b> / {s.max}
+                </span>
+              </div>
+              <div class="c-track" style={`--n:${s.max}`}>
+                <span style={`--v:${(s.level / s.max) * 100}%;--i:${i}`} />
+              </div>
+            </div>
+          ))}
+        </div>
+        <p class="c-hint">
+          <Icon name="spark" size={18} />
+          攻击溢出 1 级，可把腰部的「攻击珠【1】」换成其他 1 级珠。
+        </p>
+      </section>
+
+      <aside class="c-panel c-glass c-reveal" style="--i:4" aria-labelledby="st-h">
+        <div class="c-panel__head">
+          <h2 id="st-h">状态</h2>
+          <span>对 {target.name}</span>
+        </div>
+        <div class="c-ring">
+          <div style="position:relative">
+            <svg width="132" height="132" viewBox="0 0 132 132" aria-hidden="true">
+              <defs>
+                <linearGradient id="c-ring-grad" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0" stop-color="var(--accent)" />
+                  <stop offset="1" stop-color="var(--c-accent-2)" />
+                </linearGradient>
+              </defs>
+              <circle class="c-ring__bg" cx="66" cy="66" r={ringR} />
+              <circle
+                class="c-ring__fg"
+                cx="66"
+                cy="66"
+                r={ringR}
+                style={`--dash:${(ringLen * stats.affinity) / 100}`}
+              />
+            </svg>
+            <div class="c-ring__center">
+              <b>{stats.affinity}%</b>
+              <span>会心率</span>
+            </div>
+          </div>
+          <dl class="c-big">
+            <dt>攻击力</dt>
+            <dd>{stats.attack}</dd>
+            <dt>物理期望</dt>
+            <dd>{stats.effectiveRaw}</dd>
+          </dl>
+        </div>
+        <dl class="c-stat-grid">
+          <div>
+            <dt>冰属性</dt>
+            <dd>{stats.element}</dd>
+          </div>
+          <div>
+            <dt>防御力</dt>
+            <dd>{stats.defense}</dd>
+          </div>
+          <div class="is-accent" style="grid-column:1/-1">
+            <dt>对弱点部位的期望（示意）</dt>
+            <dd>× 1.24</dd>
+          </div>
+        </dl>
+        <p class="c-sublabel">
+          <span>锐利度</span>
+          <span>紫 40 · 匠 3</span>
+        </p>
+        <div class="c-sharp" aria-label="锐利度示意">
+          {stats.sharpness.map((s) => (
+            <span style={`background:${s.color};width:${(s.len / sharpTotal) * 100}%`} />
+          ))}
+        </div>
+        <dl class="c-resist">
+          {stats.resist.map((r) => (
+            <div style={`--el:${r.color}`}>
+              <dt>{r.el}</dt>
+              <dd>{r.value > 0 ? `+${r.value}` : r.value}</dd>
+            </div>
+          ))}
+        </dl>
+      </aside>
+    </div>
+
+    <section class="c-solver c-glass" aria-labelledby="sv-h">
+      <div class="c-solver__top">
+        <h2 id="sv-h">自动配装</h2>
+        {searchTargets.map((t) => (
+          <span class="c-target">
+            {t.name}
+            <b>{t.level}</b>
+          </span>
+        ))}
+        <button
+          class="c-icon-btn"
+          type="button"
+          aria-label="添加技能"
+          style="box-shadow:0 0 0 1px var(--c-line-strong)"
+        >
+          <Icon name="plus" size={18} />
+        </button>
+        <button class="c-btn c-btn--glass" type="button" style="margin-left:auto;height:38px">
+          <Icon name="sliders" size={16} />
+          条件 · 4
+        </button>
+      </div>
+      <div class="c-solver__status">
+        <span>已找到 128 套</span>
+        <span class="c-solver__bar">
+          <span></span>
+        </span>
+        <span>64%</span>
+        <button class="c-btn c-btn--glass" type="button" style="height:32px;padding-inline:14px">
+          取消
+        </button>
+      </div>
+      <div class="c-results">
+        {searchResults.map((r, i) => (
+          <article class="c-result" style={`--i:${i}`}>
+            <header>
+              <span>No.{r.rank}</span>
+              <span>防御 {r.defense}</span>
+            </header>
+            <strong>{r.expect.toFixed(1)}</strong>
+            <p>{r.extra}</p>
+            <p>空余槽 {r.free}</p>
+          </article>
+        ))}
+      </div>
+      <div class="c-extra">
+        追加技能：
+        {additionalSkills.map((s) => (
+          <span>
+            {s.name}
+            <b>+{s.max}</b>
+          </span>
+        ))}
+      </div>
+    </section>
+
+    <div class="c-dock c-glass" role="group" aria-label="状态摘要">
+      <dl>
+        <dt>攻击</dt>
+        <dd>{stats.attack}</dd>
+      </dl>
+      <dl>
+        <dt>会心</dt>
+        <dd>{stats.affinity}%</dd>
+      </dl>
+      <dl>
+        <dt>期望</dt>
+        <dd>{stats.effectiveRaw}</dd>
+      </dl>
+      <a class="c-btn c-btn--accent" href="#sv-h">
+        搜索
+      </a>
+    </div>
+  </main>
+
+  <div class="c-sheet" id="picker" role="dialog" aria-modal="true" aria-labelledby="pk-h">
+    <a href="#" style="position:absolute;inset:0" aria-label="关闭" tabindex="-1"></a>
+    <div class="c-sheet__panel" style={`--accent:${target.tint}`}>
+      <div class="c-sheet__head">
+        <h2 id="pk-h">选择大剑</h2>
+        <a class="c-icon-btn" href="#" aria-label="关闭">
+          <Icon name="close" />
+        </a>
+      </div>
+      <label class="c-sheet__search">
+        <Icon name="search" />
+        <span class="visually-hidden">搜索</span>
+        <input type="search" value="bing" placeholder="名称、拼音、首字母" />
+        <kbd>Esc</kbd>
+      </label>
+      <div class="c-sheet__chips">
+        <button class="c-chip" type="button" aria-pressed="true">
+          全部
+        </button>
+        <button class="c-chip" type="button" aria-pressed="false">
+          冰属性
+        </button>
+        <button class="c-chip" type="button" aria-pressed="false">
+          稀有度 12
+        </button>
+        <button class="c-chip" type="button" aria-pressed="false">
+          有 4 级槽
+        </button>
+        <button class="c-chip" type="button" aria-pressed="false">
+          适合当前目标
+        </button>
+      </div>
+      <div class="c-sheet__grid">
+        {pickerGroups.flatMap((g) =>
+          g.items.map((it) => (
+            <a
+              href="#"
+              style={`--el:${elColor[g.group] ?? 'var(--c-text-3)'}`}
+              aria-current={it === weapon.name ? 'true' : undefined}
+            >
+              <span class="c-sheet__thumb">
+                <Icon name="weapon" size={34} stroke={1.3} />
+              </span>
+              <b>{it}</b>
+              <small>
+                <span>{g.group}</span>
+                <span>R12</span>
+              </small>
+            </a>
+          )),
+        )}
+      </div>
+    </div>
+  </div>
+</DesignLayout>

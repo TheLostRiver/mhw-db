@@ -1,0 +1,262 @@
+---
+import '@fontsource-variable/noto-sans-sc';
+import '@fontsource-variable/martian-mono/wdth.css';
+import '../../../styles/directions/b.css';
+import DesignLayout from '../../../layouts/DesignLayout.astro';
+import ThemeToggle from '../../../components/design/ThemeToggle.astro';
+import Icon from '../../../components/design/Icon.astro';
+import ToolArt from '../../../components/design/ToolArt.astro';
+import Swarm from '../../../components/design/Swarm.astro';
+import { aiLink, aiMonsters, disclaimer, projects, tools } from '../../../data/design-mock';
+
+const toolArt = ['builder', 'damage', 'map', 'cover', 'calendar', 'dice'] as const;
+const tiles = [
+  ...tools.map((t, i) => ({
+    ...t,
+    art: toolArt[i] ?? 'builder',
+    href: i === 0 ? '/design/b/builder/' : t.href,
+  })),
+  { label: '怪物图鉴', desc: '肉质热力图、部位破坏、掉落', href: '#', py: '', art: 'monster' as const },
+  { label: '武器派生树', desc: '14 种武器、强化路线与素材', href: '#', py: '', art: 'tree' as const },
+];
+const pipeline = [
+  { name: '文本', note: '四语 gmd' },
+  { name: '物品', note: 'itm' },
+  { name: '技能', note: 'skl_pt_dat' },
+  { name: '防具', note: 'am_dat' },
+  { name: '护石', note: 'ch_dat' },
+  { name: '饰品', note: 'deco' },
+  { name: '武器', note: 'wp_dat ×14' },
+  { name: '怪物', note: 'dtt_*' },
+];
+const filters = ['怪物', '武器', '防具', '技能', '饰品', '物品', '任务', '地图'];
+---
+
+<DesignLayout title="方向 B · 导虫 — mhw-db" direction="b">
+  <div class="b-status b-label">
+    <div>
+      <span>
+        <span class="b-dot"></span>MHW:I
+      </span>
+      <span>
+        数据版本 <b>—</b>
+      </span>
+      <span>
+        解析进度 <b>0 / 14</b>
+      </span>
+      <span>
+        怪猎历 <b>—</b>
+      </span>
+    </div>
+    <div>
+      <span>
+        <span class="b-dot b-dot--amber"></span>静态稿 · 示意数据
+      </span>
+      <span>
+        离线缓存 <b>就绪</b>
+      </span>
+    </div>
+  </div>
+
+  <header class="b-head">
+    <a class="b-logo" href="/design/b/">
+      <span class="b-logo__mark"></span>mhw·db
+    </a>
+    <nav class="b-nav" aria-label="主导航">
+      <a href="#" aria-current="page">
+        百科
+      </a>
+      <a href="/design/b/builder/">配装</a>
+      <a href="#">伤害</a>
+      <a href="#">地图</a>
+      <a href="#">封面</a>
+      <a href="#">更新日志</a>
+    </nav>
+    <div class="b-head__right">
+      <button class="b-qs" type="button" aria-label="搜索">
+        <Icon name="search" size={16} />
+        <span>搜索</span>
+        <kbd>Ctrl</kbd>
+        <kbd>K</kbd>
+      </button>
+      <ThemeToggle />
+    </div>
+  </header>
+
+  <main>
+    <section class="b-hero">
+      <Swarm target="#console" />
+      <div class="b-hero__inner">
+        <p class="b-label">// scoutfly index · monster hunter world: iceborne</p>
+        <h1>
+          猎人的<span>数据工作台</span>
+        </h1>
+        <p class="b-hero__sub">全部数据解包自游戏文件，可追溯到文件与字段。配装、伤害、地图，一处完成。</p>
+
+        <div class="b-console" id="console">
+          <label class="b-console__input">
+            <Icon name="search" size={20} />
+            <span class="visually-hidden">搜索</span>
+            <input type="search" placeholder="搜索怪物、装备、技能、物品……  支持拼音与首字母" />
+            <kbd>Ctrl</kbd>
+            <kbd>K</kbd>
+          </label>
+          <div class="b-console__bar">
+            {filters.map((f, i) => (
+              <button class="b-chip" type="button" aria-pressed={i === 0 ? 'true' : 'false'}>
+                {f}
+              </button>
+            ))}
+            <span class="b-console__recent">最近：黑龙 · 攻击珠 · 配装器</span>
+          </div>
+        </div>
+
+        <dl class="b-stats">
+          <div>
+            <dt class="b-label">条目</dt>
+            <dd>
+              4,812<small>示意</small>
+            </dd>
+          </div>
+          <div>
+            <dt class="b-label">文本语言</dt>
+            <dd>
+              4<small>zh/hant/ja/en</small>
+            </dd>
+          </div>
+          <div>
+            <dt class="b-label">地图</dt>
+            <dd>
+              17<small>示意</small>
+            </dd>
+          </div>
+          <div>
+            <dt class="b-label">AI 解析</dt>
+            <dd>
+              5<small>只</small>
+            </dd>
+          </div>
+        </dl>
+      </div>
+    </section>
+
+    <div class="b-wrap">
+      <div class="b-sec-head">
+        <h2>工具</h2>
+        <span class="b-label">tools · 08</span>
+      </div>
+      <div class="b-tiles">
+        {tiles.map((t, i) => (
+          <a class="b-tile" href={t.href}>
+            <div class="b-tile__top">
+              <span class="b-label">{String(i + 1).padStart(2, '0')}</span>
+              <Icon name="arrowUpRight" size={16} />
+            </div>
+            <ToolArt name={t.art} class="b-tile__art" width={120} />
+            <div>
+              <h3>{t.label}</h3>
+              <p>{t.desc}</p>
+            </div>
+          </a>
+        ))}
+      </div>
+    </div>
+
+    <div class="b-wrap" style="padding-top:0">
+      <div class="b-split">
+        <section class="b-panel">
+          <div class="b-panel__head">
+            <h2>AI 速览</h2>
+            <span class="b-label">已收录 5</span>
+            <a class="b-label b-push" href="https://mhwi.helsincy.com">
+              mhwi.helsincy.com ↗
+            </a>
+          </div>
+          <table class="b-table">
+            <thead>
+              <tr>
+                <th class="b-label">怪物</th>
+                <th class="b-label">内部编号</th>
+                <th class="b-label">种别</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {aiMonsters.map((m) => (
+                <tr>
+                  <td>
+                    <span class="b-glyph">{m.glyph}</span>
+                    {m.name}
+                  </td>
+                  <td class="b-mono">{m.key}</td>
+                  <td>{m.kind}</td>
+                  <td class="b-table__go">
+                    <a href={aiLink(m.key)} aria-label={`${m.name} 完整 AI 解析`}>
+                      <Icon name="arrowUpRight" size={16} />
+                    </a>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+
+        <section class="b-panel">
+          <div class="b-panel__head">
+            <h2>数据管线</h2>
+            <span class="b-label">里程碑 2</span>
+          </div>
+          <ul class="b-pipe">
+            {pipeline.map((p) => (
+              <li data-state="todo">
+                <span>{p.name}</span>
+                <span class="b-meter" style="--v:0%">
+                  <span />
+                </span>
+                <span class="b-label">待解析</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      </div>
+    </div>
+
+    <div class="b-wrap" style="padding-top:0">
+      <div class="b-sec-head">
+        <h2>我的项目</h2>
+        <span class="b-label">by helsincy</span>
+      </div>
+      <div class="b-projects">
+        {projects.map((p) => (
+          <article class="b-proj b-corners">
+            <div class="b-proj__top">
+              <span class="b-proj__mono">{p.short}</span>
+              <h3>{p.name}</h3>
+              <span class="b-label" style="margin-left:auto">
+                {p.tag}
+              </span>
+            </div>
+            <p>{p.desc}</p>
+            <div class="b-proj__links">
+              <a href={p.site}>
+                官网 <Icon name="arrowUpRight" size={12} />
+              </a>
+              <a href={p.repo}>
+                GitHub <Icon name="arrowUpRight" size={12} />
+              </a>
+            </div>
+          </article>
+        ))}
+      </div>
+    </div>
+  </main>
+
+  <footer class="b-foot">
+    <p>{disclaimer}</p>
+    <div class="b-foot__meta b-label">
+      <span>数据版本 —</span>
+      <a href="#">反馈</a>
+      <a href="https://github.com/TheLostRiver/mhw-db">GitHub</a>
+    </div>
+  </footer>
+</DesignLayout>

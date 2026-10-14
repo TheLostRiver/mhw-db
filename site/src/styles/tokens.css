@@ -1,0 +1,129 @@
+/*
+ * 设计令牌：与视觉方向无关的尺度。
+ * 颜色与字体属于「语义令牌」，由各方向 / 主题在 [data-direction][data-theme] 上赋值，
+ * 组件只引用 --c-* / --font-*，不直接写色值。
+ */
+
+/* 注册为颜色类型，主题与强调色切换时可以平滑插值（包括渐变里的颜色） */
+@property --accent {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #888;
+}
+
+:root {
+  /* 间距：4px 基准 */
+  --space-0: 0;
+  --space-px: 1px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
+  --space-32: 128px;
+
+  /* 字号阶梯（大字号随视口流式变化） */
+  --text-2xs: 0.6875rem;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-md: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.375rem;
+  --text-2xl: clamp(1.5rem, 1.25rem + 1vw, 2rem);
+  --text-3xl: clamp(1.875rem, 1.4rem + 2vw, 2.75rem);
+  --text-4xl: clamp(2.25rem, 1.5rem + 3.4vw, 4rem);
+  --text-5xl: clamp(2.75rem, 1.4rem + 6vw, 6.5rem);
+
+  --leading-none: 1;
+  --leading-tight: 1.15;
+  --leading-snug: 1.35;
+  --leading-normal: 1.65;
+
+  /* 圆角 */
+  --radius-0: 0;
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-2xl: 28px;
+  --radius-pill: 999px;
+
+  /* 动效：时长与缓动 */
+  --dur-instant: 80ms;
+  --dur-fast: 140ms;
+  --dur-base: 220ms;
+  --dur-slow: 360ms;
+  --dur-slower: 600ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  /* 轻微回弹，用于展开 / 弹出 */
+  --ease-spring: linear(
+    0,
+    0.009,
+    0.035 2.1%,
+    0.141 4.4%,
+    0.723 12.9%,
+    0.938 16.7%,
+    1.017,
+    1.077 24.1%,
+    1.097 26.5%,
+    1.094,
+    1.074 32.6%,
+    1.006 42.4%,
+    0.991 47%,
+    0.988 52%,
+    1.001 69.4%,
+    1
+  );
+
+  /* 层级 */
+  --z-raised: 1;
+  --z-sticky: 100;
+  --z-overlay: 200;
+  --z-modal: 300;
+  --z-toast: 400;
+
+  /* 布局 */
+  --content-max: 1320px;
+  --reading-max: 68ch;
+  --gutter: clamp(16px, 4vw, 48px);
+
+  /* 属性与异常（全站统一；各主题可覆盖明度） */
+  --el-fire: #e5583a;
+  --el-water: #3f8fe0;
+  --el-thunder: #e9c22e;
+  --el-ice: #7cc7e8;
+  --el-dragon: #a33a5d;
+  --st-poison: #9a5bd1;
+  --st-sleep: #6b8fd6;
+  --st-para: #d8b62c;
+  --st-blast: #e07a3a;
+
+  /* 锐利度 */
+  --sharp-red: #d2423a;
+  --sharp-orange: #e07f2f;
+  --sharp-yellow: #e2c93b;
+  --sharp-green: #5fb54a;
+  --sharp-blue: #3e7fe0;
+  --sharp-white: #f1f1ee;
+  --sharp-purple: #a65ee0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-instant: 0ms;
+    --dur-fast: 0ms;
+    --dur-base: 0ms;
+    --dur-slow: 0ms;
+    --dur-slower: 0ms;
+  }
+}

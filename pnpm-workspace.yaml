@@ -1,0 +1,7 @@
+packages:
+  - site
+
+# sharp 的 Windows 预编译包含 LGPL-3.0 的 libvips；本项目图片由 Python 管线转换，
+# Astro 使用 passthrough 图片服务，不需要 sharp。
+ignoredOptionalDependencies:
+  - sharp

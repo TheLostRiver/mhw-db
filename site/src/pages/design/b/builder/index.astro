@@ -1,0 +1,504 @@
+---
+import '@fontsource-variable/noto-sans-sc';
+import '@fontsource-variable/martian-mono/wdth.css';
+import '../../../../styles/directions/b.css';
+import DesignLayout from '../../../../layouts/DesignLayout.astro';
+import ThemeToggle from '../../../../components/design/ThemeToggle.astro';
+import Icon, { type IconName } from '../../../../components/design/Icon.astro';
+import {
+  additionalSkills,
+  disclaimer,
+  gear,
+  pickerGroups,
+  searchResults,
+  searchTargets,
+  setBonus,
+  skills,
+  stats,
+  weapon,
+} from '../../../../data/design-mock';
+
+const partIcon: Record<string, IconName> = {
+  头部: 'head',
+  身体: 'chest',
+  腕部: 'arms',
+  腰部: 'waist',
+  脚部: 'legs',
+  护石: 'charm',
+};
+const sharpTotal = stats.sharpness.reduce((s, x) => s + x.len, 0);
+const highlight = (name: string) => name.replace(/冰/g, '<mark>冰</mark>');
+---
+
+<DesignLayout title="方向 B · 配装工作台 — mhw-db" direction="b">
+  <div class="b-app">
+    <div class="b-status b-label">
+      <div>
+        <span>
+          <span class="b-dot"></span>求解器就绪 · 8 线程
+        </span>
+        <span>
+          方案 <b>A</b> · 已保存
+        </span>
+        <span>
+          撤销栈 <b>14</b>
+        </span>
+      </div>
+      <div>
+        <span>
+          <span class="b-dot b-dot--amber"></span>静态稿 · 示意数据
+        </span>
+      </div>
+    </div>
+
+    <header class="b-head">
+      <a class="b-logo" href="/design/b/">
+        <span class="b-logo__mark"></span>mhw·db
+      </a>
+      <nav class="b-nav" aria-label="主导航">
+        <a href="/design/b/">百科</a>
+        <a href="#" aria-current="page">
+          配装
+        </a>
+        <a href="#">伤害</a>
+        <a href="#">地图</a>
+        <a href="#">封面</a>
+      </nav>
+      <div class="b-head__right">
+        <button class="b-btn b-btn--icon b-hide-sm" type="button" title="撤销 Ctrl+Z" aria-label="撤销">
+          <Icon name="undo" size={16} />
+        </button>
+        <button class="b-btn b-btn--icon b-hide-sm" type="button" title="重做 Ctrl+Y" aria-label="重做">
+          <Icon name="redo" size={16} />
+        </button>
+        <button class="b-btn b-hide-sm" type="button">
+          <Icon name="layers" size={16} />
+          比较
+        </button>
+        <button class="b-btn b-hide-sm" type="button">
+          <Icon name="image" size={16} />
+          导出
+        </button>
+        <button class="b-btn b-btn--primary" type="button">
+          <Icon name="share" size={16} />
+          分享
+        </button>
+        <ThemeToggle />
+      </div>
+    </header>
+
+    <div class="b-work">
+      <nav class="b-rail" aria-label="方案">
+        <a href="#" aria-current="true" title="方案 A">
+          <span class="b-label" style="color:inherit">
+            A
+          </span>
+        </a>
+        <a href="#" title="方案 B">
+          <span class="b-label" style="color:inherit">
+            B
+          </span>
+        </a>
+        <button type="button" title="新建方案" aria-label="新建方案">
+          <Icon name="plus" size={16} />
+        </button>
+        <hr />
+        <button type="button" title="预设" aria-label="预设">
+          <Icon name="book" size={18} />
+        </button>
+        <button type="button" title="我的饰品" aria-label="我的饰品">
+          <Icon name="gem" size={18} />
+        </button>
+        <span class="b-rail__spacer"></span>
+        <button type="button" title="设置" aria-label="设置">
+          <Icon name="sliders" size={18} />
+        </button>
+      </nav>
+
+      <section class="b-col" id="gear" aria-labelledby="gear-h">
+        <div class="b-col__head">
+          <h2 id="gear-h">装备</h2>
+          <span class="b-label">equipment · 7/7</span>
+          <span class="b-push">
+            <span class="b-label">稀有度 12</span>
+          </span>
+        </div>
+        <div class="b-col__body">
+          <a class="b-slot b-slot--weapon" href="#picker">
+            <span class="b-slot__icon">
+              <Icon name="weapon" />
+            </span>
+            <span>
+              <span class="b-slot__name">
+                {weapon.name}
+                <span class="b-label">{weapon.type}</span>
+              </span>
+              <span class="b-slot__meta">
+                <span>
+                  攻击 <b>{weapon.attack}</b>
+                </span>
+                <span>
+                  会心 <b>{weapon.affinity}%</b>
+                </span>
+                <span>
+                  {weapon.element.kind} <b>{weapon.element.value}</b>
+                </span>
+              </span>
+              <span class="b-slot__meta">{weapon.decos.join(' · ')}</span>
+            </span>
+            <span class="b-decos">
+              {weapon.decoSlots.map((l) => (
+                <span class="deco-slot" data-lv={l} data-filled>
+                  {l}
+                </span>
+              ))}
+            </span>
+          </a>
+          {gear.map((g) => (
+            <a class="b-slot" href="#picker">
+              <span class="b-slot__icon">
+                <Icon name={partIcon[g.slot] ?? 'gem'} />
+              </span>
+              <span>
+                <span class="b-slot__name">
+                  {g.name}
+                  <span class="b-label">{g.slot}</span>
+                </span>
+                <span class="b-slot__meta">{g.skills}</span>
+                {g.decos.length > 0 && <span class="b-slot__meta">{g.decos.join(' · ')}</span>}
+              </span>
+              <span class="b-decos">
+                {g.decoSlots.map((l, i) => (
+                  <span class="deco-slot" data-lv={l} data-filled={i < g.decos.length ? '' : undefined}>
+                    {l || ''}
+                  </span>
+                ))}
+              </span>
+            </a>
+          ))}
+        </div>
+      </section>
+
+      <section class="b-col" id="skills" aria-labelledby="skills-h">
+        <div class="b-col__head">
+          <h2 id="skills-h">技能</h2>
+          <span class="b-label">skills · {skills.length}</span>
+          <span class="b-push">
+            <button class="b-chip" type="button" aria-pressed="true">
+              全部
+            </button>
+            <button class="b-chip" type="button" aria-pressed="false">
+              未满
+            </button>
+          </span>
+        </div>
+        <div class="b-col__body">
+          {skills.map((s) => (
+            <div class="b-skill" data-maxed={s.level >= s.max ? '' : undefined}>
+              <span class="b-skill__name">{s.name}</span>
+              <span class="b-seg" style={`--n:${s.max}`} aria-hidden="true">
+                {Array.from({ length: s.max }, (_, k) => (
+                  <span
+                    style={`--k:${k}`}
+                    data-on={k < s.level ? '' : undefined}
+                    data-over={s.over && k === s.max - 1 ? '' : undefined}
+                  />
+                ))}
+              </span>
+              <span class="b-skill__lv">
+                <b>{s.level}</b>/{s.max}
+              </span>
+            </div>
+          ))}
+          <p class="b-callout">
+            <Icon name="spark" size={16} />
+            攻击溢出 1 级：腰部「攻击珠【1】」可换成其他 1 级珠。
+          </p>
+          {setBonus.map((b) => (
+            <p class="b-callout b-callout--set">
+              <Icon name="layers" size={16} />
+              {b.name} · {b.active}
+            </p>
+          ))}
+        </div>
+      </section>
+
+      <section class="b-col" id="status" aria-labelledby="status-h">
+        <div class="b-col__head">
+          <h2 id="status-h">状态</h2>
+          <span class="b-label">status</span>
+          <span class="b-push">
+            <span class="b-label">对比 方案 B</span>
+          </span>
+        </div>
+        <div class="b-col__body">
+          <dl class="b-readouts">
+            <div class="b-readout">
+              <dt class="b-label">攻击力</dt>
+              <dd>
+                {stats.attack}
+                <span class="b-delta">+21</span>
+              </dd>
+            </div>
+            <div class="b-readout">
+              <dt class="b-label">会心率</dt>
+              <dd>
+                {stats.affinity}
+                <small>%</small>
+                <span class="b-delta">+5</span>
+              </dd>
+            </div>
+            <div class="b-readout">
+              <dt class="b-label">冰属性</dt>
+              <dd>{stats.element}</dd>
+            </div>
+            <div class="b-readout b-readout--hl">
+              <dt class="b-label">物理期望</dt>
+              <dd>{stats.effectiveRaw}</dd>
+            </div>
+          </dl>
+
+          <div class="b-block">
+            <div class="b-block__head">
+              <span class="b-label">锐利度</span>
+              <span class="b-label">匠 3 · 紫 40</span>
+            </div>
+            <div class="b-sharp" aria-label="锐利度示意">
+              {stats.sharpness.map((s) => (
+                <span style={`background:${s.color};width:${(s.len / sharpTotal) * 100}%`} />
+              ))}
+            </div>
+            <div class="b-sharp__ticks b-label">
+              <span>0</span>
+              <span>100</span>
+              <span>200</span>
+              <span>300</span>
+              <span>400</span>
+            </div>
+          </div>
+
+          <div class="b-block">
+            <div class="b-block__head">
+              <span class="b-label">耐性</span>
+              <span class="b-label">防御 {stats.defense}</span>
+            </div>
+            <dl class="b-resist">
+              {stats.resist.map((r) => (
+                <div style={`--el:${r.color}`}>
+                  <dt>{r.el}</dt>
+                  <dd data-neg={r.value < 0 ? '' : undefined}>{r.value > 0 ? `+${r.value}` : r.value}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+
+          <div class="b-block">
+            <dl class="b-kv">
+              <div>
+                <dt>会心伤害倍率</dt>
+                <dd>1.40×</dd>
+              </div>
+              <div>
+                <dt>锐利度修正（紫）</dt>
+                <dd>1.39×</dd>
+              </div>
+              <div>
+                <dt>挑战者（怒）</dt>
+                <dd>+20 / +15%</dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="b-dock" id="solver">
+      <section aria-labelledby="t-h">
+        <div class="b-col__head">
+          <h2 id="t-h">自动配装</h2>
+          <span class="b-label">targets</span>
+          <span class="b-push">
+            <button class="b-btn b-btn--primary" type="button" style="height:28px">
+              <Icon name="play" size={14} />
+              搜索
+            </button>
+          </span>
+        </div>
+        <div class="b-col__body">
+          {searchTargets.map((t) => (
+            <div class="b-target">
+              <span>{t.name}</span>
+              <span class="b-stepper">
+                <button type="button" aria-label="减少">
+                  −
+                </button>
+                <output>{t.level}</output>
+                <button type="button" aria-label="增加">
+                  +
+                </button>
+              </span>
+            </div>
+          ))}
+          <div class="b-switches">
+            <span class="b-switch" data-on>
+              只用已持有饰品 <i></i>
+            </span>
+            <span class="b-switch" data-on>
+              锁定护石 <i></i>
+            </span>
+            <span class="b-switch">
+              包含进阶 / 活动防具 <i></i>
+            </span>
+          </div>
+        </div>
+      </section>
+      <section aria-labelledby="r-h">
+        <div class="b-col__head">
+          <h2 id="r-h">结果</h2>
+          <span class="b-label">已检出 128 · 64% · 1.8 s</span>
+          <span class="b-push">
+            <button class="b-btn" type="button" style="height:28px">
+              取消
+            </button>
+          </span>
+        </div>
+        <div style="display:grid;grid-template-rows:auto 1fr;min-height:0">
+          <div class="b-progress">
+            <span></span>
+          </div>
+          <div class="b-col__body" style="padding:0">
+            <table class="b-table b-results">
+              <thead>
+                <tr>
+                  <th class="b-label">#</th>
+                  <th class="b-label">防御</th>
+                  <th class="b-label">空余槽</th>
+                  <th class="b-label">附带技能</th>
+                  <th class="b-label">期望</th>
+                </tr>
+              </thead>
+              <tbody>
+                {searchResults.map((r, i) => (
+                  <tr style={`--i:${i}`}>
+                    <td class="b-mono">{String(r.rank).padStart(2, '0')}</td>
+                    <td class="b-mono">{r.defense}</td>
+                    <td class="b-mono">{r.free}</td>
+                    <td>{r.extra}</td>
+                    <td class="b-mono">{r.expect.toFixed(1)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+      <section aria-labelledby="x-h">
+        <div class="b-col__head">
+          <h2 id="x-h">追加技能</h2>
+          <span class="b-label">还能再加</span>
+        </div>
+        <div class="b-col__body">
+          <ul class="b-extra">
+            {additionalSkills.map((s) => (
+              <li>
+                <span>{s.name}</span>
+                <span>+{s.max}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <nav class="b-mobile-tabs" aria-label="面板">
+    <a href="#gear" aria-current="true">
+      <Icon name="weapon" size={18} />
+      装备
+    </a>
+    <a href="#skills">
+      <Icon name="list" size={18} />
+      技能
+    </a>
+    <a href="#status">
+      <Icon name="chart" size={18} />
+      状态
+    </a>
+    <a href="#solver">
+      <Icon name="search" size={18} />
+      搜索
+    </a>
+  </nav>
+
+  <footer class="b-foot">
+    <p>{disclaimer}</p>
+  </footer>
+
+  <div class="b-picker" id="picker" role="dialog" aria-modal="true" aria-label="选择武器">
+    <div class="b-picker__card">
+      <label class="b-picker__search">
+        <Icon name="search" />
+        <span class="visually-hidden">搜索武器</span>
+        <input type="search" value="冰" placeholder="名称、拼音或首字母" />
+        <a href="#" aria-label="关闭">
+          <kbd>Esc</kbd>
+        </a>
+      </label>
+      <div class="b-picker__tabs">
+        <button class="b-chip" type="button" aria-pressed="true">
+          大剑
+        </button>
+        <button class="b-chip" type="button" aria-pressed="false">
+          稀有度 12
+        </button>
+        <button class="b-chip" type="button" aria-pressed="false">
+          有 4 级槽
+        </button>
+        <button class="b-chip" type="button" aria-pressed="false">
+          已收藏
+        </button>
+      </div>
+      <div class="b-picker__list">
+        {pickerGroups.map((g, gi) => (
+          <div>
+            <button class="b-picker__group b-label" type="button">
+              <Icon name={gi < 2 ? 'chevronDown' : 'chevronRight'} size={14} />
+              {g.group} · {g.items.length}
+            </button>
+            {gi < 2 &&
+              g.items.map((it) => (
+                <a class="b-picker__row" href="#" data-active={it === weapon.name ? '' : undefined}>
+                  <span class="b-slot__icon">
+                    <Icon name="weapon" size={16} />
+                  </span>
+                  <span set:html={highlight(it)} />
+                  <span class="b-label">R12</span>
+                  <span class="b-decos">
+                    <span class="deco-slot" data-lv="4">
+                      4
+                    </span>
+                    <span class="deco-slot" data-lv="2">
+                      2
+                    </span>
+                  </span>
+                </a>
+              ))}
+          </div>
+        ))}
+      </div>
+      <div class="b-picker__foot">
+        <span>
+          <kbd>↑</kbd>
+          <kbd>↓</kbd>选择
+        </span>
+        <span>
+          <kbd>↵</kbd>装备
+        </span>
+        <span>
+          <kbd>Tab</kbd>切换筛选
+        </span>
+        <span style="margin-left:auto">拼音 / 首字母 / 繁简 / 日英 均可</span>
+      </div>
+    </div>
+  </div>
+</DesignLayout>

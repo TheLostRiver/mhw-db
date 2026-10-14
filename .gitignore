@@ -86,3 +86,6 @@ mhw-db_开发提示词.md
 
 # 管线本地配置（游戏目录、Oodle 路径）
 pipeline/local.toml
+
+# 本地缓存（字体源文件等）
+.cache/

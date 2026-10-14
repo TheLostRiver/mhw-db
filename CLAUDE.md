@@ -5,7 +5,7 @@
 
 - 全程用**中文**和用户交流，包括进度汇报。
 - 需要用户拍板的事（技术选型的重大分歧、可能涉及版权的做法、要花很多时间的方向）先问，其余自行推进。
-- 只有用户要求时才提交、推送；默认分支 `main`。
+- 用户已把提交、推送权交给我（2026-10-14）：完成一块可验证的工作后自行提交并推送到 `main`；推送前照常自查署名。
 - 项目暂不放许可证（默认保留所有权利），不要自行添加 LICENSE。
 
 ## 1. 硬性规则
@@ -52,10 +52,21 @@
 - 怪物 AI 速览沿用 mhwi-ai 的区间约定：距离「≤N」含 N、「>N」不含；「>A 且 ≤B」为两档之间；角度区间含两端；
   血量「HP≤N%」按截断取整比较（即实际 <N+1%）。
 
-## 3. 技术栈与目录
+## 3. 技术栈与命令
 
 技术选型已确认（2026-10-14），详见 `docs/PLAN.md` 第 1、2 节：Astro + React + TS 严格模式、手写 CSS 设计令牌、
-Python（uv）数据管线、zod 校验、Rust→WASM 配装求解、Konva、Leaflet、MiniSearch、pnpm。常用命令在工程骨架搭好后补全。
+Python（uv）数据管线、zod 校验、Rust→WASM 配装求解、Konva、Leaflet、MiniSearch、pnpm。
+
+```bash
+pnpm dev / pnpm build / pnpm verify / pnpm e2e        # 站点（site/）
+cd pipeline && uv run pytest && uv run ruff check .    # 管线
+uv run mhdb config | fonts | extract | parse | images | diff
+```
+
+- 设计令牌与主题见 `docs/DESIGN.md`。**配装器与装备界面要贴近游戏 UI**（用游戏图标、镶嵌槽、技能格），
+  站点视觉方向只负责外层框架。
+- 本机临时截图：`node scripts/shot.mjs <路径> <名字> [light|dark] [宽] [高] [1|0|tall]`（需先 `pnpm dev`），输出到 `.cache/shots/`。
+- Windows 下 Git Bash 的 heredoc 会吞反斜杠：含反斜杠转义（如换行符转义、Windows 路径）的内容用编辑工具写，不要用 heredoc。
 
 ## 4. 本地资源
 

@@ -1,0 +1,47 @@
+---
+/** 方向 C 的氛围层：强调色光晕 + 程序生成的等高线（构建期生成，零运行时成本）。 */
+import { contours } from '../../lib/contours';
+
+interface Props {
+  seed?: number;
+}
+
+const { seed = 11 } = Astro.props;
+const paths = contours({ width: 1600, height: 1000, peaks: 5, rings: 11, seed });
+---
+
+<div class="c-atmos" aria-hidden="true">
+  <svg viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice">
+    {paths.map((d) => (
+      <path d={d} />
+    ))}
+  </svg>
+</div>
+
+<script>
+  // 带 data-accent 的元素：悬停 / 聚焦时预览强调色，点击后固定
+  const root = document.documentElement;
+  let pinned = getComputedStyle(root).getPropertyValue('--accent').trim();
+  const set = (c: string) => root.style.setProperty('--accent', c);
+
+  document.querySelectorAll<HTMLElement>('[data-accent]').forEach((el) => {
+    const color = el.dataset.accent ?? pinned;
+    const preview = () => set(color);
+    const restore = () => set(pinned);
+    el.addEventListener('pointerenter', preview);
+    el.addEventListener('focus', preview);
+    el.addEventListener('pointerleave', restore);
+    el.addEventListener('blur', restore);
+    if (el.matches('button[aria-pressed]')) {
+      el.addEventListener('click', () => {
+        pinned = color;
+        set(color);
+        const group = el.closest('[data-accent-group]');
+        group
+          ?.querySelectorAll('button[aria-pressed]')
+          .forEach((b) => b.setAttribute('aria-pressed', String(b === el)));
+        group?.dispatchEvent(new CustomEvent('accent-pick', { detail: el.dataset }));
+      });
+    }
+  });
+</script>

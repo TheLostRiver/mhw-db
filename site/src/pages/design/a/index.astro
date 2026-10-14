@@ -1,0 +1,296 @@
+---
+import '@fontsource-variable/noto-serif-sc';
+import '@fontsource-variable/noto-sans-sc';
+import '@fontsource-variable/fraunces/full.css';
+import '@fontsource-variable/fraunces/full-italic.css';
+import '@fontsource/lxgw-wenkai/500.css';
+import '../../../styles/directions/a.css';
+import DesignLayout from '../../../layouts/DesignLayout.astro';
+import ThemeToggle from '../../../components/design/ThemeToggle.astro';
+import Icon from '../../../components/design/Icon.astro';
+import ToolArt from '../../../components/design/ToolArt.astro';
+import { aiLink, aiMonsters, disclaimer, encyclopedia, projects, tools } from '../../../data/design-mock';
+
+const numerals = ['壹', '贰', '叁', '肆', '伍', '陆', '柒', '捌', '玖', '拾', '拾壹', '拾贰'];
+const toolArt = ['builder', 'damage', 'map', 'cover', 'calendar', 'dice'] as const;
+const log = [
+  { date: '10·14', title: '数据管线 v1 开工', desc: '从 chunk 解包，四语文本与装备数据', tag: '数据' },
+  { date: '10·14', title: '视觉方向静态稿', desc: '三个方向的首页与配装器', tag: '设计' },
+  { date: '10·13', title: '怪物 AI 解析：煌黑龙', desc: 'AI 解析站新增第 5 只怪物', tag: 'AI' },
+];
+---
+
+<DesignLayout title="方向 A · 调查手记 — mhw-db" direction="a">
+  <div class="a-page">
+    <header class="a-top">
+      <a class="a-brand" href="/design/a/">
+        <span class="a-brand__cn">新大陆调查资料库</span>
+        <span class="a-brand__lat">mhw·db</span>
+      </a>
+      <nav class="a-nav" aria-label="主导航">
+        <a class="a-link" href="#" aria-current="page">
+          百科
+        </a>
+        <a class="a-link" href="/design/a/builder/">
+          配装
+        </a>
+        <a class="a-link" href="#">
+          地图
+        </a>
+        <a class="a-link" href="#">
+          伤害
+        </a>
+        <a class="a-link" href="#">
+          封面
+        </a>
+        <a class="a-link" href="#">
+          更新
+        </a>
+      </nav>
+      <div class="a-top__tools">
+        <label class="a-search">
+          <Icon name="search" size={16} />
+          <span class="visually-hidden">站内检索</span>
+          <input type="search" placeholder="检索怪物、装备、技能……" />
+          <kbd>/</kbd>
+        </label>
+        <ThemeToggle />
+      </div>
+    </header>
+
+    <main>
+      <section class="a-mast">
+        <aside class="a-vert a-reveal" aria-hidden="true">
+          调查团资料室 · <b>第一卷</b>
+        </aside>
+
+        <div>
+          <div class="a-issue a-reveal" style="--i:1">
+            <span class="a-kicker">Vol. I — Monster Hunter: World · Iceborne</span>
+            <span>数据版本 15.xx（示意）</span>
+            <span>二〇二六年十月</span>
+          </div>
+          <h1 class="a-hero a-reveal" style="--i:2">
+            <span>把新大陆</span>
+            <span>
+              收进<em>一册手记</em>。
+            </span>
+          </h1>
+          <p class="a-deck a-reveal" style="--i:3">
+            怪物、武器、防具、技能与地图，全部从游戏文件解包整理，每一条数据都能追溯到出处。配装、伤害推算与封面制作，也在同一本手记里完成。
+          </p>
+          <div class="a-cta a-reveal" style="--i:4">
+            <a class="a-btn" href="/design/a/builder/">
+              翻到配装实验室 <Icon name="arrowRight" size={16} />
+            </a>
+            <a class="a-btn a-btn--ghost" href="#contents">
+              浏览目录
+            </a>
+          </div>
+          <dl class="a-facts a-reveal" style="--i:5">
+            <div>
+              <dt>收录条目</dt>
+              <dd>
+                4,812<small>示意</small>
+              </dd>
+            </div>
+            <div>
+              <dt>文本语言</dt>
+              <dd>
+                4<small>简繁日英</small>
+              </dd>
+            </div>
+            <div>
+              <dt>AI 解析</dt>
+              <dd>
+                5<small>只</small>
+              </dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="a-side a-reveal" style="--i:4">
+          <figure class="a-specimen">
+            <div class="a-plate">
+              <span class="a-plate__corner a-plate__corner--tl">Plate I · em013</span>
+              <span class="a-plate__glyph" aria-hidden="true">
+                黑
+              </span>
+              <span class="a-stamp" aria-hidden="true">
+                已收录
+              </span>
+              <span class="a-plate__corner a-plate__corner--br">图版由游戏图标生成</span>
+            </div>
+            <figcaption>
+              <div class="a-specimen__name">
+                黑龙 <i>Fatalis</i>
+              </div>
+              <dl>
+                <dt>种别</dt>
+                <dd>古龙种</dd>
+                <dt>AI 解析</dt>
+                <dd>
+                  <a class="a-link" href={aiLink('em013_00')}>
+                    查看完整 AI 解析 ↗
+                  </a>
+                </dd>
+                <dt>本页</dt>
+                <dd>肉质热力图、部位耐久、掉落率（里程碑 7）</dd>
+              </dl>
+            </figcaption>
+          </figure>
+          <p class="a-specimen__note a-note" aria-hidden="true">
+            <svg
+              width="40"
+              height="40"
+              viewBox="0 0 40 40"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.6"
+              stroke-linecap="round"
+            >
+              <path d="M34 36C30 22 22 12 6 6" />
+              <path d="M5 15 6 6l9-1" />
+            </svg>
+            <span>
+              开场为什么不扇火？
+              <br />
+              条件写在 AI 速览里
+            </span>
+          </p>
+        </div>
+      </section>
+
+      <section class="a-contents" id="contents">
+        <div class="a-section-head">
+          <span class="a-num">目</span>
+          <h2>目录</h2>
+          <span class="a-kicker">Contents — encyclopedia</span>
+        </div>
+        <ol class="a-toc">
+          {encyclopedia.map((e, i) => (
+            <li class="a-reveal" style={`--i:${i + 2}`}>
+              <a href={e.href}>
+                <span class="a-toc__no">{numerals[i]}</span>
+                <span class="a-toc__title">{e.label}</span>
+                <span class="a-toc__leader" />
+                <span class="a-toc__desc">{e.desc}</span>
+              </a>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      <section class="a-tools">
+        <div class="a-section-head">
+          <span class="a-num">器</span>
+          <h2>工具图版</h2>
+          <span class="a-kicker">Plates — tools</span>
+        </div>
+        <div class="a-plates">
+          {tools.map((t, i) => (
+            <a href={i === 0 ? '/design/a/builder/' : t.href}>
+              <span class="a-plates__no">
+                <span>No. {String(i + 1).padStart(2, '0')}</span>
+                <Icon name="arrowUpRight" size={16} />
+              </span>
+              <ToolArt name={toolArt[i] ?? 'builder'} class="a-plates__art" />
+              <div>
+                <h3>{t.label}</h3>
+                <p>{t.desc}</p>
+              </div>
+            </a>
+          ))}
+        </div>
+      </section>
+
+      <section class="a-ai">
+        <div class="a-section-head">
+          <span class="a-num">智</span>
+          <h2>AI 速览 · 已收录五种</h2>
+          <a class="a-kicker a-link" href="https://mhwi.helsincy.com">
+            mhwi.helsincy.com ↗
+          </a>
+        </div>
+        <div class="a-cards">
+          {aiMonsters.map((m) => (
+            <a class="a-card" href={aiLink(m.key)}>
+              <span class="a-card__glyph" aria-hidden="true">
+                {m.glyph}
+              </span>
+              <span class="a-card__name">{m.name}</span>
+              <span class="a-card__en">
+                {m.en} · {m.key}
+              </span>
+              <span class="a-card__go">
+                查看完整 AI 解析 <Icon name="arrowUpRight" size={13} />
+              </span>
+            </a>
+          ))}
+        </div>
+      </section>
+
+      <div class="a-two">
+        <section>
+          <div class="a-section-head">
+            <span class="a-num">记</span>
+            <h2>调查报告</h2>
+            <span class="a-kicker">Changelog</span>
+          </div>
+          <ul class="a-log">
+            {log.map((l) => (
+              <li>
+                <time>{l.date}</time>
+                <div>
+                  <b>{l.title}</b>
+                  <p>{l.desc}</p>
+                </div>
+                <span class="a-tag">{l.tag}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+        <section>
+          <div class="a-section-head">
+            <span class="a-num">作</span>
+            <h2>我的项目</h2>
+            <span class="a-kicker">by Helsincy</span>
+          </div>
+          <ul class="a-proj">
+            {projects.map((p) => (
+              <li>
+                <span class="a-proj__mono">{p.short}</span>
+                <div>
+                  <h3>{p.name}</h3>
+                  <p>{p.desc}</p>
+                  <div class="a-proj__links">
+                    <a class="a-link" href={p.site}>
+                      官网 ↗
+                    </a>
+                    <a class="a-link" href={p.repo}>
+                      仓库 ↗
+                    </a>
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+      </div>
+    </main>
+
+    <footer class="a-foot">
+      <p>{disclaimer}</p>
+      <div class="a-foot__meta">
+        <span>数据版本：示意</span>
+        <a class="a-link" href="#">
+          反馈
+        </a>
+        <a class="a-link" href="https://github.com/TheLostRiver/mhw-db">
+          GitHub
+        </a>
+        <span class="a-tag a-mock">静态稿 · 示意数据</span>
+      </div>
+    </footer>
+  </div>
+</DesignLayout>

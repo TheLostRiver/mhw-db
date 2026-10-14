@@ -1,0 +1,76 @@
+---
+import '@fontsource-variable/noto-sans-sc';
+import '@fontsource-variable/noto-serif-sc';
+import '../styles/tokens.css';
+import '../styles/base.css';
+import ThemeScript from '../components/design/ThemeScript.astro';
+import { disclaimer } from '../data/design-mock';
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="怪物猎人系列资料站，建设中。" />
+    <title>mhw-db · 建设中</title>
+    <ThemeScript />
+    <style is:global>
+      :root {
+        --c-bg: #f2f1ee;
+        --c-text: #16181b;
+        --c-focus: #16181b;
+        --c-accent-soft: rgb(0 0 0 / 0.1);
+        --font-body: 'Noto Sans SC Variable', sans-serif;
+      }
+      html[data-theme='dark'] {
+        --c-bg: #121315;
+        --c-text: #eceef0;
+        --c-focus: #eceef0;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>mhw-db</h1>
+      <p>怪物猎人：世界 冰原 资料与工具站，建设中。</p>
+      <p>
+        <a href="/design/">视觉方向静态稿 →</a>
+      </p>
+    </main>
+    <footer>{disclaimer}</footer>
+    <style>
+      body {
+        display: grid;
+        grid-template-rows: 1fr auto;
+        min-height: 100dvh;
+        padding: 24px;
+      }
+      main {
+        align-self: center;
+        justify-self: center;
+        text-align: center;
+      }
+      h1 {
+        font-family: 'Noto Serif SC Variable', serif;
+        font-weight: 800;
+        font-size: 3rem;
+      }
+      p {
+        margin-top: 8px;
+        opacity: 0.75;
+      }
+      a {
+        text-decoration: underline;
+        text-underline-offset: 4px;
+      }
+      footer {
+        max-width: 60em;
+        margin-inline: auto;
+        font-size: 12px;
+        opacity: 0.6;
+        text-align: center;
+      }
+    </style>
+  </body>
+</html>

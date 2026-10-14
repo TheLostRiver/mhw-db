@@ -1,0 +1,41 @@
+---
+/** 视觉方向静态稿的页面外壳。字体与方向样式由各页面自行引入。 */
+import ThemeScript from '../components/design/ThemeScript.astro';
+import '../styles/tokens.css';
+import '../styles/base.css';
+
+interface Props {
+  title: string;
+  direction: 'a' | 'b' | 'c';
+  description?: string;
+  bodyClass?: string;
+}
+
+const {
+  title,
+  direction,
+  description = '怪物猎人：世界 冰原 资料站 · 视觉方向静态稿',
+  bodyClass,
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="zh-CN" data-direction={direction}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <meta name="robots" content="noindex" />
+    <title>{title}</title>
+    <ThemeScript />
+  </head>
+  <body class={bodyClass}>
+    <slot />
+    <script is:inline>
+      // 选择器以 :target 打开；Esc 关闭
+      addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && location.hash === '#picker') location.hash = '';
+      });
+    </script>
+  </body>
+</html>

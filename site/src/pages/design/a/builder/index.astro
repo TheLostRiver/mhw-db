@@ -1,0 +1,453 @@
+---
+import '@fontsource-variable/noto-serif-sc';
+import '@fontsource-variable/noto-sans-sc';
+import '@fontsource-variable/fraunces/full.css';
+import '@fontsource-variable/fraunces/full-italic.css';
+import '@fontsource/lxgw-wenkai/500.css';
+import '../../../../styles/directions/a.css';
+import DesignLayout from '../../../../layouts/DesignLayout.astro';
+import ThemeToggle from '../../../../components/design/ThemeToggle.astro';
+import Icon, { type IconName } from '../../../../components/design/Icon.astro';
+import {
+  additionalSkills,
+  disclaimer,
+  gear,
+  pickerGroups,
+  searchResults,
+  searchTargets,
+  setBonus,
+  skills,
+  stats,
+  weapon,
+} from '../../../../data/design-mock';
+
+const partIcon: Record<string, IconName> = {
+  头部: 'head',
+  身体: 'chest',
+  腕部: 'arms',
+  腰部: 'waist',
+  脚部: 'legs',
+  护石: 'charm',
+};
+const sharpTotal = stats.sharpness.reduce((s, x) => s + x.len, 0);
+---
+
+<DesignLayout title="方向 A · 配装实验室 — mhw-db" direction="a">
+  <div class="a-page">
+    <header class="a-top">
+      <a class="a-brand" href="/design/a/">
+        <span class="a-brand__cn">新大陆调查资料库</span>
+        <span class="a-brand__lat">mhw·db</span>
+      </a>
+      <nav class="a-nav" aria-label="主导航">
+        <a class="a-link" href="/design/a/">
+          百科
+        </a>
+        <a class="a-link" href="/design/a/builder/" aria-current="page">
+          配装
+        </a>
+        <a class="a-link" href="#">
+          地图
+        </a>
+        <a class="a-link" href="#">
+          伤害
+        </a>
+        <a class="a-link" href="#">
+          封面
+        </a>
+        <a class="a-link" href="#">
+          更新
+        </a>
+      </nav>
+      <div class="a-top__tools">
+        <label class="a-search">
+          <Icon name="search" size={16} />
+          <span class="visually-hidden">站内检索</span>
+          <input type="search" placeholder="检索怪物、装备、技能……" />
+          <kbd>/</kbd>
+        </label>
+        <ThemeToggle />
+      </div>
+    </header>
+
+    <main>
+      <div class="a-lab-head">
+        <div>
+          <h1 class="a-reveal">配装实验室</h1>
+          <p class="a-reveal" style="--i:1">
+            <span class="a-kicker">Field record No. 0217</span>
+            <span>大剑 · 冰属性</span>
+            <span class="a-tag a-mock">示意数据</span>
+          </p>
+        </div>
+        <div class="a-toolbar a-reveal" style="--i:2" role="toolbar" aria-label="方案操作">
+          <button type="button" title="撤销 Ctrl+Z">
+            <Icon name="undo" size={16} />
+            撤销
+          </button>
+          <button type="button" title="重做 Ctrl+Y">
+            <Icon name="redo" size={16} />
+            重做
+          </button>
+          <div class="a-sets">
+            <button type="button" aria-pressed="true">
+              方案 A
+            </button>
+            <button type="button" aria-pressed="false">
+              B
+            </button>
+            <button type="button" aria-pressed="false">
+              C
+            </button>
+          </div>
+          <button type="button">
+            <Icon name="layers" size={16} />
+            并排比较
+          </button>
+          <button type="button">
+            <Icon name="share" size={16} />
+            分享
+          </button>
+          <button type="button">
+            <Icon name="image" size={16} />
+            导出图片
+          </button>
+        </div>
+      </div>
+
+      <div class="a-lab">
+        <section aria-labelledby="ledger-h">
+          <div class="a-col-head">
+            <h2 id="ledger-h">装备清单</h2>
+            <span class="a-kicker">Inventory</span>
+          </div>
+          <table class="a-ledger">
+            <thead>
+              <tr>
+                <th>部位</th>
+                <th>装备与饰品</th>
+                <th>镶嵌</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <span class="a-ledger__part">
+                    <Icon name="weapon" size={18} />
+                    武器
+                  </span>
+                </td>
+                <td>
+                  <div class="a-ledger__name">{weapon.name}</div>
+                  <div class="a-weapon-extra">
+                    <span>
+                      攻击 <b>{weapon.attack}</b>
+                    </span>
+                    <span>
+                      会心 <b>{weapon.affinity}%</b>
+                    </span>
+                    <span>
+                      {weapon.element.kind} <b>{weapon.element.value}</b>
+                    </span>
+                  </div>
+                  <div class="a-decos">
+                    {weapon.decos.map((d) => (
+                      <span>{d}</span>
+                    ))}
+                  </div>
+                </td>
+                <td>
+                  <span class="a-slots">
+                    {weapon.decoSlots.map((l) => (
+                      <span class="deco-slot" data-lv={l} data-filled>
+                        {l}
+                      </span>
+                    ))}
+                  </span>
+                </td>
+                <td>
+                  <a class="a-ledger__swap a-link" href="#picker">
+                    更换
+                  </a>
+                </td>
+              </tr>
+              {gear.map((g) => (
+                <tr>
+                  <td>
+                    <span class="a-ledger__part">
+                      <Icon name={partIcon[g.slot] ?? 'gem'} size={18} />
+                      {g.slot}
+                    </span>
+                  </td>
+                  <td>
+                    <div class="a-ledger__name">{g.name}</div>
+                    <div class="a-ledger__sub">{g.skills}</div>
+                    {g.decos.length > 0 && (
+                      <div class="a-decos">
+                        {g.decos.map((d) => (
+                          <span>{d}</span>
+                        ))}
+                      </div>
+                    )}
+                  </td>
+                  <td>
+                    <span class="a-slots">
+                      {g.decoSlots.map((l, i) => (
+                        <span class="deco-slot" data-lv={l} data-filled={i < g.decos.length ? '' : undefined}>
+                          {l || ''}
+                        </span>
+                      ))}
+                    </span>
+                  </td>
+                  <td>
+                    <a class="a-ledger__swap a-link" href="#picker">
+                      更换
+                    </a>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+
+        <section aria-labelledby="skills-h">
+          <div class="a-col-head">
+            <h2 id="skills-h">技能刻度</h2>
+            <span class="a-kicker">{skills.length} skills</span>
+          </div>
+          <ul class="a-rulers">
+            {skills.map((s) => (
+              <li data-maxed={s.level >= s.max ? '' : undefined}>
+                <span class="a-rulers__name">{s.name}</span>
+                <span class="a-ruler" style={`--n:${s.max}`} aria-hidden="true">
+                  {Array.from({ length: s.max }, (_, k) => (
+                    <span
+                      style={`--k:${k}`}
+                      data-on={k < s.level ? '' : undefined}
+                      data-over={s.over && k === s.max - 1 ? '' : undefined}
+                    />
+                  ))}
+                </span>
+                <span class="a-rulers__lv">
+                  <b>{s.level}</b>/{s.max}
+                </span>
+              </li>
+            ))}
+          </ul>
+          {setBonus.map((b) => (
+            <p class="a-setbonus">
+              {b.name} · {b.active}
+            </p>
+          ))}
+          <p class="a-note" style="margin-top:12px;font-size:14px">
+            攻击溢出 1 级 —— 可换一颗珠子
+          </p>
+        </section>
+
+        <aside aria-labelledby="record-h">
+          <div class="a-col-head">
+            <h2 id="record-h">状态记录</h2>
+            <span class="a-kicker">Status</span>
+          </div>
+          <dl class="a-record__big">
+            <div>
+              <dt>攻击力</dt>
+              <dd>{stats.attack}</dd>
+            </div>
+            <div>
+              <dt>会心率</dt>
+              <dd>
+                {stats.affinity}
+                <small>%</small>
+              </dd>
+            </div>
+          </dl>
+          <dl class="a-record__rows">
+            <div>
+              <dt>属性</dt>
+              <dd class="a-el" style={`--el:${weapon.element.color}`}>
+                {weapon.element.kind}
+              </dd>
+              <dd>{stats.element}</dd>
+            </div>
+            <div>
+              <dt>锐利度</dt>
+              <dd class="a-sharp" aria-label="锐利度示意">
+                {stats.sharpness.map((s) => (
+                  <span style={`background:${s.color};width:${(s.len / sharpTotal) * 100}%`} />
+                ))}
+              </dd>
+              <dd>紫</dd>
+            </div>
+            <div>
+              <dt>防御力</dt>
+              <dd />
+              <dd>{stats.defense}</dd>
+            </div>
+          </dl>
+          <dl class="a-resist">
+            {stats.resist.map((r) => (
+              <div style={`--el:${r.color}`}>
+                <dt>{r.el}</dt>
+                <dd data-neg={r.value < 0 ? '' : undefined}>{r.value > 0 ? `+${r.value}` : r.value}</dd>
+              </div>
+            ))}
+          </dl>
+          <div class="a-record__expect">
+            <dl class="a-record__big" style="border:0;padding:0">
+              <div>
+                <dt>物理期望值</dt>
+                <dd>{stats.effectiveRaw}</dd>
+              </div>
+            </dl>
+            <p class="a-note">
+              按会心期望与锐利度修正推算；
+              <br />
+              结合怪物肉质见伤害模拟
+            </p>
+          </div>
+        </aside>
+      </div>
+
+      <section class="a-auto" aria-labelledby="auto-h">
+        <div class="a-section-head" style="border-top:0">
+          <span class="a-num">寻</span>
+          <h2 id="auto-h">自动配装</h2>
+          <span class="a-kicker">Solver — Web Worker · Rust/WASM</span>
+        </div>
+        <div class="a-auto__grid">
+          <div>
+            <h3>目标技能</h3>
+            <div class="a-chips">
+              {searchTargets.map((t) => (
+                <span class="a-chip">
+                  {t.name}
+                  <b>{t.level}</b>
+                </span>
+              ))}
+            </div>
+            <ul class="a-conds">
+              <li>
+                <Icon name="check" size={15} />
+                武器槽 4·4·2
+              </li>
+              <li>
+                <Icon name="check" size={15} />
+                只用已持有的饰品
+              </li>
+              <li>
+                <Icon name="check" size={15} />
+                防御 ≥ 650，冰耐性 ≥ 0
+              </li>
+              <li>
+                <Icon name="lock" size={15} />
+                锁定：攻击护石5
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h3>
+              结果 <span class="a-kicker">已找到 128 套 · 搜索中 64%</span>
+            </h3>
+            <div class="a-progress">
+              <span></span>
+            </div>
+            <table class="a-results">
+              <thead>
+                <tr>
+                  <th>序</th>
+                  <th>防御</th>
+                  <th>空余槽</th>
+                  <th>附带技能</th>
+                  <th>期望值</th>
+                </tr>
+              </thead>
+              <tbody>
+                {searchResults.map((r, i) => (
+                  <tr style={`--i:${i}`}>
+                    <td>No.{r.rank}</td>
+                    <td class="num">{r.defense}</td>
+                    <td class="num">{r.free}</td>
+                    <td>{r.extra}</td>
+                    <td class="num">{r.expect.toFixed(1)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div>
+            <h3>
+              追加技能 <span class="a-kicker">还能再加</span>
+            </h3>
+            <ul class="a-extra">
+              {additionalSkills.map((s) => (
+                <li>
+                  {s.name}
+                  <b>+{s.max}</b>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <div class="a-mobilebar" role="group" aria-label="状态摘要">
+        <dl>
+          <dt>攻击</dt>
+          <dd>{stats.attack}</dd>
+        </dl>
+        <dl>
+          <dt>会心</dt>
+          <dd>{stats.affinity}%</dd>
+        </dl>
+        <dl>
+          <dt>期望</dt>
+          <dd>{stats.effectiveRaw}</dd>
+        </dl>
+        <a class="a-btn" href="#auto-h">
+          搜索
+        </a>
+      </div>
+    </main>
+
+    <footer class="a-foot">
+      <p>{disclaimer}</p>
+      <div class="a-foot__meta">
+        <span>数据版本：示意</span>
+        <span class="a-tag a-mock">静态稿 · 示意数据</span>
+      </div>
+    </footer>
+  </div>
+
+  <div class="a-picker" id="picker" role="dialog" aria-modal="true" aria-labelledby="picker-h">
+    <div class="a-picker__card">
+      <div class="a-picker__head">
+        <h2 id="picker-h">选择武器 · 大剑</h2>
+        <a href="#" aria-label="关闭">
+          <Icon name="close" />
+        </a>
+      </div>
+      <label class="a-picker__search">
+        <Icon name="search" />
+        <span class="visually-hidden">搜索武器</span>
+        <input type="search" placeholder="名称、拼音或首字母，如 ybzy" value="冰" />
+        <kbd>Esc</kbd>
+      </label>
+      <div class="a-picker__list">
+        {pickerGroups.map((g) => (
+          <>
+            <p class="a-picker__group">{g.group}</p>
+            {g.items.map((it) => (
+              <a href="#" aria-current={it === weapon.name ? 'true' : undefined}>
+                <span>{it}</span>
+                <span class="a-toc__leader" />
+                <small>R12</small>
+              </a>
+            ))}
+          </>
+        ))}
+      </div>
+    </div>
+  </div>
+</DesignLayout>

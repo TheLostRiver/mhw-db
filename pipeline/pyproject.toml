@@ -1,0 +1,34 @@
+[project]
+name = "mhdb"
+version = "0.1.0"
+description = "mhw-db 数据管线：解包、解析、图片转换、差异报告"
+requires-python = ">=3.12"
+dependencies = [
+    "fonttools[woff]>=4.55",
+    "pillow>=12",
+    "texture2ddecoder>=1.0.5",
+]
+
+[project.scripts]
+mhdb = "mhdb.cli:main"
+
+[dependency-groups]
+dev = ["pytest>=8", "ruff>=0.6"]
+
+[build-system]
+requires = ["uv_build>=0.11,<0.12"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-root = ""
+
+[tool.ruff]
+line-length = 110
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["game: 依赖本地解包结果的对照测试（缺文件时跳过）"]

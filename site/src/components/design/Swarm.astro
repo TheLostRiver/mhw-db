@@ -1,0 +1,185 @@
+---
+/**
+ * 导虫光点：沿流场漂移，搜索框获得焦点时向它聚拢，鼠标附近轻微吸引。
+ * 颜色取 --c-accent；不可见时暂停；减少动效时只画一帧静态画面。
+ */
+interface Props {
+  /** 聚拢目标的 CSS 选择器 */
+  target: string;
+  count?: number;
+}
+
+const { target, count = 64 } = Astro.props;
+---
+
+<canvas class="b-swarm" data-target={target} data-count={count} aria-hidden="true"></canvas>
+
+<script>
+  type Mote = { x: number; y: number; vx: number; vy: number; r: number; phase: number; speed: number };
+
+  for (const canvas of document.querySelectorAll<HTMLCanvasElement>('canvas.b-swarm')) {
+    const ctx = canvas.getContext('2d');
+    const host = canvas.parentElement;
+    if (!ctx || !host) continue;
+    const goal = document.querySelector<HTMLElement>(canvas.dataset.target ?? '');
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const count = Number(canvas.dataset.count ?? 64);
+    let w = 0;
+    let h = 0;
+    let dpr = 1;
+    let color = '#5cf2b4';
+    let dark = true;
+    let sprite: HTMLCanvasElement | null = null;
+    let focused = false;
+    let visible = true;
+    let raf = 0;
+    const pointer = { x: -1e4, y: -1e4 };
+    const motes: Mote[] = [];
+
+    const makeSprite = () => {
+      const s = document.createElement('canvas');
+      const size = 64;
+      s.width = s.height = size;
+      const g = s.getContext('2d')!;
+      const grad = g.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
+      grad.addColorStop(0, color);
+      grad.addColorStop(0.18, color);
+      grad.addColorStop(0.32, color + '66');
+      grad.addColorStop(1, color + '00');
+      g.fillStyle = grad;
+      g.fillRect(0, 0, size, size);
+      sprite = s;
+    };
+
+    const readTheme = () => {
+      const v = getComputedStyle(document.documentElement).getPropertyValue('--c-accent').trim();
+      color = /^#[0-9a-f]{6}$/i.test(v) ? v : '#5cf2b4';
+      dark = document.documentElement.dataset.theme !== 'light';
+      makeSprite();
+    };
+
+    const resize = () => {
+      const rect = host.getBoundingClientRect();
+      dpr = Math.min(devicePixelRatio || 1, 2);
+      w = rect.width;
+      h = rect.height;
+      canvas.width = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    };
+
+    const seed = () => {
+      motes.length = 0;
+      for (let i = 0; i < count; i++) {
+        motes.push({
+          x: Math.random() * w,
+          y: Math.random() * h,
+          vx: 0,
+          vy: 0,
+          r: 2 + Math.random() * 5,
+          phase: Math.random() * Math.PI * 2,
+          speed: 0.25 + Math.random() * 0.5,
+        });
+      }
+    };
+
+    const goalPoint = () => {
+      if (!goal) return { x: w / 2, y: h / 2, rx: 200, ry: 30 };
+      const g = goal.getBoundingClientRect();
+      const c = host.getBoundingClientRect();
+      return {
+        x: g.left - c.left + g.width / 2,
+        y: g.top - c.top + g.height / 2,
+        rx: g.width / 2 + 24,
+        ry: g.height / 2 + 18,
+      };
+    };
+
+    const draw = (t: number) => {
+      ctx.clearRect(0, 0, w, h);
+      ctx.globalCompositeOperation = dark ? 'lighter' : 'source-over';
+      const gp = goalPoint();
+      for (let i = 0; i < motes.length; i++) {
+        const m = motes[i]!;
+        // 流场：缓慢变化的正弦场
+        const a =
+          Math.sin(m.x * 0.004 + t * 0.00012) * 1.6 + Math.cos(m.y * 0.005 - t * 0.0001) * 1.6 + m.phase;
+        let ax = Math.cos(a) * 0.035 * m.speed;
+        let ay = Math.sin(a) * 0.035 * m.speed;
+        if (focused) {
+          // 聚拢到搜索框外围的椭圆轨道上
+          const ang = m.phase + t * 0.0004 * m.speed * (i % 2 ? 1 : -1);
+          const tx = gp.x + Math.cos(ang) * gp.rx * (0.85 + (i % 5) * 0.06);
+          const ty = gp.y + Math.sin(ang) * gp.ry * (1.4 + (i % 3) * 0.5);
+          ax += (tx - m.x) * 0.0016;
+          ay += (ty - m.y) * 0.0016;
+        } else {
+          const dx = pointer.x - m.x;
+          const dy = pointer.y - m.y;
+          const d2 = dx * dx + dy * dy;
+          if (d2 < 160 * 160) {
+            ax += dx * 0.00018;
+            ay += dy * 0.00018;
+          }
+        }
+        m.vx = (m.vx + ax) * 0.965;
+        m.vy = (m.vy + ay) * 0.965;
+        m.x += m.vx;
+        m.y += m.vy;
+        if (m.x < -20) m.x = w + 20;
+        if (m.x > w + 20) m.x = -20;
+        if (m.y < -20) m.y = h + 20;
+        if (m.y > h + 20) m.y = -20;
+        const flicker = 0.55 + 0.45 * Math.sin(t * 0.002 * m.speed + m.phase * 3);
+        const size = m.r * 4 * (0.8 + flicker * 0.35);
+        ctx.globalAlpha = (dark ? 0.85 : 0.55) * flicker;
+        if (sprite) ctx.drawImage(sprite, m.x - size / 2, m.y - size / 2, size, size);
+      }
+      ctx.globalAlpha = 1;
+    };
+
+    const loop = (t: number) => {
+      draw(t);
+      raf = visible && !document.hidden ? requestAnimationFrame(loop) : 0;
+    };
+
+    const start = () => {
+      if (reduced) return draw(0);
+      if (!raf) raf = requestAnimationFrame(loop);
+    };
+
+    readTheme();
+    resize();
+    seed();
+    start();
+
+    new ResizeObserver(() => {
+      resize();
+      if (reduced) draw(0);
+    }).observe(host);
+    new MutationObserver(() => {
+      readTheme();
+      if (reduced) draw(0);
+    }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    new IntersectionObserver(([e]) => {
+      visible = !!e?.isIntersecting;
+      if (visible) start();
+    }).observe(host);
+    document.addEventListener('visibilitychange', () => !document.hidden && start());
+    host.addEventListener('pointermove', (e) => {
+      const r = host.getBoundingClientRect();
+      pointer.x = e.clientX - r.left;
+      pointer.y = e.clientY - r.top;
+    });
+    host.addEventListener('pointerleave', () => {
+      pointer.x = pointer.y = -1e4;
+    });
+    goal?.addEventListener('focusin', () => {
+      focused = true;
+      if (reduced) draw(0);
+    });
+    goal?.addEventListener('focusout', () => {
+      focused = false;
+    });
+  }
+</script>

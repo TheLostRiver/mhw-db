@@ -1,0 +1,307 @@
+---
+import '@fontsource-variable/noto-sans-sc';
+import '@fontsource-variable/bricolage-grotesque';
+import '../../../styles/directions/c.css';
+import DesignLayout from '../../../layouts/DesignLayout.astro';
+import ThemeToggle from '../../../components/design/ThemeToggle.astro';
+import Icon from '../../../components/design/Icon.astro';
+import ToolArt from '../../../components/design/ToolArt.astro';
+import Atmos from '../../../components/design/Atmos.astro';
+import { aiLink, aiMonsters, disclaimer, encyclopedia, projects, regions } from '../../../data/design-mock';
+
+const start = regions.find((r) => r.id === 'st108') ?? regions[0]!;
+const glyphs = ['怪', '武', '防', '石', '珠', '技', '物', '任', '魔', '生', '饭', '祭'];
+---
+
+<DesignLayout title="方向 C · 地脉 — mhw-db" direction="c">
+  <Atmos />
+
+  <header class="c-nav c-glass">
+    <a class="c-logo" href="/design/c/">
+      <svg
+        width="22"
+        height="22"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.8"
+        aria-hidden="true"
+      >
+        <path d="M12 3c5 0 9 3.6 9 8.2S17.4 21 12 21 3 17.4 3 12.6 7 3 12 3Z" />
+        <path d="M12 7.5c2.8 0 5 2 5 4.6s-2.1 4.9-5 4.9-5-2-5-4.6 2.2-4.9 5-4.9Z" />
+        <circle cx="12" cy="12.2" r="1.4" fill="currentColor" />
+      </svg>
+      mhw·db
+    </a>
+    <nav class="c-nav__links" aria-label="主导航">
+      <a href="#" aria-current="page">
+        百科
+      </a>
+      <a href="/design/c/builder/">配装</a>
+      <a href="#">伤害</a>
+      <a href="#">地图</a>
+      <a href="#">封面</a>
+    </nav>
+    <button class="c-nav__search" type="button" aria-label="搜索">
+      <Icon name="search" size={16} />
+      <span>搜索新大陆</span>
+      <kbd>/</kbd>
+    </button>
+    <ThemeToggle />
+  </header>
+
+  <main class="c-wrap">
+    <section class="c-hero">
+      <div>
+        <p class="c-eyebrow c-reveal">Monster Hunter World · Iceborne</p>
+        <h1 class="c-display c-reveal" style="--i:1">
+          <span>狩猎之前，</span>
+          <span class="c-grad">先读懂新大陆</span>
+        </h1>
+        <p class="c-lede c-reveal" style="--i:2">
+          每一只怪物的肉质与习性，每一处采集点的位置，每一件装备的来历——全部解包自游戏数据，按地区、按怪物为你重新组织。
+        </p>
+        <div class="c-cta c-reveal" style="--i:3">
+          <a class="c-btn c-btn--accent" href="/design/c/builder/">
+            开始配装 <Icon name="arrowRight" size={18} />
+          </a>
+          <a class="c-btn c-btn--glass" href="#">
+            打开交互地图
+          </a>
+        </div>
+        <div class="c-regions c-reveal" style="--i:4" data-accent-group>
+          {regions.map((r) => (
+            <button
+              class="c-region"
+              type="button"
+              data-accent={r.accent}
+              data-name={r.name}
+              data-en={r.en}
+              data-glyph={r.glyph}
+              aria-pressed={r.id === start.id ? 'true' : 'false'}
+              style={`--tint:${r.accent}`}
+            >
+              <i>{r.glyph}</i>
+              {r.name}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <aside class="c-feature c-glass c-reveal" style="--i:3" aria-live="polite">
+        <span class="c-feature__glyph" data-f="glyph" aria-hidden="true">
+          {start.glyph}
+        </span>
+        <p class="c-eyebrow" style="position:relative">
+          当前地区
+        </p>
+        <h2 class="c-feature__title" data-f="name">
+          {start.name}
+        </h2>
+        <p class="c-feature__en" data-f="en">
+          {start.en}
+        </p>
+        <dl>
+          <div>
+            <dt>区域</dt>
+            <dd>
+              16<small>示意</small>
+            </dd>
+          </div>
+          <div>
+            <dt>采集点</dt>
+            <dd>
+              128<small>示意</small>
+            </dd>
+          </div>
+          <div>
+            <dt>环境生物</dt>
+            <dd>
+              24<small>示意</small>
+            </dd>
+          </div>
+        </dl>
+        <div class="c-feature__go">
+          <span>悬停地区可预览配色</span>
+          <a href="#">
+            查看地图 <Icon name="arrowRight" size={15} />
+          </a>
+        </div>
+      </aside>
+    </section>
+
+    <section class="c-sec">
+      <div class="c-sec__head">
+        <h2>百科</h2>
+        <p>12 个分类 · 横向滑动</p>
+      </div>
+      <div class="c-rail">
+        {encyclopedia.map((e, i) => (
+          <a class="c-glass" href={e.href}>
+            <span class="c-rail__no">{String(i + 1).padStart(2, '0')}</span>
+            <span class="c-rail__glyph" aria-hidden="true">
+              {glyphs[i]}
+            </span>
+            <div>
+              <h3>{e.label}</h3>
+              <p>{e.desc}</p>
+            </div>
+          </a>
+        ))}
+      </div>
+    </section>
+
+    <section class="c-sec" style="padding-top:var(--space-10)">
+      <div class="c-sec__head">
+        <h2>工具</h2>
+        <p>计算密集的部分在 Web Worker 中运行，不卡界面</p>
+      </div>
+      <div class="c-bento">
+        <a class="c-glass is-big" href="/design/c/builder/">
+          <div class="c-mini" aria-hidden="true">
+            <div>
+              攻击<span style="--v:100%"></span>
+            </div>
+            <div>
+              看破<span style="--v:100%"></span>
+            </div>
+            <div>
+              超会心<span style="--v:100%"></span>
+            </div>
+            <div>
+              挑战者<span style="--v:71%"></span>
+            </div>
+            <div>
+              匠<span style="--v:60%"></span>
+            </div>
+          </div>
+          <div>
+            <h3>配装器</h3>
+            <p>手动与自动配装、追加技能搜索、多方案比较</p>
+          </div>
+        </a>
+        <a class="c-glass" href="#">
+          <ToolArt name="damage" class="c-bento__art" width={110} />
+          <div>
+            <h3>伤害模拟</h3>
+            <p>动作值 × 肉质 × 技能</p>
+          </div>
+        </a>
+        <a class="c-glass" href="#">
+          <ToolArt name="cover" class="c-bento__art" width={110} />
+          <div>
+            <h3>封面生成</h3>
+            <p>图层画布，4K 导出</p>
+          </div>
+        </a>
+        <a class="c-glass is-wide" href="#">
+          <ToolArt name="map" class="c-bento__art" width={150} />
+          <div>
+            <h3>交互地图</h3>
+            <p>采集点、环境生物、路线规划与测距</p>
+          </div>
+        </a>
+        <a class="c-glass" href="#">
+          <ToolArt name="calendar" class="c-bento__art" width={110} />
+          <div>
+            <h3>怪猎历</h3>
+            <p>游戏内日期与活动轮换</p>
+          </div>
+        </a>
+        <a class="c-glass" href="#">
+          <ToolArt name="dice" class="c-bento__art" width={110} />
+          <div>
+            <h3>概率模拟</h3>
+            <p>炼金、抽选期望次数</p>
+          </div>
+        </a>
+        <a class="c-glass is-wide" href="#">
+          <ToolArt name="tree" class="c-bento__art" width={150} />
+          <div>
+            <h3>武器派生树</h3>
+            <p>14 种武器的强化路线与素材</p>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <section class="c-sec">
+      <div class="c-sec__head">
+        <h2>AI 速览</h2>
+        <p>悬停卡片，页面随怪物换色 · 数据来自 mhwi.helsincy.com</p>
+      </div>
+      <div class="c-ai">
+        {aiMonsters.map((m) => (
+          <a class="c-glass" href={aiLink(m.key)} style={`--tint:${m.tint}`} data-accent={m.tint}>
+            <span class="c-ai__glyph" aria-hidden="true">
+              {m.glyph}
+            </span>
+            <div>
+              <h3>{m.name}</h3>
+              <p>
+                {m.en}
+                <Icon name="arrowUpRight" size={14} />
+              </p>
+            </div>
+          </a>
+        ))}
+      </div>
+    </section>
+
+    <section class="c-sec">
+      <div class="c-sec__head">
+        <h2>我的项目</h2>
+        <p>by Helsincy</p>
+      </div>
+      <div class="c-proj">
+        {projects.map((p) => (
+          <article class="c-glass">
+            <span class="c-proj__mono">{p.short}</span>
+            <h3>{p.name}</h3>
+            <p>{p.desc}</p>
+            <div class="c-proj__links">
+              <a href={p.site}>
+                官网 <Icon name="arrowUpRight" size={12} />
+              </a>
+              <a href={p.repo}>
+                GitHub <Icon name="arrowUpRight" size={12} />
+              </a>
+            </div>
+          </article>
+        ))}
+      </div>
+    </section>
+
+    <footer class="c-foot c-glass">
+      <p>{disclaimer}</p>
+      <div class="c-foot__meta">
+        <span>数据版本：示意</span>
+        <a href="#">反馈</a>
+        <a href="https://github.com/TheLostRiver/mhw-db">GitHub</a>
+        <span class="c-pill c-pill--mock" style="height:26px">
+          静态稿 · 示意数据
+        </span>
+      </div>
+    </footer>
+  </main>
+
+  <script>
+    // 地区卡跟随所选地区更新
+    const group = document.querySelector('[data-accent-group]');
+    const card = document.querySelector('.c-feature');
+    const fill = (d: DOMStringMap) => {
+      card?.querySelectorAll<HTMLElement>('[data-f]').forEach((el) => {
+        const key = el.dataset.f as 'glyph' | 'name' | 'en';
+        if (d[key]) el.textContent = d[key] ?? '';
+      });
+    };
+    group?.addEventListener('accent-pick', (e) => fill((e as CustomEvent<DOMStringMap>).detail));
+    group?.querySelectorAll<HTMLElement>('[data-accent]').forEach((el) => {
+      el.addEventListener('pointerenter', () => fill(el.dataset));
+      el.addEventListener('pointerleave', () => {
+        const on = group.querySelector<HTMLElement>('[aria-pressed="true"]');
+        if (on) fill(on.dataset);
+      });
+    });
+  </script>
+</DesignLayout>

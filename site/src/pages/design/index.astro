@@ -1,0 +1,188 @@
+---
+import '@fontsource-variable/noto-sans-sc';
+import '@fontsource-variable/noto-serif-sc';
+import '@fontsource-variable/martian-mono/wdth.css';
+import '@fontsource-variable/fraunces/full-italic.css';
+import '../../styles/tokens.css';
+import '../../styles/base.css';
+import ThemeScript from '../../components/design/ThemeScript.astro';
+
+const directions = [
+  {
+    key: 'a',
+    name: '调查手记',
+    en: 'Field Journal',
+    desc: '编辑式排版、博物图鉴。纸与墨、朱砂强调、宋体标题、手写批注与印章。',
+    font: "'Noto Serif SC Variable', serif",
+    bg: '#f2ede2',
+    fg: '#1c1813',
+    accent: '#a8361f',
+  },
+  {
+    key: 'b',
+    name: '导虫',
+    en: 'Scoutfly',
+    desc: '深色优先的精密工具台。导虫萤绿是唯一发光色，等宽数字、网格与刻线，首页有导虫群。',
+    font: "'Noto Sans SC Variable', sans-serif",
+    bg: '#090c0e',
+    fg: '#e0ebe7',
+    accent: '#5cf2b4',
+  },
+  {
+    key: 'c',
+    name: '地脉',
+    en: 'Ley Lines',
+    desc: '分层磨砂与程序生成的等高线，强调色随地区 / 怪物平滑切换，得意黑斜体标题。',
+    font: "'MHDB Display', 'Noto Sans SC Variable', sans-serif",
+    bg: '#0b0d10',
+    fg: '#eef2f5',
+    accent: '#4fa3d6',
+  },
+];
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>视觉方向静态稿 — mhw-db</title>
+    <ThemeScript />
+    <style is:global>
+      @font-face {
+        font-family: 'MHDB Display';
+        src: url('/fonts/mhdb-display/MHDBDisplay-Oblique.woff2') format('woff2');
+        font-display: swap;
+      }
+      :root {
+        --c-bg: #ecebe8;
+        --c-text: #16181b;
+        --c-focus: #16181b;
+        --c-accent-soft: rgb(0 0 0 / 0.1);
+        --font-body: 'Noto Sans SC Variable', sans-serif;
+      }
+      html[data-theme='dark'] {
+        --c-bg: #121315;
+        --c-text: #eceef0;
+        --c-focus: #eceef0;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <p class="kicker">mhw-db · 里程碑 1 · 静态稿 · 示意数据</p>
+      <h1>三个视觉方向</h1>
+      <p class="lede">
+        每个方向都有「首页」与「配装器」两页，深浅两套主题（右上角切换，默认跟随系统），桌面与手机都做了适配。配装器里点「更换」可以打开带搜索的选择器。
+      </p>
+      <ul>
+        {directions.map((d) => (
+          <li style={`--bg:${d.bg};--fg:${d.fg};--ac:${d.accent};--ff:${d.font}`}>
+            <span class="tag">方向 {d.key.toUpperCase()}</span>
+            <h2>
+              {d.name}
+              <i>{d.en}</i>
+            </h2>
+            <p>{d.desc}</p>
+            <div class="links">
+              <a href={`/design/${d.key}/`}>首页 →</a>
+              <a href={`/design/${d.key}/builder/`}>配装器 →</a>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </main>
+    <style>
+      .wrap {
+        max-width: 1180px;
+        margin-inline: auto;
+        padding: 80px 24px;
+      }
+      .kicker {
+        font-family: 'Martian Mono Variable', monospace;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        opacity: 0.6;
+      }
+      h1 {
+        margin-top: 16px;
+        font-family: 'Noto Serif SC Variable', serif;
+        font-weight: 800;
+        font-size: clamp(2.5rem, 1.5rem + 4vw, 4.5rem);
+      }
+      .lede {
+        max-width: 46em;
+        margin-top: 16px;
+        opacity: 0.75;
+      }
+      ul {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        margin-top: 48px;
+      }
+      li {
+        display: grid;
+        grid-template-rows: auto auto 1fr auto;
+        gap: 12px;
+        min-height: 340px;
+        padding: 28px;
+        border-radius: 16px;
+        background: var(--bg);
+        color: var(--fg);
+        box-shadow: 0 0 0 1px rgb(127 127 127 / 0.2);
+        transition: transform 260ms cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      li:hover {
+        transform: translateY(-4px);
+      }
+      .tag {
+        font-family: 'Martian Mono Variable', monospace;
+        font-size: 11px;
+        color: var(--ac);
+      }
+      h2 {
+        font-family: var(--ff);
+        font-size: 2.4rem;
+        font-weight: 800;
+        line-height: 1.1;
+      }
+      h2 i {
+        display: block;
+        font-family: 'Fraunces Variable', serif;
+        font-weight: 400;
+        font-size: 1rem;
+        opacity: 0.6;
+      }
+      li p {
+        opacity: 0.8;
+        font-size: 0.95rem;
+      }
+      .links {
+        display: flex;
+        gap: 10px;
+      }
+      .links a {
+        padding: 8px 14px;
+        border-radius: 999px;
+        box-shadow: 0 0 0 1px var(--ac);
+        color: var(--ac);
+        font-size: 0.9rem;
+        font-weight: 600;
+      }
+      .links a:hover {
+        background: var(--ac);
+        color: var(--bg);
+      }
+      @media (max-width: 860px) {
+        ul {
+          grid-template-columns: 1fr;
+        }
+        li {
+          min-height: 0;
+        }
+      }
+    </style>
+  </body>
+</html>
