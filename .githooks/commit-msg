@@ -1,0 +1,6 @@
+#!/bin/sh
+# 拒绝带 Claude / Anthropic 署名的提交信息
+if grep -qiE 'co-authored-by:.*(claude|anthropic)|generated with .*claude|noreply@anthropic\.com' "$1"; then
+  echo "提交信息含 Claude 署名，已拒绝。" >&2
+  exit 1
+fi

@@ -1,0 +1,88 @@
+# ===== 游戏原始文件：绝不入库 =====
+# 解包输出、chunk、nativePC、Oodle 库、exe 内存转储
+data-raw/
+extracted/
+nativePC/
+chunk*.bin
+chunkG*.bin
+*.pkg
+oo2core_*.dll
+*.exe
+mhw_mem.bin
+*.dmp
+dump_module.py
+
+# 游戏原始格式（防止误放进仓库任何位置）
+*.tex
+*.dds
+*.gmd
+*.mib
+*.thk
+*.thklst
+*.lmt
+*.mod3
+*.mrl3
+*.sobj
+*.sobjl
+*.wp_dat
+*.wp_dat_g
+*.am_dat
+*.itm
+*.dtt*
+*.skl_dat
+*.skl_pt_dat
+*.deco
+*.ch_dat
+*.eq_crt
+*.eq_cus
+*.kire
+
+# 由管线从游戏贴图转换出的图片（不入库：本机生成后随 wrangler deploy 上传）
+public/assets/game/
+**/public/assets/game/
+
+# ===== 构建与依赖 =====
+node_modules/
+dist/
+.astro/
+.turbo/
+coverage/
+playwright-report/
+test-results/
+target/
+pkg/
+*.tsbuildinfo
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+*.egg-info/
+
+# Cloudflare 本地缓存（含账户信息）与本地密钥
+.wrangler/
+.dev.vars
+.env
+.env.*
+!.env.example
+
+# 编辑器 / 系统
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# Claude Code 本地设置（项目共享的 .claude/settings.json 需要入库）
+.claude/settings.local.json
+
+# 开发提示词（含本机路径），不入库
+mhw-db_开发提示词.md
+
+# 管线本地配置（游戏目录、Oodle 路径）
+pipeline/local.toml
