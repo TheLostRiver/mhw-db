@@ -7,7 +7,8 @@
     "build": "astro build",
     "preview": "astro preview",
     "typecheck": "astro check",
-    "test": "vitest run"
+    "test": "vitest run --exclude src/data/world/check.test.ts",
+    "data:check": "vitest run src/data/world/check.test.ts"
   },
   "dependencies": {
     "@astrojs/react": "^7.0.1",
@@ -21,10 +22,12 @@
     "immer": "^11.1.21",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
+    "zod": "^4.6.7",
     "zustand": "^5.0.15"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
+    "@types/node": "^24.19.2",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "typescript": "~6.0.3",

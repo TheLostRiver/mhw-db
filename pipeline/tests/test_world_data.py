@@ -1,0 +1,81 @@
+"""对照测试：用本地解包结果生成的 data/world/*.json，断言与游戏画面一致的数值。
+
+已核对的来源：用户提供的游戏截图（2026-10-14，装备详情与饰品界面）。缺少数据时跳过。
+"""
+
+import json
+
+import pytest
+
+from mhdb.config import DATA
+
+WORLD = DATA / "world"
+pytestmark = [
+    pytest.mark.game,
+    pytest.mark.skipif(not (WORLD / "skills.json").is_file(), reason="需要先运行 mhdb parse"),
+]
+
+
+def load(name: str, key: str) -> list[dict]:
+    return json.loads((WORLD / name).read_text(encoding="utf-8"))[key]
+
+
+def by_name(rows: list[dict], zh: str) -> dict:
+    hits = [r for r in rows if r["name"].get("zh-Hans") == zh]
+    assert hits, f"找不到 {zh}"
+    return hits[0]
+
+
+def test_black_fatalis_blade_matches_screenshot() -> None:
+    # 截图：黑龙玄刃 稀有度 12，攻击力 1632，龙属性 180，龙封力 大，镶嵌槽 4·4
+    w = by_name(load("weapons/great-sword.json", "weapons"), "黑龙玄刃")
+    assert w["rarity"] == 12
+    assert round(w["attack"] * 4.8) == 1632  # 数据存真实攻击力，大剑显示值 = ×4.8
+    assert w["element"] == {"type": "dragon", "value": 18}  # 显示值 = ×10
+    assert w["elderseal"] == 3
+    assert w["slots"] == [4, 4]
+    assert w["name"]["en"] == "Black Fatalis Blade"
+
+
+def test_critical_evasion_jewel_matches_screenshot() -> None:
+    # 截图：超心·回避珠【4】 = 超会心 1 + 回避性能 1
+    skills = {s["id"]: s for s in load("skills.json", "skills")}
+    d = by_name(load("decorations.json", "decorations"), "超心·回避珠【4】")
+    assert d["size"] == 4
+    assert {skills[s["id"]]["name"]["zh-Hans"]: s["level"] for s in d["skills"]} == {
+        "超会心": 1,
+        "回避性能": 1,
+    }
+
+
+def test_critical_boost_levels_match_screenshot() -> None:
+    # 截图：超会心 等级 1/2/3 = 会心攻击时的伤害倍率增强为 1.3 / 1.35 / 1.4 倍
+    s = by_name(load("skills.json", "skills"), "超会心")
+    assert s["maxLevel"] == 3
+    descs = [lv["desc"]["zh-Hans"].replace("\n", "") for lv in s["levels"]]
+    assert [x in d for x, d in zip(("1.3倍", "1.35倍", "1.4倍"), descs, strict=True)] == [True] * 3
+    assert [lv["params"][0] for lv in s["levels"]] == [130, 135, 140]
+
+
+def test_secret_skill_unlocks() -> None:
+    # 挑战者 6、7 级由「极意」类套装技能解锁；黑龙的传说 2 件解锁全部极意
+    skills = load("skills.json", "skills")
+    names = {s["id"]: s["name"]["zh-Hans"] for s in skills}
+    agitator = by_name(skills, "挑战者")
+    assert (agitator["baseMaxLevel"], agitator["maxLevel"]) == (5, 7)
+    unlocks = {(names[u["skill"]], u["level"]) for u in agitator["levels"][5]["unlockedBy"]}
+    assert ("黑龙的传说", 2) in unlocks
+
+
+def test_charm_and_armor() -> None:
+    charm = by_name(load("charms.json", "charms"), "挑战护石5")
+    assert charm["rarity"] == 12
+    hide = by_name(load("armor.json", "armor"), "精英·龙皮阿尔法")
+    assert hide["slot"] == "chest" and hide["slots"] == [4, 4, 3] and hide["rarity"] == 12
+    assert hide["series"]["name"]["en"] == "Fatalisα+"
+
+
+def test_every_record_has_source() -> None:
+    for name, key in (("items.json", "items"), ("armor.json", "armor"), ("decorations.json", "decorations")):
+        for r in load(name, key):
+            assert r["_src"]["file"].startswith("common/")

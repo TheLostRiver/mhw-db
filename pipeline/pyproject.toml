@@ -28,6 +28,8 @@ target-version = "py312"
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "UP", "B", "SIM"]
+# 行宽由 ruff format 负责；中文注释与字符串按双宽计，不再单独报 E501
+ignore = ["E501"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

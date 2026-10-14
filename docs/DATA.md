@@ -1,125 +1,126 @@
 # 数据来源与解析状态
 
-> 所有数据来自自己解包《怪物猎人：世界 冰原》（PC / Steam 版）。下表的文件路径都在 `D:\Tools\mhwi-ai\extracted\chunk_index.json`
-> 的 chunk 文件索引里确认存在（共 171,615 个文件）。表中括号里的内容说明是根据文件名 / 参考资料推断的，
-> 解析并与游戏内核对之前都算「未确认」。
+> 所有数据来自自己解包《怪物猎人：世界 冰原》（PC / Steam 版）。表中的字段含义分三档：
+> **已核对**（与游戏画面对照过）、**已验证结构**（文件大小与结构严格吻合、名称对得上，但数值未与画面逐一对照）、**未确认**。
 
-状态：⬜ 未开始 · 🟨 解析中 · ✅ 已解析并通过对照 · ❓ 有疑问（见第 4 节）
+状态：⬜ 未开始 · 🟨 已解析（结构验证） · ✅ 已解析并与游戏核对 · ❓ 有疑问（见第 5 节）
 
-## 1. 现有解包情况
+## 1. 管线
 
-**只从 chunk 解包，忽略游戏目录的 `nativePC/`**：本机 `nativePC/` 装有 Mod（含 `common/equip`），会覆盖装备数据。
+```bash
+cd pipeline
+uv run mhdb extract   # 按 manifest.toml 从 chunk 解包到 data-raw/world/（约 5900 个文件，9 秒）
+uv run mhdb parse     # → data/world/*.json（入库）
+uv run mhdb images    # → site/public/assets/game/world/（不入库）
+```
 
-`D:\Tools\mhwi-ai\extracted\` 目前只有怪物 AI 相关文件（THK、部分 dtt）、任务 `questData_*.mib`、一个 stage 区域文件，
-以及大部分 `common/text/*.gmd` 的**简中**版本。装备、物品、繁中 / 日 / 英文本、UI 贴图都还没解，里程碑 2 会按清单重新解包到 `data-raw/`。
+- **只从 chunk 解包，忽略游戏目录的 `nativePC/`**：本机 `nativePC/` 装有 Mod（含 `common/equip`），会覆盖装备数据。
+- 本机依赖（不入库，路径写在 `pipeline/local.toml`）：`oo2core_8_win64.dll`、`chunk.key`（MHWNoChunk 的子块密钥表）。
+- **数据版本**：exe 的版本资源是 0.0.0.0，读不到游戏版本号；改用 Steam `appmanifest_582010.acf` 的 `buildid`
+  （当前 15539686），加上 exe SHA-256 前缀与 chunk 指纹，写在 `data/world/meta.json`。
+  ❓ 标题画面显示的版本号（如 15.xx.xx）需要用户告知，或继续找数据来源。
+- 所有表格文件都用 `read_table` 读取：记录长度 × 记录数必须**恰好**等于文件长度，否则直接报错。
+- 每条记录带 `_src`（来源文件与行号）。
 
-## 2. 文件清单
+## 2. 文件格式
 
-### 2.1 文本
-
-| 内容 | 文件 | 状态 |
-|---|---|---|
-| 四语文本 | `common/text/**/*_{chS,chT,jpn,eng}.gmd`（共 11,040 个 gmd，含其他语种） | ⬜ |
-| 物品名称 / 说明 | `common/text/steam/item_*.gmd` | ⬜ |
-| 防具 / 系列 | `common/text/steam/armor_*.gmd`、`armor_series_*.gmd` | ⬜ |
-| 武器 | `common/text/steam/<武器种>_*.gmd`（如 `w_sword_*`、`whistle_*`）、`wep_series_*.gmd` | ⬜ |
-| 护石 | `common/text/steam/charm_*.gmd` | ⬜ |
-| 技能 | `common/text/vfont/skill_pt_*.gmd`（技能名）、`vfont/skill_*.gmd`（等级说明） | ⬜ |
-| 猫饭技能 / 狩猎笛旋律 / 装衣 | `vfont/catSkill_*.gmd`、`vfont/music_skill_*.gmd`、`vfont/a_skill_*.gmd` | ⬜ |
-| 怪物名 / 部位 / 图鉴 | `common/text/em_names_*.gmd`、`em_parts_*.gmd`、`em_info_*.gmd` | ⬜ |
-| 环境生物 | `common/text/ec_info_*.gmd` | ⬜ |
-| 任务 | `common/text/quest/q*_*.gmd` | ⬜ |
-| 随从装备 | `common/text/steam/ot_armor_*.gmd`、`ot_weapon_*.gmd` | ⬜ |
-
-### 2.2 装备与物品（`common/equip/`、`common/item/`）
-
-| 内容 | 文件 | 状态 |
-|---|---|---|
-| 物品 | `common/item/itemData.itm` | ⬜ |
-| 调合 | `common/item/itemMake.imk`、`itemMakeType.imt` | ⬜ |
-| 技能 | `common/equip/skill_point_data.skl_pt_dat`、`skill_data.skl_dat` | ⬜ |
-| 防具 | `armor.am_dat`、`amr_series.amrs`、`armor.eq_crt`（打造）、`arm_upgrade.arm_up`（强化） | ⬜ |
-| 护石 | `charm.ch_dat`、`charm.eq_crt` | ⬜ |
-| 饰品 | `deco.deco`；掉落表 `deco_lot.diot`、`deco_grade_lot.dglt` | ⬜ |
-| 近战武器 | `sword` `w_sword` `l_sword` `tachi` `hammer` `whistle` `lance` `g_lance` `s_axe` `c_axe` `rod` `.wp_dat` | ⬜ |
-| 远程武器 | `bow` `hbg` `lbg` `.wp_dat_g` | ⬜ |
-| 锐利度 | `kireaji.kire` | ⬜ |
-| 武器打造 / 派生 | `weapon.eq_crt`、`weapon.eq_cus` | ⬜ |
-| 武器专属参数 | `bottle_table.bbtbl`（瓶）、`shell_table.shl_tbl`（弹 / 炮击）、`wep_glan.wep_glan`、`wep_saxe.wep_saxe`、`wep_whistle.wep_wsl`、`wep_wsword.wep_wsd`、`rod_insect.rod_inse`、`insect*.eq_cus`、`gun_unique.gnuq`、`wp11_unique.bowuq`、`gunner_reload.gun_rd`、`gunner_shoot.gun_sd` | ⬜ |
-| 特殊武器抽选 / 觉醒 / 强化 | `em104_*`（`wp_custom`、`wp_upgrade`、`wp_exp`、`limit_break` 等）、`em117_*`（`lot` / `grade_lot`） | ⬜ ❓ 分别对应哪只怪物的武器（冥赤龙觉醒、搜刮武器等）待确认 |
-| 零件强化 / 解放 | `customParts.cus_pa` / `.cus_par`、`new_limit_break.new_lb` / `.new_lbr`、`limit_break_mat_*` | ⬜ |
-| 自定义外观 | `customOuter*.cus_ou`、`customOuterRecipe.cus_otr` | ⬜ |
-| 随从装备 | `otomoArmor.oam_dat`、`otomoWeapon.owp_dat`、`ot_equip.eq_crt`、`ot_series.amrs` | ⬜ |
-| 猫饭技能 | `cat_skill.cat_skill` | ⬜ |
-| 商店 | `shop.sed`、`shop_insect.sed` | ⬜ |
-
-### 2.3 怪物
-
-| 内容 | 文件 | 状态 |
-|---|---|---|
-| 公共参数 | `common/em/em_common_param.ecp`、`em_difficulty.dtt_dif`（任务倍率）、`em_rank.dtt_rnk`、`em_meat_soften.dtt_msf`（软化）、`em_rsiz.dtt_rsz` / `em_size_setting.em_ss`（体型） | ⬜（`dtt_dif` 已由 mhwi-ai 的 questdata.py 解析过） |
-| 每只怪物 | `em/emXXX/YY/data/emXXX.dtt_*`（`dtt_epg`、`dtt_eda`、`dtt_drp` 等，共约 20 种） | ⬜ ❓ 每种 dtt 对应的内容待逐一确认 |
-| 图标 | `ui/note/tex/micon/*.tex`（95 个） | ⬜ |
-
-### 2.4 任务、地图、其他
-
-| 内容 | 文件 | 状态 |
-|---|---|---|
-| 任务 | `quest/questData_*.mib`（Blowfish 加密，mhwi-ai 已有解密） | ⬜ |
-| 地图底图 | `ui/map/tex/maptex/stXXX/*.tex`（st101–109、聚魔之地 st109V2/V3、st201/202、st301–305、st403–417） | ⬜ |
-| 采集 / 怪物 / 环境生物点位 | `stage/stXXX/common/set/*.sobj`（`_gm` 采集、`_em` 怪物、`_ec` 环境生物等）、`*.sobjl` | ⬜ |
-| 采集物品表 | `stage/stXXX/common/data/stXXX*.itlot` | ⬜ |
-| 区域划分 | `stage/stXXX/common/zone/*.zon` | ⬜ |
-| 设施（随从探险队、植生研究所、交易等） | `common/facility/*`（`ex_map`、`swp*`、`trdr` 等） | ⬜ |
-| 随从 | `common/otomo/*` | ⬜ |
-| 玩家参数 | `common/pl/pl_param.plp`、`pl_skill_param.plsp`、`pl_item_param.plip`、`askill_param.asp`、`music_skill_efc.mske` | ⬜ |
-| 动作值 | **未找到** | ❓ 见第 4 节 |
-
-### 2.5 界面图标（游戏 UI 贴图）
-
-`.tex` 格式已核实（`pipeline/mhdb/formats/tex.py`）：magic `TEX\0`、版本 0x10，0x14 mip 数、0x18 宽、0x1C 高、
-0x24 像素格式、0xB8 起为各级 mip 偏移（u64）。目前只核实了格式 **0x1F = BC7**（UI 贴图都是这一种）；
-0x1A（`icon_normal_NM_NOMIP.tex`，法线贴图）及其他格式遇到时再核对。
-
-| 图集 | 尺寸 | 内容 | 状态 |
+| 格式 | 解析器 | 要点 | 状态 |
 |---|---|---|---|
-| `ui/common/tex/cmn_item00_ID.tex` | 1024² | 64px 网格 16×16：物品、防具五部位（编号 144–148 等）、14 种武器（160–173）、饰品宝石、衣装、护石等；灰度，运行时着色 | 🟨 已解码，编号与物品数据的对应待 2.3 |
-| `ui/common/tex/cmn_item00M_ID.tex` | 1024² | 同上的遮罩版（用途待确认） | ❓ |
-| `ui/common/tex/cmn_status00_ID.tex` | 512×1024 | 64px 网格 8 列：技能 / 状态图标（彩色） | 🟨 已解码，编号与技能数据的对应待 2.4 |
-| `ui/common/tex/common00_ID.tex` | 512² | 镶嵌槽框（三角数 = 槽位等级）、宝石、按钮等；非网格，需按坐标裁切 | 🟨 |
-| `ui/common/tex/decoration00_ID.tex` | 512² | 64px 数字 00–63 与徽章（用途待确认） | ❓ |
-| `ui/equip/tex/equip_menu_ID.tex`、`wp_upgrade_ID.tex` | — | 装备 / 武器客制界面的边框装饰 | 🟨 |
-| `ui/common/tex/cmn_micon00_ID.tex` 等 | — | 怪物小图标 | ⬜ |
-| `ui/**/*.gui` | — | 界面布局（含图集裁切坐标的可能性，待研究） | ⬜ |
+| chunk | `mhdb/chunk/reader.py` | 子块 0x40000 字节，Oodle 压缩 + 16 字节循环 XOR；改写自用户的 mhw_chunk.py | ✅ |
+| `.gmd` 文本 | `mhdb/formats/gmd.py` | 版本 0x10302；177 个文件字符串数多于键数，以字符串序号为主索引；样式标签 `<STYL MOJI_x_DEFAULT>`、`<ICON ALPHA>` 等 | ✅（3133 个文件全部通过） |
+| 定长记录表 | `mhdb/formats/table.py` | 头 `u32 magic 0x18091001, u16 版本, u32 条数` | ✅ |
+| `.tex` 贴图 | `mhdb/formats/tex.py` | magic `TEX\0`、版本 0x10；0x14 mip 数、0x18 宽、0x1C 高、0x24 格式；0xB8 起各 mip 偏移。只核实了格式 **0x1F = BC7** | ✅ |
+| `.uct` 颜色表 | `mhdb/build/world.py` | 头 12 字节；若干张表：u32 条数 + 每条 28 字节（u32 标记、RGBA、5 × f32） | 🟨 |
 
-稀有度颜色、饰品颜色的色表来源待找（候选：物品数据里的颜色编号 + 某个色表文件）。
+字段布局参照 [MHW-Editor](https://github.com/Synthlight/MHW-Editor) 的 010 模板（无许可证，只读作格式文档，未复制代码），
+结构写在 `mhdb/games/world/specs.py`，全部 28 张表与文件长度严格吻合。
 
-## 3. 参考资料（只当格式文档阅读，不复制代码）
+## 3. 已解析的数据（`data/world/`）
+
+| 输出 | 来源 | 条数 | 文本 | 状态 |
+|---|---|---|---|---|
+| `items.json` | `common/item/itemData.itm` | 2578 | `steam/item_*.gmd`，名称 = `id×2`，说明 = `id×2+1` | 🟨 |
+| `skills.json` | `skill_point_data.skl_pt_dat` + `skill_data.skl_dat` | 203 | 名称 `vfont/skill_pt` 的 `id×3`（读音 +1、说明 +2）；等级说明 `vfont/skill` 的 `2×行号+1` | ✅ 超会心 |
+| `decorations.json` | `common/item/skillGemParam.sgpa` | 404 | 名称取物品 | ✅ 超心·回避珠【4】 |
+| `armor.json` | `armor.am_dat`（`type 0`、部位 0–4） | 1779 | `steam/armor_*.gmd` 用记录里的名称 / 说明序号；系列名 `armor_series` 的 `set_id` | 🟨 |
+| `charms.json` | `armor.am_dat`（部位 5） | 334 | 同上 | ✅ 挑战护石5 稀有度 |
+| `mantles.json` | `common/equip/a_skill.ask` | 20 | `vfont/a_skill` 每件 4 条：名称、说明、占位、改名称 | 🟨 |
+| `weapons/*.json` | 14 个 `*.wp_dat` / `*.wp_dat_g` + `kireaji.kire` | 3700 | `steam/<武器>_*.gmd` | ✅ 黑龙玄刃 |
+| `colors.json` | `common/ui/ui_colortable.uct` | — | — | 🟨 |
+
+### 3.1 已确认的换算与含义
+
+| 项 | 结论 | 依据 |
+|---|---|---|
+| 稀有度 | 文件里从 0 开始，显示 = 值 + 1 | 黑龙玄刃文件值 11，画面稀有度 12 |
+| 武器攻击力 | 文件存真实攻击力；大剑显示 = ×4.8 | 黑龙玄刃 340 × 4.8 = 1632（画面 1632） |
+| 武器属性值 | 显示 = ×10 | 黑龙玄刃龙 18 → 画面 180 |
+| 龙封力 | 3 = 大 | 黑龙玄刃画面「大」 |
+| 属性编号 | 3 = 冰、5 = 龙 | 严冰之翼 / 黑龙玄刃 |
+| 技能参数 | 超会心 param_1 = 130 / 135 / 140 | 画面说明 1.3 / 1.35 / 1.4 倍 |
+| 极意解锁 | `skill_data` 的 unlock_1…6 是**同表的行号**，指向解锁该等级的套装技能等级 | 挑战者 6、7 级 ← 碎龙的真髓 3、黑龙的传说 2 等，文本对得上 |
+| 套装技能等级 | 套装技能的「等级」= 所需件数 | 黑龙的传说 2 / 4 级，说明对应 2 件、4 件效果 |
+| 防具部位 | `equip_slot` 0 头 1 身 2 腕 3 腰 4 脚 5 护石 | 名称 |
+| 防具类型 | `type` 0 普通防具、2 幻化服装；1 / 3 含 HARDUMMY 占位与联动装 | 名称（1 / 3 的含义 ❓） |
+| 防具变体 | `variant` 1 = α、2 = β | 名称（精英·…阿尔法 / 贝塔）；护石也有该字段，含义 ❓ |
+| 物品图标颜色 | `itemData.icon_color` 是 `ui_colortable` 第 1 张表（28 色）的序号 | 回复药 = 绿；超心·回避珠 = 15 号蓝紫，与画面一致 |
+
+### 3.2 推断（未与游戏核对）
+
+- `colors.json` 第 2 张表（12 色）是稀有度颜色、第 3 张（7 色）是锐利度颜色——条数与色相吻合，稀有度 12 的
+  #b4f5ff 与画面「稀有度 12」字色接近。第 4 张（2 色）用途不明。
+- 其他武器种的显示倍率（大剑以外）尚未核对，数据只存真实值。
+- 锐利度：`kireaji.kire` 每行是 7 色累计长度；武器的 `sharpness_amount`（记为 handicraftSteps）推测与匠技能有关，
+  具体换算待核对。❓
+- 防具 `gender` 取值 0 / 1 / 2 / 3（3 占 94%，推测为男女通用），❓
+- 衣装 `a_skill.ask` 的镶嵌槽（隐身衣装 3·3 等）结构吻合，数值待游戏内核对。
+
+## 4. 界面图标（游戏 UI 贴图）
+
+| 图集 | 内容 | 用到的格子 |
+|---|---|---|
+| `ui/common/tex/cmn_item00_ID.tex`（+ `cmn_item00M_ID.tex` 遮罩） | 64px 网格 16×16，灰度，运行时着色 | 技能徽章 96；饰品宝石 66 / 67 / 68 / 72（1–4 级）；防具 144–148；护石 149；衣装 112、烟筒 113；武器 160–173（顺序：片手剑、大剑、太刀、双剑、长枪、铳枪、大锤、狩猎笛、斩击斧、盾斧、操虫棍、轻弩、重弩、弓） |
+| `ui/common/tex/cmn_status00_ID.tex` | 64px 网格 8 列，彩色状态 / 技能效果图标 | 全部原样输出 |
+| `ui/common/tex/common00_ID.tex` | 镶嵌槽框（三角个数 = 等级）、宝石；非网格 | 按坐标裁切，见 `mhdb/images/world_icons.py` |
+
+- 格子编号都已按图形与游戏截图核对。饰品的宝石格由物品数据的 `icon_id` 直接给出（1–4 级分别是 66 / 67 / 68 / 72），
+  衣装的图标由 `a_skill.ask` 的 `icon_id` / `color` 给出。
+- **着色方式是近似**：游戏的合成公式未知。技能徽章、衣装、2–4 级宝石用乘法着色；防具、武器、护石用遮罩填色
+  （遮罩内填稀有度色、遮罩外压暗），1 级宝石用遮罩填色并保留线条。都是对照用户截图选定的，不代表游戏的真实算法。
+- 物品图标的 `icon_id` 与图集格子的对应关系目前只在上述类别核对过，其他物品待核对。
+
+## 5. 待解析 / 疑问
+
+1. **动作值来源**：chunk 里的 `pl/`、`wp/` 下没有 `.col` 一类的攻击参数文件，需要继续调查；
+   找不到时先问用户，不手抄社区数据。
+2. **怪物 dtt 文件**：约 20 种扩展名（`dtt_epg` 部位、`dtt_eda` 肉质等，部分 Blowfish 加密，密钥见 MHW-Editor），
+   需要对照结构并与游戏核对。
+3. **武器客制 / 零件强化 / 冥赤龙觉醒**：结构已验证（`new_limit_break.new_lb`、`customParts.cus_pa`、
+   `em104_limit_break.em104lb` 等），含义与规则尚未整理。`em104lb` 有每种武器是否可用、能否叠加、升级链字段。
+   `cus_pa` / `cus_par` 等有 Blowfish 加密，密钥见 MHW-Editor。
+4. **防具强化后的防御上限**：`arm_upgrade.arm_up` 结构已读出（12 行 × 11 列），与稀有度 / 强化等级的对应待确认。
+5. **游戏版本号**：见第 1 节。
+
+## 6. 参考资料（只当格式文档阅读，不复制代码）
 
 | 资料 | 用途 | 许可证 |
 |---|---|---|
-| [MHW-Editor](https://github.com/Synthlight/MHW-Editor) | 各数据文件的结构体定义、加密密钥 | 无许可证（保留所有权利），只读文档 |
-| [MonsterHunterWorldModding Wiki](https://github.com/Ezekial711/MonsterHunterWorldModding/wiki) | gmd、tex、sobj 等格式说明 | 无许可证，只读文档 |
+| [MHW-Editor](https://github.com/Synthlight/MHW-Editor) | 数据表结构、加密密钥 | 无许可证，只读文档 |
+| [MonsterHunterWorldModding Wiki](https://github.com/Ezekial711/MonsterHunterWorldModding/wiki) | 各类格式说明 | 无许可证，只读文档 |
 | [MHW-DTI-Dumps](https://github.com/Andoryuuta/MHW-DTI-Dumps) | exe 类名与字段名 | 无许可证，只读文档 |
 | [QuestDataDump](https://github.com/AsteriskAmpersand/QuestDataDump) | 任务 mib 布局 | 无许可证，只读文档 |
 | [DaveuRrr/MHW_Research](https://github.com/DaveuRrr/MHW_Research) | sobj / 地图 010 模板 | MIT |
 | [Feuleur/blender-mhworld-tools-suite](https://github.com/Feuleur/blender-mhworld-tools-suite) | sobj 等 Python 解析参考 | MIT |
-| [MHWorldData](https://github.com/gatheringhallstudios/MHWorldData) | 只用于交叉核对字段含义，不复制代码或数据 | MIT |
-| [MHWNoChunk](https://github.com/JodoZT/MHWNoChunk) / [WorldChunkTool](https://github.com/mhvuze/WorldChunkTool) | chunk 解包逻辑（mhwi-ai 已移植） | MIT / 无许可证 |
-| [Leviathon](https://github.com/AsteriskAmpersand/Leviathon)、[MHW-Free-HyperKinetics](https://github.com/AsteriskAmpersand/MHW-Free-HyperKinetics) | THK / lmt | GPL-3.0：只作为外部工具调用，不并入本项目代码 |
+| [MHWorldData](https://github.com/gatheringhallstudios/MHWorldData) | 只用于交叉核对字段含义 | MIT |
+| [MHWNoChunk](https://github.com/JodoZT/MHWNoChunk) / [WorldChunkTool](https://github.com/mhvuze/WorldChunkTool) | chunk 解包逻辑（经 mhwi-ai 移植） | MIT / 无许可证 |
+| [Leviathon](https://github.com/AsteriskAmpersand/Leviathon)、[MHW-Free-HyperKinetics](https://github.com/AsteriskAmpersand/MHW-Free-HyperKinetics) | THK / lmt | GPL-3.0：只作为外部工具调用 |
 | [SharpPluginLoader](https://github.com/Fexty12573/SharpPluginLoader) | 运行时结构、字段名 | MIT |
-| [DirectXTex texconv](https://github.com/microsoft/DirectXTex)、[texture2ddecoder](https://github.com/K0lb3/texture2ddecoder) | 贴图解码 | MIT |
+| [texture2ddecoder](https://github.com/K0lb3/texture2ddecoder) | BC7 解码 | MIT |
 
-## 4. 疑问与未确认项
+## 7. 游戏内核对记录
 
-1. **动作值来源**：chunk 索引的 `pl/`、`wp/` 下没有 `.col` 一类的攻击参数文件。需要进一步调查（候选：`pl` 下的其他参数文件、exe 内的数据表）。找不到时先列出来问用户，不手抄社区数据。
-2. **每只怪物的 dtt 文件**：约 20 种扩展名，哪个是肉质、部位耐久、异常耐性、掉落，需要对照 MHW-Editor 的结构定义并与游戏内核对。
-3. **衣装 / 武器客制 / 零件强化 / 冥赤龙觉醒的数据与规则**：候选文件见 2.2。MHW-Editor 把 `em104_wp_custom`、
-   `em104_wp_upgrade`、`em104_wp_exp`、`em104_limit_break*` 命名为 `Awakened*`（觉醒），推测与觉醒武器有关；
-   `em104_*` / `em117_*` 的抽选表分别对应哪只怪物仍未确认。觉醒技能的搭配规则需从数据核实，取不到时问用户。
-4. **稀有度 / 饰品颜色色表**：见 2.5。
-5. **游戏版本号**：计划用 `pefile` 读取 exe 的文件版本资源；需确认该版本号与游戏标题界面显示的版本一致。
+| 日期 | 来源 | 核对项 |
+|---|---|---|
+| 2026-10-14 | 用户截图（装备详情 / 饰品界面） | 黑龙玄刃：稀有度、攻击力、龙属性、龙封力、镶嵌槽；超心·回避珠【4】技能；超会心等级说明；稀有度与饰品颜色 |
 
-## 5. 待游戏内核对的已知值
-
-里程碑 2 里列出一组样本（几件装备的技能与槽位、几把武器的锐利度、几颗饰品的技能、几只怪物的肉质），请用户在游戏内核对后填入本节，作为对照测试的断言。
+自动化断言见 `pipeline/tests/test_world_data.py`。

@@ -11,6 +11,7 @@
 | react / react-dom | 19.3.x | MIT | 交互组件 |
 | zustand | 5.0.x | MIT | 工具页状态 |
 | immer | 11.1.x | MIT | 不可变状态（撤销 / 重做） |
+| zod | 4.6.x | MIT | 数据结构校验 |
 | @fontsource-variable/noto-sans-sc | 5.3.x | OFL-1.1（字体）/ MIT（包） | 思源黑体（Noto Sans SC） |
 | @fontsource-variable/noto-serif-sc | 5.3.x | OFL-1.1 / MIT | 思源宋体（Noto Serif SC） |
 | @fontsource/lxgw-wenkai | 5.3.x | OFL-1.1 / MIT | 霞鹜文楷（方向 A 批注） |
@@ -20,7 +21,7 @@
 
 开发依赖：typescript（Apache-2.0）、@astrojs/check（MIT）、vitest（MIT）、@playwright/test（Apache-2.0）、
 eslint（MIT）、typescript-eslint（MIT）、eslint-plugin-astro（MIT）、eslint-plugin-react-hooks（MIT）、
-prettier（MIT）、prettier-plugin-astro（MIT）、@types/react、@types/react-dom（MIT）。
+prettier（MIT）、prettier-plugin-astro（MIT）、@types/react、@types/react-dom、@types/node（MIT）。
 
 **排除**：Astro 的可选依赖 `sharp` 的 Windows 预编译包含 LGPL-3.0 的 libvips，已通过
 `pnpm-workspace.yaml` 的 `ignoredOptionalDependencies` 排除，Astro 使用 passthrough 图片服务。

@@ -1,0 +1,25 @@
+# mhdb extract 的解包清单。正则匹配以 / 开头、/ 分隔的游戏内路径，不区分大小写。
+# 只解网站需要的文件，保持 data-raw/ 精简。
+
+[world]
+patterns = [
+  # 文本：简中 / 繁中 / 日文 / 英文
+  '^/common/text/.*_(chS|chT|jpn|eng)\.gmd$',
+
+  # 装备、物品、玩家、随从、设施、怪物公共参数
+  '^/common/equip/',
+  '^/common/item/(itemData\.itm|itemMake\.imk|itemMakeType\.imt|skillGemParam\.sgpa|itemList\.itlist)$',
+  '^/common/pl/',
+  '^/common/otomo/',
+  '^/common/facility/',
+  '^/common/em/[^/]+\.(dtt_\w+|ecp|em_ss)$',
+
+  # 每只怪物的数据表（不含 THK 与动画）
+  '^/em/em\d+/\d+/data/em\d+\.(dtt\w*|em\d+_dmg|em\d+_pbc)$',
+
+  # 任务
+  '^/quest/questData_\d+\.mib$',
+
+  # 界面贴图
+  '^/ui/(common|common_menu|equip|status|item_menu|note|map)/tex/.*\.tex$',
+]

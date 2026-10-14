@@ -1,0 +1,63 @@
+{
+  "icon": [
+    "#ebebeb",
+    "#e1505c",
+    "#47b267",
+    "#577bff",
+    "#e8c506",
+    "#9788d1",
+    "#4ec3e5",
+    "#df9c65",
+    "#d98b94",
+    "#dfe500",
+    "#afafaf",
+    "#ba954b",
+    "#92d0c1",
+    "#3d7f3a",
+    "#ad1547",
+    "#4c4cd9",
+    "#56379e",
+    "#909bb0",
+    "#d464a2",
+    "#685ecd",
+    "#3257a7",
+    "#2a8d61",
+    "#9a5c45",
+    "#9ec09a",
+    "#d7c18d",
+    "#e16d44",
+    "#86b239",
+    "#ffffff"
+  ],
+  "rarity": [
+    "#aaaaaa",
+    "#dedede",
+    "#a1c42e",
+    "#48ab3f",
+    "#5caebb",
+    "#595cda",
+    "#8d59ef",
+    "#c76d46",
+    "#b3436a",
+    "#0ad5fa",
+    "#fac81e",
+    "#b4f5ff"
+  ],
+  "sharpness": {
+    "red": "#be3844",
+    "orange": "#d3673d",
+    "yellow": "#cab232",
+    "green": "#6eaf1e",
+    "blue": "#4678e6",
+    "white": "#e2e2e2",
+    "purple": "#8755f0"
+  },
+  "unknown": [
+    "#7373b4",
+    "#b48c5a"
+  ],
+  "_src": {
+    "file": "common/ui/ui_colortable.uct",
+    "note": "第 2 张为稀有度 1–12（推断），第 3 张为锐利度"
+  }
+}

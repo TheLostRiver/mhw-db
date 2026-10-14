@@ -6,3 +6,7 @@ dir = 'C:\Program Files (x86)\Steam\steamapps\common\Monster Hunter World'
 [oodle]
 # oo2core_8_win64.dll（RAD 专有库，不入库；新版游戏目录里可能已没有，需要自行准备）
 dll = 'C:\path\to\oo2core_8_win64.dll'
+
+[chunk]
+# chunk.key：子块密钥序号表，见 MHWNoChunk 仓库的 MHWNoChunk/Resources/chunk.key（不入库）
+key = 'C:\path\to\chunk.key'

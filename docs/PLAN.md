@@ -130,18 +130,18 @@ mhw-db/
 
 ### 里程碑 2：数据管线 v1（详细）
 
-- [ ] 2.1 解包：改写 `mhw_chunk.py` 为 `mhdb extract`；索引缓存、manifest 选择性解包、四语文本；exe 版本 + chunk 指纹；XOR / 密钥流程的合成数据单测
-- [ ] 2.2 `.gmd` 文本解析器：键名、字符串表、空项与占位符；样式标签转换；四语字典；单测
-- [ ] 2.3 物品 `common/item/itemData.itm`：id、类型、稀有度、图标编号与颜色、携带上限、售价、标志位；名称 / 说明来自 `steam/item_*.gmd`
-- [ ] 2.4 技能 `skill_point_data.skl_pt_dat` + `skill_data.skl_dat`：技能、各级说明、上限、极意解锁、套装技能；文本来自 `vfont/skill_pt_*.gmd`、`vfont/skill_*.gmd`
-- [ ] 2.5 防具 `armor.am_dat` + `amr_series.amrs` + `armor.eq_crt` + `arm_upgrade.arm_up`：阶位（下 / 上 / 大师）、稀有度、防御（初始 / 最大 / 强化）、耐性、槽位、技能、系列、性别、幻化标记、打造素材
-- [ ] 2.6 护石 `charm.ch_dat` + `charm.eq_crt`：技能、等级链、打造 / 强化素材
-- [ ] 2.7 饰品 `deco.deco`：槽位等级、技能（含 4 级复合珠）、稀有度、对应物品
-- [ ] 2.8 武器：14 种 `*.wp_dat` / `*.wp_dat_g` + `kireaji.kire`（锐利度）+ `weapon.eq_crt` / `weapon.eq_cus`（打造与派生树）+ 专属参数表（瓶、炮击、笛音、猎虫、弹种 / 装填）；攻击、属性 / 异常、会心、槽位、防御加成、武器树
+- [x] 2.1 解包：改写 `mhw_chunk.py` 为 `mhdb extract`；索引缓存、manifest 选择性解包、四语文本；exe 版本 + chunk 指纹；XOR / 密钥流程的合成数据单测
+- [x] 2.2 `.gmd` 文本解析器：键名、字符串表、空项与占位符；样式标签转换；四语字典；单测
+- [x] 2.3 物品 `common/item/itemData.itm`：id、类型、稀有度、图标编号与颜色、携带上限、售价、标志位；名称 / 说明来自 `steam/item_*.gmd`
+- [x] 2.4 技能 `skill_point_data.skl_pt_dat` + `skill_data.skl_dat`：技能、各级说明、上限、极意解锁、套装技能；文本来自 `vfont/skill_pt_*.gmd`、`vfont/skill_*.gmd`
+- [~] 2.5 防具（基础数据已出；强化后防御、打造素材待做） `armor.am_dat` + `amr_series.amrs` + `armor.eq_crt` + `arm_upgrade.arm_up`：阶位（下 / 上 / 大师）、稀有度、防御（初始 / 最大 / 强化）、耐性、槽位、技能、系列、性别、幻化标记、打造素材
+- [x] 2.6 护石（护石在 `armor.am_dat` 部位 5，不在 `charm.ch_dat`——那是武器挂饰） `charm.ch_dat` + `charm.eq_crt`：技能、等级链、打造 / 强化素材
+- [x] 2.7 饰品（实际来源 `common/item/skillGemParam.sgpa`）：槽位等级、技能（含 4 级复合珠）、稀有度、对应物品
+- [~] 2.8 武器（基础属性、锐利度、槽位已出；派生树、打造、专属参数待做）：14 种 `*.wp_dat` / `*.wp_dat_g` + `kireaji.kire`（锐利度）+ `weapon.eq_crt` / `weapon.eq_cus`（打造与派生树）+ 专属参数表（瓶、炮击、笛音、猎虫、弹种 / 装填）；攻击、属性 / 异常、会心、槽位、防御加成、武器树
 - [ ] 2.9 武器扩展（配装器必需，优先级提高）：衣装（`a_skill.ask`、`askill_param.asp` 待核实）；冥赤觉醒与特殊武器强化（`em104_*`、`em117_*`，对应关系待确认）、零件强化（`customParts.*`、`new_limit_break.*`）、自定义外观（`customOuter*.cus_ou`）——配装器需要，放在 2.8 之后
-- [ ] 2.10 zod schema、JSON Schema 导出、`pnpm data:check`（引用完整性、四语覆盖率）
-- [ ] 2.11 图片：~~`.tex` 解析 + BC7 解码~~（已提前完成，`mhdb/formats/tex.py`）；物品 / 装备 / 技能 / 饰品 / 镶嵌槽图标裁切与着色；稀有度色表；怪物图标；多尺寸 WebP/AVIF
-- [ ] 2.12 `meta.json` 数据版本；`mhdb diff` 差异报告
+- [x] 2.10 zod schema（`site/src/data/world/schema.ts`）、`pnpm data:check`（结构、id 唯一、引用完整性、四语覆盖率）；JSON Schema 导出给 Python 侧暂未做（Python 侧已有对照测试）
+- [~] 2.11 图片（技能、饰品、镶嵌槽、防具、武器、衣装图标已出）：~~`.tex` 解析 + BC7 解码~~（已提前完成，`mhdb/formats/tex.py`）；物品 / 装备 / 技能 / 饰品 / 镶嵌槽图标裁切与着色；稀有度色表；怪物图标；多尺寸 WebP/AVIF
+- [~] 2.12 `meta.json` 数据版本（已出，用 Steam 构建号）；`mhdb diff` 差异报告待做
 - [ ] 2.13 对照测试：一组已知值（装备技能、锐利度、饰品技能等），请你在游戏内核对
 - [ ] 2.14 `docs/DATA.md` 补全：每个文件的字段表、解析状态、未确认项
 

@@ -1,0 +1,133 @@
+"""《世界：冰原》数据表的结构定义。
+
+字段布局参照 Synthlight/MHW-Editor 的 010 模板（无许可证，仅作格式文档阅读，未复制代码），
+每张表都由 read_table 校验「记录长度 × 记录数 = 文件长度」。字段含义以 docs/DATA.md 为准，
+标 unk 的字段含义未确认。
+"""
+
+from mhdb.formats.table import spec
+
+ITEM = spec(
+    "itemData.itm",
+    """
+    id:I sub_type:B type:I rarity:B carry_limit:b carry_limit_base:b sort_order:H flags:I
+    icon_id:I icon_color:B is_huge:B sell_price:I buy_price:I
+    """,
+)
+
+SKILL_POINT = spec("skill_point_data.skl_pt_dat", "is_set_bonus:B icon_color:B")
+
+SKILL_LEVEL = spec(
+    "skill_data.skl_dat",
+    """
+    skill_id:H level:B unlock_1:I unlock_2:I unlock_3:I unlock_4:I unlock_5:I unlock_6:I
+    param_1:H param_2:H param_3:H param_4:H
+    """,
+)
+
+ARMOR = spec(
+    "armor.am_dat",
+    """
+    index:I order:H variant:B set_id:H type:B equip_slot:B defense:H model_1:H model_2:H
+    icon_color:H icon_effect:B rarity:B cost:I
+    res_fire:b res_water:b res_ice:b res_thunder:b res_dragon:b
+    slot_count:B slot_1:B slot_2:B slot_3:B
+    set_skill:H set_skill_level:B hidden_skill:H hidden_skill_level:B
+    skill_1:H skill_1_level:B skill_2:H skill_2_level:B skill_3:H skill_3_level:B
+    gender:I set_group:H name_index:H desc_index:H is_permanent:B
+    """,
+)
+
+DECORATION = spec(
+    "skillGemParam.sgpa",
+    "item_id:I index:I size:I skill_1:I skill_1_level:I skill_2:I skill_2_level:I",
+)
+
+MANTLE = spec(
+    "a_skill.ask",
+    """
+    icon_id:I color:I sort_order:I item_id:I mantle_id:I unlock:I
+    slot_count:B slot_1:B slot_2:B slot_3:B
+    """,
+)
+
+CRAFT = spec(
+    "*.eq_crt",
+    """
+    category:B equip_index:H unlock_item:H unlock_monster:i unlock_story:I unk_1:I item_rank:I
+    mat_1:H mat_1_count:B mat_2:H mat_2_count:B mat_3:H mat_3_count:B mat_4:H mat_4_count:B
+    unk_2:B unk_3:B unk_4:B unk_5:B
+    """,
+)
+
+UPGRADE = spec(
+    "*.eq_cus",
+    """
+    category:B equip_index:H unlock_item:H unlock_monster:i unlock_story:I item_rank:I
+    mat_1:H mat_1_count:B mat_2:H mat_2_count:B mat_3:H mat_3_count:B mat_4:H mat_4_count:B
+    child_1:H child_2:H child_3:H child_4:H unk_1:B unk_2:B unk_3:B unk_4:B
+    """,
+)
+
+SHARPNESS = spec("kireaji.kire", "id:I red:H orange:H yellow:H green:H blue:H white:H purple:H")
+
+MELEE = spec(
+    "*.wp_dat",
+    """
+    index:I unk_1:h model:h part_1:h part_2:h unk_2:B color:B tree_id:B is_fixed_upgrade:B
+    cost:I rarity:B sharpness_id:B sharpness_amount:B attack:H defense:H affinity:b
+    element:B element_value:H hidden_element:B hidden_element_value:H elderseal:B
+    slot_count:B slot_1:B slot_2:B slot_3:B special_1:H special_2:H unk_3:I unk_4:I unk_5:I
+    tree_position:B id:H name_index:H desc_index:H skill:H unk_6:H
+    """,
+)
+
+RANGED = spec(
+    "*.wp_dat_g",
+    """
+    index:I unk_1:h model:h part_1:h part_2:h unk_2:B color:B tree_id:B is_fixed_upgrade:B
+    muzzle:B barrel:B magazine:B scope:B cost:I rarity:B attack:H defense:H affinity:b
+    element:B element_value:H hidden_element:B hidden_element_value:H elderseal:B
+    shell_type:B unk_3:B deviation:B slot_count:B slot_1:B slot_2:B slot_3:B
+    unk_4:I unk_5:I unk_6:I unk_7:B special_ammo:B tree_position:B id:H name_index:H desc_index:H
+    skill:H unk_8:H
+    """,
+)
+
+AWAKENING = spec(
+    "em104_limit_break.em104lb",
+    """
+    skill_id:H group_id:I rarity:I unk_1:I has_upgrade:B prev_upgrade:H next_upgrade:H can_stack:B unk_2:B
+    lv_1:H lv_2:H lv_3:H lv_4:H lv_5:H
+    gs:B sns:B db:B ls:B hammer:B hh:B lance:B gl:B sa:B cb:B ig:B bow:B hbg:B lbg:B
+    unk_3:B unk_4:B unk_5:B unk_6:B
+    """,
+)
+
+AUGMENT = spec(
+    "new_limit_break.new_lb",
+    "category:I level:I slot_cost:I cost_r10:I cost_r11:I cost_r12:I",
+)
+
+CUSTOM_PART = spec(
+    "customParts.cus_pa",
+    "id:I weapon_type:I part_id:I unk_1:B cost:I attack:H defense:H affinity:B element:H sharpness:B",
+)
+
+# 武器种：文件名、站内键、文本文件、是否远程
+WEAPON_TYPES = [
+    ("l_sword", "great-sword", "l_sword", False),
+    ("sword", "sword-and-shield", "sword", False),
+    ("w_sword", "dual-blades", "w_sword", False),
+    ("tachi", "long-sword", "tachi", False),
+    ("hammer", "hammer", "hammer", False),
+    ("whistle", "hunting-horn", "whistle", False),
+    ("lance", "lance", "lance", False),
+    ("g_lance", "gunlance", "g_lance", False),
+    ("s_axe", "switch-axe", "s_axe", False),
+    ("c_axe", "charge-blade", "c_axe", False),
+    ("rod", "insect-glaive", "rod", False),
+    ("bow", "bow", "bow", True),
+    ("hbg", "heavy-bowgun", "hbg", True),
+    ("lbg", "light-bowgun", "lbg", True),
+]
