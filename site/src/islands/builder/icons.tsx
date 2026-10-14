@@ -11,6 +11,16 @@ export const iconUrl = {
   socket: (level: number) => `${BASE}/socket/${level}.webp`,
   mantle: (id: number, color: number) => `${BASE}/mantle/${id}-${color}.webp`,
   status: (i: number) => `${BASE}/status/${i}.webp`,
+  /** 自定义强化项目的图标（gen_pre_icon 里的头像） */
+  augment: (name: string) => `${BASE}/augment/${name}.webp`,
+  /** 自定义强化栏位的六角格：已用 / 空 */
+  augmentHex: (used: boolean) => `${BASE}/augment/hex-${used ? 'used' : 'empty'}.webp`,
+  /** 未装备时的灰色占位图标 */
+  empty: {
+    weapon: (type: string) => `${BASE}/weapon/${type}-0.webp`,
+    equip: (slot: ArmorSlot | 'charm') => `${BASE}/equip/${slot}-0.webp`,
+    mantle: () => `${BASE}/mantle/empty.webp`,
+  },
 };
 
 interface Props {

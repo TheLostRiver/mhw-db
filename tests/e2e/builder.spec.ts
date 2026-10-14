@@ -72,7 +72,7 @@ test('选择器：Esc 关闭，方向键移动选中项', async ({ page }) => {
   const dialog = page.getByRole('dialog');
   await expect(dialog).toBeVisible();
   await expect(dialog.getByRole('searchbox')).toBeFocused();
-  const first = dialog.getByRole('option').first();
+  const first = dialog.locator('.gb-picker__list [role="option"]').first();
   await expect(first).toHaveAttribute('aria-selected', 'true');
   await page.keyboard.press('ArrowDown');
   await expect(first).toHaveAttribute('aria-selected', 'false');
@@ -100,7 +100,7 @@ test('饰品选择器：卡片网格，按单技能 / 复合珠筛选', async ({
   const dialog = page.getByRole('dialog');
   await expect(dialog.locator('.gb-picker__list--grid')).toBeVisible();
   await dialog.getByRole('radio', { name: '复合珠' }).click();
-  const cards = dialog.getByRole('option');
+  const cards = dialog.locator('.gb-picker__list [role="option"]');
   await expect(cards.first()).toBeVisible();
   for (const n of await cards
     .locator('.gb-picker__meta')
@@ -113,19 +113,29 @@ test('饰品选择器：卡片网格，按单技能 / 复合珠筛选', async ({
 test('自定义强化：攻击力强化计入状态，镶嵌槽强化追加槽，超出格数上限的选项不可选', async ({ page }) => {
   await open(page);
   await pick(page, '.gb-row__piece[aria-label^="武器"]', '黑龙玄刃');
-  await page.getByRole('radio', { name: '攻击力强化2' }).click();
-  await expect(page.locator('.gb-custom__cost')).toContainText('5 / 6');
-  // (340 + 10) × 4.8 = 1680
-  await expect(page.locator('section[aria-labelledby="gb-stats-h"]')).toContainText('1680');
-  // 稀有度 12 上限 6 格：攻击Ⅱ（5）+ 镶嵌槽Ⅰ（3）超出
-  await expect(page.getByRole('radio', { name: '镶嵌槽强化1' })).toBeDisabled();
+  // 稀有度 12 基础 3 格：攻击Ⅱ（5 格）放不下，先选定，扩充后再试
   await page.getByRole('radio', { name: '攻击力强化1' }).click();
+  await expect(page.locator('.gb-custom__cost')).toContainText('3 / 3');
+  // (340 + 5) × 4.8 = 1656
+  await expect(page.locator('section[aria-labelledby="gb-stats-h"]')).toContainText('1656');
+  await expect(page.getByRole('radio', { name: '攻击力强化2' })).toBeDisabled();
+  await expect(page.getByRole('radio', { name: '镶嵌槽强化1' })).toBeDisabled();
+  // 扩充自定义栏：三级各 +1 格，上限 3 → 6（第一级在数据里就叫「扩充自定义栏」，不带数字）
+  const extendBtns = page.locator('.gb-aug--extend button');
+  await extendBtns.nth(1).click();
+  await extendBtns.nth(2).click();
+  await extendBtns.nth(3).click();
+  await expect(page.locator('.gb-custom__cost')).toContainText('3 / 6');
+  await expect(page.getByRole('radio', { name: '攻击力强化2' })).toBeEnabled();
   await page.getByRole('radio', { name: '镶嵌槽强化1' }).click();
   await expect(page.locator('.gb-custom__cost')).toContainText('6 / 6');
   await expect(page.locator('.gb-row').first().locator('.gb-slot')).toHaveCount(3);
   await expect(page.getByRole('radio', { name: '攻击力强化2' })).toBeDisabled();
+  // 取消扩充后退回基础 3 格，放不下的强化会被裁掉
+  await page.getByRole('button', { name: '不扩充' }).click();
+  await expect(page.locator('.gb-custom__cost')).toContainText('3 / 3');
+  await expect(page.locator('.gb-row').first().locator('.gb-slot')).toHaveCount(2);
 });
-
 test('冥赤龙觉醒：不可重复的能力在选择器里禁用', async ({ page }) => {
   await open(page);
   await pick(page, '.gb-row__piece[aria-label^="武器"]', '赤龙断绝剑·火');
@@ -136,7 +146,10 @@ test('冥赤龙觉醒：不可重复的能力在选择器里禁用', async ({ pa
   await page.locator('.gb-awk__slot').nth(1).click();
   const dialog = page.getByRole('dialog');
   await dialog.getByRole('searchbox').fill('攻击力强化6');
-  await expect(dialog.getByRole('option').first()).toHaveAttribute('aria-disabled', 'true');
+  await expect(dialog.locator('.gb-picker__list [role="option"]').first()).toHaveAttribute(
+    'aria-disabled',
+    'true',
+  );
   await expect(dialog).toContainText('此能力不能重复设定');
   await page.keyboard.press('Enter');
   await expect(dialog).toBeVisible();

@@ -16,8 +16,10 @@ import {
   computeStats,
   emptyBuild,
   emptyCustom,
+  emptyPiece,
   fitDecos,
   makeIndex,
+  pruneAugments,
   setAugment,
   weaponSlots,
   type ArmorSlot,
@@ -28,7 +30,7 @@ import {
   type SkillTotal,
   type WeaponPayload,
 } from '../../lib/world/builder';
-import Picker from './Picker';
+import Picker, { type PickerSort } from './Picker';
 import WeaponCustomPanel, { AWAKENING_GROUPS, ROMAN, awakeningMeta } from './WeaponCustom';
 import { GameIcon, iconUrl, LevelBoxes } from './icons';
 import './builder.css';
@@ -177,6 +179,8 @@ export default function Builder() {
               ? (idx.armor.get(id)?.slots ?? [])
               : (idx.mantles.get(id)?.slots ?? []);
       p.decos = fitDecos(slots, p.decos, idx);
+      // 存档里可能留着换武器前超上限的强化，按新武器的格数裁一遍
+      if (t.kind === 'weapon') b.custom = pruneAugments(b.custom, idx, idx.weapons.get(id ?? -1));
       return b;
     });
 
@@ -263,6 +267,13 @@ export default function Builder() {
               }))
             : []),
         ],
+        rarityFilter: true,
+        sorts: [
+          { key: 'default', label: '默认（等级 → 编号）', value: () => 0 },
+          { key: 'rarity', label: '稀有度', value: (id) => deco(id)?.rarity ?? 0 },
+          { key: 'size', label: '饰品等级', value: (id) => deco(id)?.size ?? 0 },
+          { key: 'skills', label: '技能数', value: (id) => deco(id)?.skills.length ?? 0 },
+        ],
         items: data.decorations
           .filter((d) => d.size <= size)
           .sort((a, b) => b.size - a.size || a.id - b.id)
@@ -280,8 +291,9 @@ export default function Builder() {
       return {
         title: `选择${WEAPON_TYPE_NAMES[build.weaponType] ?? '武器'}`,
         current: build.weapon.id,
-        rankTabs: true,
-        minRarity: 9,
+        rarityFilter: true,
+        defaultRarities: [10, 11, 12],
+        sorts: weaponSorts(idx, build.weaponType),
         items: payload.weapons.map((w) => ({
           id: w.id,
           name: w.name,
@@ -289,8 +301,10 @@ export default function Builder() {
           icon: <GameIcon src={iconUrl.weapon(build.weaponType, w.rarity)} size={28} />,
           meta: (
             <>
-              {w.awakened ? '冥赤龙武器 · ' : ''}攻击 {w.attack} · 会心 {w.affinity}%
+              {w.awakened ? '冥赤龙武器 · ' : ''}攻击{' '}
+              {Math.round(w.attack * (idx.bloat[build.weaponType] ?? 1))} · 会心 {w.affinity}%
               {w.element ? ` · ${ELEMENT_NAMES[w.element.type] ?? ''} ${w.element.value * 10}` : ''}
+              {w.defense ? ` · 防御 +${w.defense}` : ''}
             </>
           ),
           side: <SlotDots slots={w.slots} />,
@@ -300,8 +314,19 @@ export default function Builder() {
       return {
         title: `选择${SLOT_NAMES[t.slot]}防具`,
         current: build.armor[t.slot].id,
-        rankTabs: true,
-        minRarity: 9,
+        rarityFilter: true,
+        defaultRarities: [9, 10, 11, 12],
+        sorts: [
+          { key: 'default', label: '默认（游戏内顺序）', value: () => 0 },
+          { key: 'rarity', label: '稀有度', value: (id) => idx.armor.get(id)?.rarity ?? 0 },
+          { key: 'defense', label: '防御力', value: (id) => idx.armor.get(id)?.defense ?? 0 },
+          { key: 'slots', label: '镶嵌槽', value: (id) => slotScore(idx.armor.get(id)?.slots ?? []) },
+          {
+            key: 'skills',
+            label: '技能点数',
+            value: (id) => (idx.armor.get(id)?.skills ?? []).reduce((n, s) => n + s.level, 0),
+          },
+        ],
         items: data.armor
           .filter((a) => a.slot === t.slot)
           .map((a) => ({
@@ -310,7 +335,11 @@ export default function Builder() {
             rarity: a.rarity,
             search: `${a.series} ${a.skills.map((s) => idx.skills.get(s.id)?.name ?? '').join(' ')}`,
             icon: <GameIcon src={iconUrl.equip(a.slot, a.rarity)} size={28} />,
-            meta: <SkillLine refs={a.skills} idx={idx} />,
+            meta: (
+              <>
+                防御 {a.defense} · <SkillLine refs={a.skills} idx={idx} />
+              </>
+            ),
             side: <SlotDots slots={a.slots} />,
           })),
       };
@@ -319,8 +348,16 @@ export default function Builder() {
         title: '选择护石',
         layout: 'grid',
         current: build.charm,
-        rankTabs: true,
-        minRarity: 9,
+        rarityFilter: true,
+        sorts: [
+          { key: 'default', label: '默认（游戏内顺序）', value: () => 0 },
+          { key: 'rarity', label: '稀有度', value: (id) => idx.charms.get(id)?.rarity ?? 0 },
+          {
+            key: 'skills',
+            label: '技能点数',
+            value: (id) => (idx.charms.get(id)?.skills ?? []).reduce((n, s) => n + s.level, 0),
+          },
+        ],
         items: data.charms.map((c) => ({
           id: c.id,
           name: c.name,
@@ -394,9 +431,38 @@ export default function Builder() {
         <button
           type="button"
           className="gb-btn gb-btn--ghost"
+          title="卸下所有装备与饰品"
           onClick={() => setBuild(emptyBuild(build.weaponType))}
         >
           清空
+        </button>
+        <button
+          type="button"
+          className="gb-btn gb-btn--ghost"
+          title="只卸下五件防具（武器、护石、衣装保留）"
+          onClick={() =>
+            update((b) => {
+              for (const s of ARMOR_SLOTS) b.armor[s] = emptyPiece();
+              return b;
+            })
+          }
+        >
+          清空防具
+        </button>
+        <button
+          type="button"
+          className="gb-btn gb-btn--ghost"
+          title="清掉所有镶嵌槽里的饰品（装备保留）"
+          onClick={() =>
+            update((b) => {
+              b.weapon.decos = [];
+              for (const s of ARMOR_SLOTS) b.armor[s].decos = [];
+              for (const m of b.mantles) m.decos = [];
+              return b;
+            })
+          }
+        >
+          清空珠子
         </button>
       </div>
 
@@ -438,6 +504,8 @@ export default function Builder() {
                 onAugment={(category, level) =>
                   update((b) => {
                     b.custom = setAugment(b.custom, idx, category, level);
+                    // 取消扩充后可能超上限，按当前格数裁一遍
+                    b.custom = pruneAugments(b.custom, idx, idx.weapons.get(b.weapon.id ?? -1));
                     b.weapon.decos = fitDecos(weaponSlots(b, idx), b.weapon.decos, idx);
                     return b;
                   })
@@ -499,6 +567,23 @@ export default function Builder() {
   );
 }
 
+/** 镶嵌槽排序用的分数：先比最高等级，再比个数（4·4 > 4·1 > 3·3·3） */
+const slotScore = (slots: number[]) =>
+  [...slots].sort((a, b) => b - a).reduce((n, s, i) => n + s * 10 ** (4 - i * 2), 0);
+
+function weaponSorts(idx: Index, weaponType: string): PickerSort[] {
+  const w = (id: number) => idx.weapons.get(id);
+  return [
+    { key: 'default', label: '默认（游戏内顺序）', value: () => 0 },
+    { key: 'rarity', label: '稀有度', value: (id) => w(id)?.rarity ?? 0 },
+    { key: 'attack', label: '攻击力', value: (id) => (w(id)?.attack ?? 0) * (idx.bloat[weaponType] ?? 1) },
+    { key: 'affinity', label: '会心率', value: (id) => w(id)?.affinity ?? 0 },
+    { key: 'element', label: '属性 / 状态异常值', value: (id) => w(id)?.element?.value ?? 0 },
+    { key: 'slots', label: '镶嵌槽', value: (id) => slotScore(w(id)?.slots ?? []) },
+    { key: 'defense', label: '防御力加成', value: (id) => w(id)?.defense ?? 0 },
+  ];
+}
+
 // ---------- 子组件 ----------
 
 function SlotDots({ slots }: { slots: number[] }) {
@@ -556,8 +641,9 @@ function EquipRow({
   onPickPiece,
   onPickDeco,
 }: RowProps) {
+  // 未装备时用灰色占位图标（稀有度 0 的那一套），和游戏一样空栏位也画出来
   let name = '无装备';
-  let icon: string | null = null;
+  let icon = iconUrl.empty.weapon(build.weaponType);
   let rarity: number | null = null;
   let decos: (number | null)[] = [];
   if (target.kind === 'weapon') {
@@ -566,19 +652,22 @@ function EquipRow({
     decos = build.weapon.decos;
   } else if (target.kind === 'armor') {
     const p = build.armor[target.slot];
+    icon = iconUrl.empty.equip(target.slot);
     const a = p.id == null ? undefined : idx.armor.get(p.id);
     if (a) [name, icon, rarity] = [a.name, iconUrl.equip(a.slot, a.rarity), a.rarity];
     decos = p.decos;
   } else if (target.kind === 'charm') {
+    icon = iconUrl.empty.equip('charm');
     const c = build.charm == null ? undefined : idx.charms.get(build.charm);
     if (c) [name, icon, rarity] = [c.name, iconUrl.equip('charm', c.rarity), c.rarity];
   } else {
+    icon = iconUrl.empty.mantle();
     const p = build.mantles[target.index];
     const m = p.id == null ? undefined : idx.mantles.get(p.id);
     if (m) [name, icon] = [m.name, iconUrl.mantle(m.icon.id, m.icon.color)];
     decos = p.decos;
   }
-  const empty = icon == null;
+  const empty = rarity == null && name === '无装备';
   // 与游戏一样，每一栏的高度固定（按这类装备最多的镶嵌槽数），槽少的装备下方留空，便于区分上下两件
   const lines = target.kind === 'charm' ? 1 : target.kind === 'mantle' ? 2 : 3;
   return (
@@ -596,11 +685,7 @@ function EquipRow({
         aria-label={`${label}：${name}，点击更换`}
       >
         <span className="gb-row__icon">
-          {icon ? (
-            <GameIcon src={icon} size={36} />
-          ) : (
-            <span className="gb-row__placeholder" aria-hidden="true" />
-          )}
+          <GameIcon src={icon} size={36} />
         </span>
         <span className="gb-row__text">
           <span className="gb-row__label">{label}</span>

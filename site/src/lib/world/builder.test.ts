@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   augmentCost,
+  augmentCapacity,
   availableConditions,
   awakeningConflict,
   capFor,
@@ -12,6 +13,7 @@ import {
   makeIndex,
   partTotals,
   chosenParts,
+  pruneAugments,
   setAugment,
   sharpnessBar,
   weaponSlots,
@@ -146,6 +148,7 @@ const data: BuilderData = {
   // 栏位占用与效果取自 weapon-custom.json（new_lb 与 pl_param）
   augments: {
     levels: [
+      aug(3, 'extend', 3, 0),
       aug(4, 'attack', 1, 3),
       aug(5, 'attack', 2, 5),
       aug(8, 'affinity', 1, 2),
@@ -334,6 +337,22 @@ describe('自定义强化', () => {
     expect(computeSkills(b, idx).find((x) => x.skill.id === 62)).toBeUndefined();
     b.custom = setAugment(b.custom, idx, 'slot', 1);
     expect(computeSkills(b, idx).find((x) => x.skill.id === 62)?.counted).toBe(1);
+  });
+
+  it('扩充自定义栏抬高上限，取消后退回基础格数并裁掉放不下的强化', () => {
+    const b = emptyBuild();
+    b.weapon = { id: 239, decos: [] }; // 稀有度 12：基础 3 格、扩充后最多 6 格
+    b.custom = setAugment(b.custom, idx, 'attack', 1); // 3 格
+    b.custom = setAugment(b.custom, idx, 'affinity', 1); // 2 格 → 共 5 格，不扩充放不下
+    const w = idx.weapons.get(239);
+    expect(augmentCapacity(w, 0)).toBe(3);
+    expect(pruneAugments(b.custom, idx, w).augments).toEqual([4]);
+    b.custom = setAugment(b.custom, idx, 'extend', 3); // 上限 3 → 6
+    expect(augmentCapacity(w, 3)).toBe(6);
+    expect(pruneAugments(b.custom, idx, w).augments).toEqual([4, 8, 3]);
+    expect(augmentCost({ ...b, custom: pruneAugments(b.custom, idx, w) }, idx)).toBe(5);
+    // 换到稀有度 8 的上位武器：不能自定义强化，只留下不影响占格的扩充项
+    expect(pruneAugments(b.custom, idx, idx.weapons.get(301)).augments).toEqual([3]);
   });
 });
 

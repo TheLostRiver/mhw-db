@@ -5,6 +5,7 @@
                衣装 112、烟筒 113；武器 160–173
   cmn_status00 64px 网格：攻击、会心、属性等状态图标（彩色，原样输出）
   common00     非网格：镶嵌槽框与宝石，按坐标裁切
+  equip_egc    非网格：自定义强化的格数六边形
 着色方式见 mhdb/images/atlas.py（按游戏截图对比选定的近似）。
 """
 
@@ -36,6 +37,12 @@ WEAPON = {
     "heavy-bowgun": 172,
     "bow": 173,
 }
+# 空栏位占位图标的颜色（灰，与游戏「未装备」栏的灰色图标接近）
+PLACEHOLDER = (128, 132, 138)
+# equip_egc：大师自定义强化的格数六边形（已用 / 空），坐标为 (左, 上, 右, 下)
+AUGMENT_HEX = {"used": (5, 2, 59, 62), "empty": (199, 3, 249, 60)}
+# cmn_status00 里自定义强化各项的图标（攻击↑、会心↑、防御↑、镶嵌槽＋、回复、属性↑），按图形核对
+AUGMENT_ICON = {"attack": 16, "affinity": 51, "defense": 17, "slot": 55, "health": 54, "element": 67}
 # common00 里的镶嵌槽（列表用小图标）与宝石，坐标为 (左, 上, 右, 下)
 SOCKET = {1: (347, 51, 380, 78), 2: (387, 51, 420, 78), 3: (427, 51, 460, 78), 4: (171, 144, 204, 174)}
 SOCKET_LARGE = {1: (244, 2, 300, 46), 2: (308, 2, 364, 46), 3: (372, 2, 428, 46), 4: (372, 97, 428, 142)}
@@ -97,13 +104,21 @@ def build(raw: Path, data: Path, out: Path, log=print) -> int:
             img = tint(grid_cell(item, cell), icon_colors[color])
         save(img, f"deco/{size}-{color}.webp")
 
-    # 防具、护石、武器：按稀有度着色
+    # 防具、护石、武器：按稀有度着色；稀有度 0 为空栏位的灰色占位图标
     for slot, cell in EQUIP.items():
-        for r, rgb in enumerate(rarity_colors, 1):
+        for r, rgb in enumerate([PLACEHOLDER, *rarity_colors]):
             save(fill(grid_cell(item, cell), grid_cell(item_mask, cell), rgb), f"equip/{slot}-{r}.webp")
     for key, cell in WEAPON.items():
-        for r, rgb in enumerate(rarity_colors, 1):
+        for r, rgb in enumerate([PLACEHOLDER, *rarity_colors]):
             save(fill(grid_cell(item, cell), grid_cell(item_mask, cell), rgb), f"weapon/{key}-{r}.webp")
+    save(tint(grid_cell(item, 112), PLACEHOLDER), "mantle/empty.webp")
+
+    # 自定义强化：格数六边形与各项图标
+    egc = _atlas(raw, "ui/equip/tex/equip_egc_ID.tex")
+    for name, box in AUGMENT_HEX.items():
+        save(_square(egc.crop(box)), f"augment/hex-{name}.webp")
+    for name, cell in AUGMENT_ICON.items():
+        save(grid_cell(status, cell), f"augment/{name}.webp")
 
     # 衣装 / 烟筒
     for m in load("mantles.json")["mantles"]:

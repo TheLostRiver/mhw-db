@@ -135,8 +135,13 @@ export const HR_AUGMENTS: HrAugment[] = ['attack', 'affinity', 'defense', 'slot'
 
 /** 上位自定义强化的格数（⚠ 待确认：用户说明「有的武器有两个槽」，此处按稀有度 6 / 7 / 8 = 3 / 2 / 1） */
 export const HR_AUGMENT_SLOTS: Partial<Record<number, number>> = { 6: 3, 7: 2, 8: 1 };
-/** 大师自定义强化的格数上限（用户在游戏内确认，含扩充自定义栏） */
+/**
+ * 大师自定义强化的格数上限（稀有度 10 / 11 / 12 = 9 / 8 / 6，用户在游戏内确认，含扩充自定义栏）。
+ * 扩充自定义栏共 3 级、每级 1 格（⚠ 推断：基础格数为上限减 3），所以基础格数是 6 / 5 / 3。
+ */
 export const MR_AUGMENT_CAPACITY: Partial<Record<number, number>> = { 10: 9, 11: 8, 12: 6 };
+/** 扩充自定义栏的级数（new_lb 里 category 为 extend 的有 3 级） */
+export const EXTEND_LEVELS = 3;
 
 export type PartEffectKey = 'attack' | 'affinity' | 'element' | 'defense' | 'sharpness';
 
@@ -296,8 +301,18 @@ export function customKind(w: WeaponData | undefined): 'awakening' | 'augment' |
   return HR_AUGMENT_SLOTS[w.rarity] ? 'hr' : null;
 }
 
-/** 大师自定义强化的格数上限 */
-export const augmentCapacity = (w: WeaponData | undefined) => (w ? (MR_AUGMENT_CAPACITY[w.rarity] ?? 0) : 0);
+/** 未扩充时的格数（稀有度 10 / 11 / 12 = 6 / 5 / 3） */
+export const augmentBase = (w: WeaponData | undefined) =>
+  w ? Math.max(0, (MR_AUGMENT_CAPACITY[w.rarity] ?? 0) - EXTEND_LEVELS) : 0;
+
+/** 已扩充的级数（0–3） */
+export function extendLevel(build: Build, idx: Index): number {
+  return augmentLevels(build, idx).get('extend')?.level ?? 0;
+}
+
+/** 当前格数上限 = 基础格数 + 扩充的级数 */
+export const augmentCapacity = (w: WeaponData | undefined, extend = 0) =>
+  w ? Math.min(MR_AUGMENT_CAPACITY[w.rarity] ?? 0, augmentBase(w) + extend) : 0;
 
 /** 上位自定义强化：当前武器的各项次数 */
 export function hrCounts(build: Build, idx: Index): Map<HrAugment, number> {
@@ -337,6 +352,33 @@ export function setAugment(
   const keep = custom.augments.filter((id) => idx.augments.get(id)?.category !== category);
   const pick = [...idx.augments.values()].find((a) => a.category === category && a.level === level);
   return { ...custom, augments: pick ? [...keep, pick.id] : keep };
+}
+
+/**
+ * 按当前武器的格数上限裁掉放不下的强化（换了稀有度更低的武器、或取消了扩充之后）。
+ * 从前往后保留，超出的丢掉；扩充自定义栏本身不占格，不受影响。
+ */
+export function pruneAugments(custom: WeaponCustom, idx: Index, w: WeaponData | undefined): WeaponCustom {
+  const levelOf = (id: number) => idx.augments.get(id)?.level ?? 0;
+  const extend = custom.augments.reduce(
+    (n, id) => (idx.augments.get(id)?.category === 'extend' ? Math.max(n, levelOf(id)) : n),
+    0,
+  );
+  const capacity = augmentCapacity(w, extend);
+  const keep: number[] = [];
+  let used = 0;
+  for (const id of custom.augments) {
+    const a = idx.augments.get(id);
+    if (!a) continue;
+    if (a.category === 'extend') {
+      keep.push(id);
+      continue;
+    }
+    if (used + a.slotCost > capacity) continue;
+    used += a.slotCost;
+    keep.push(id);
+  }
+  return keep.length === custom.augments.length ? custom : { ...custom, augments: keep };
 }
 
 /** 武器的镶嵌槽（含自定义强化或觉醒能力追加的那一个） */

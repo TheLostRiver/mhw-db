@@ -1,6 +1,6 @@
 /**
- * 通用选择器：带搜索、筛选标签、键盘选择、回车确认、Esc 关闭；手机上为底部抽屉。
- * 两种排版：list（单列，装备）与 grid（卡片网格，饰品 / 护石）。
+ * 通用选择器：搜索、稀有度筛选（可多选）、自定义筛选标签、排序（可切换升降序）、键盘选择、回车确认、Esc 关闭；
+ * 手机上为底部抽屉。两种排版：list（单列，装备）与 grid（卡片网格，饰品 / 护石）。
  */
 import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from 'react';
 
@@ -25,60 +25,77 @@ export interface PickerFilter {
   test: (id: number) => boolean;
 }
 
+export interface PickerSort {
+  key: string;
+  label: string;
+  /** 排序用的数值；同值时保持原顺序 */
+  value: (id: number) => number;
+}
+
 interface Props {
   title: string;
   items: PickerItem[];
   current: number | null;
   layout?: 'list' | 'grid';
-  /** 显示下位 / 上位 / 大师筛选 */
-  rankTabs?: boolean;
-  /** 打开时默认选中的阶位（按最低稀有度） */
-  minRarity?: number;
+  /** 显示稀有度筛选（按条目里出现过的稀有度生成标签） */
+  rarityFilter?: boolean;
+  /** 打开时默认选中的稀有度 */
+  defaultRarities?: number[];
   /** 自定义筛选标签（单选，第一项通常是「全部」） */
   filters?: PickerFilter[];
+  /** 排序方式（第一项为默认顺序时 value 可返回 0） */
+  sorts?: PickerSort[];
   placeholder?: string;
   onPick: (id: number | null) => void;
   onClose: () => void;
 }
-
-const RANKS = [
-  { label: '全部', min: 1, max: 99 },
-  { label: '下位', min: 1, max: 4 },
-  { label: '上位', min: 5, max: 8 },
-  { label: '大师', min: 9, max: 12 },
-] as const;
 
 export default function Picker({
   title,
   items,
   current,
   layout = 'list',
-  rankTabs = false,
-  minRarity,
+  rarityFilter = false,
+  defaultRarities = [],
   filters,
+  sorts,
   placeholder = '名称或技能',
   onPick,
   onClose,
 }: Props) {
   const [query, setQuery] = useState('');
-  const [rank, setRank] = useState(rankTabs && minRarity && minRarity >= 9 ? 3 : 0);
+  const [rarities, setRarities] = useState<number[]>(defaultRarities);
   const [filter, setFilter] = useState(0);
+  const [sort, setSort] = useState(0);
+  const [desc, setDesc] = useState(true);
   const [active, setActive] = useState(0);
   const input = useRef<HTMLInputElement>(null);
   const list = useRef<HTMLUListElement>(null);
   const titleId = useId();
 
+  const allRarities = useMemo(
+    () => [...new Set(items.flatMap((i) => (i.rarity != null ? [i.rarity] : [])))].sort((a, b) => a - b),
+    [items],
+  );
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    const r = RANKS[rank]!;
     const f = filters?.[filter];
-    return items.filter((i) => {
-      if (rankTabs && i.rarity != null && (i.rarity < r.min || i.rarity > r.max)) return false;
+    const out = items.filter((i) => {
+      if (rarities.length && i.rarity != null && !rarities.includes(i.rarity)) return false;
       if (f && !f.test(i.id)) return false;
       if (!q) return true;
       return i.name.toLowerCase().includes(q) || (i.search ?? '').toLowerCase().includes(q);
     });
-  }, [items, query, rank, rankTabs, filters, filter]);
+    const s = sorts?.[sort];
+    if (!s || sort === 0) return out;
+    const dir = desc ? -1 : 1;
+    // 稳定排序：同值保持原顺序
+    return out
+      .map((it, i) => ({ it, i, v: s.value(it.id) }))
+      .sort((a, b) => (a.v === b.v ? a.i - b.i : (a.v - b.v) * dir))
+      .map((x) => x.it);
+  }, [items, query, rarities, filters, filter, sorts, sort, desc]);
 
   useEffect(() => {
     input.current?.focus();
@@ -101,6 +118,7 @@ export default function Picker({
   const onKey = (e: React.KeyboardEvent) => {
     const inGrid = layout === 'grid';
     if (e.key === 'Escape') return onClose();
+    if (e.target instanceof HTMLSelectElement) return;
     if (e.key === 'ArrowDown') move(columns());
     else if (e.key === 'ArrowUp') move(-columns());
     else if (inGrid && e.key === 'ArrowRight' && e.target !== input.current) move(1);
@@ -113,32 +131,10 @@ export default function Picker({
     e.preventDefault();
   };
 
-  const tabs = (
-    labels: { key: string; label: ReactNode; title?: string | undefined }[],
-    value: number,
-    set: (i: number) => void,
-    name: string,
-  ) => (
-    <div className="gb-picker__tabs" role="radiogroup" aria-label={name}>
-      {labels.map((f, i) => (
-        <button
-          key={f.key}
-          type="button"
-          role="radio"
-          aria-checked={value === i}
-          aria-label={f.title}
-          title={f.title}
-          className="gb-chip"
-          onClick={() => {
-            set(i);
-            setActive(0);
-          }}
-        >
-          {f.label}
-        </button>
-      ))}
-    </div>
-  );
+  const toggleRarity = (r: number) => {
+    setRarities((cur) => (cur.includes(r) ? cur.filter((x) => x !== r) : [...cur, r].sort((a, b) => a - b)));
+    setActive(0);
+  };
 
   return (
     <div
@@ -181,14 +177,91 @@ export default function Picker({
           />
           <span className="gb-picker__count">{filtered.length}</span>
         </label>
-        {rankTabs &&
-          tabs(
-            RANKS.map((r) => ({ key: r.label, label: r.label })),
-            rank,
-            setRank,
-            '阶位',
-          )}
-        {filters && tabs(filters, filter, setFilter, '筛选')}
+
+        {(rarityFilter || filters || sorts) && (
+          <div className="gb-picker__tools">
+            {rarityFilter && allRarities.length > 1 && (
+              <div className="gb-picker__tabs" role="group" aria-label="稀有度">
+                <button
+                  type="button"
+                  className="gb-chip"
+                  aria-pressed={rarities.length === 0}
+                  onClick={() => {
+                    setRarities([]);
+                    setActive(0);
+                  }}
+                >
+                  全部
+                </button>
+                {allRarities.map((r) => (
+                  <button
+                    key={r}
+                    type="button"
+                    className="gb-chip gb-chip--rar"
+                    aria-pressed={rarities.includes(r)}
+                    aria-label={`稀有度 ${r}`}
+                    style={{ ['--rar' as string]: `var(--gb-rarity-${r})` }}
+                    onClick={() => toggleRarity(r)}
+                  >
+                    R{r}
+                  </button>
+                ))}
+              </div>
+            )}
+            {filters && (
+              <div className="gb-picker__tabs" role="radiogroup" aria-label="筛选">
+                {filters.map((f, i) => (
+                  <button
+                    key={f.key}
+                    type="button"
+                    role="radio"
+                    aria-checked={filter === i}
+                    aria-label={f.title}
+                    title={f.title}
+                    className="gb-chip"
+                    onClick={() => {
+                      setFilter(i);
+                      setActive(0);
+                    }}
+                  >
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+            )}
+            {sorts && sorts.length > 1 && (
+              <div className="gb-picker__sort">
+                <label>
+                  <span>排序</span>
+                  <select
+                    aria-label="排序方式"
+                    value={sort}
+                    onChange={(e) => {
+                      setSort(Number(e.target.value));
+                      setActive(0);
+                    }}
+                  >
+                    {sorts.map((s, i) => (
+                      <option key={s.key} value={i}>
+                        {s.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <button
+                  type="button"
+                  className="gb-chip"
+                  disabled={sort === 0}
+                  aria-label={desc ? '降序，点击切换为升序' : '升序，点击切换为降序'}
+                  onClick={() => setDesc((d) => !d)}
+                >
+                  {desc ? '↓ 降序' : '↑ 升序'}
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
         <ul
           ref={list}
           className={layout === 'grid' ? 'gb-picker__list gb-picker__list--grid' : 'gb-picker__list'}
@@ -216,7 +289,17 @@ export default function Picker({
                 )}
               </span>
               <span className="gb-picker__main">
-                <span className="gb-picker__name">{it.name}</span>
+                <span className="gb-picker__name">
+                  {layout === 'list' && it.rarity != null && (
+                    <small
+                      className="gb-picker__rar"
+                      style={{ ['--rar' as string]: `var(--gb-rarity-${it.rarity})` }}
+                    >
+                      R{it.rarity}
+                    </small>
+                  )}
+                  {it.name}
+                </span>
                 {it.meta && <span className="gb-picker__meta">{it.meta}</span>}
                 {it.disabled && <span className="gb-picker__why">{it.disabled}</span>}
               </span>

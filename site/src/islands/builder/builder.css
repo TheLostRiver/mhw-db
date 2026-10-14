@@ -303,6 +303,42 @@
   cursor: not-allowed;
 }
 
+/* 分区切换（自定义强化 / 零件强化）：贴近游戏的页签 */
+.gb-custom__tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: var(--space-2);
+}
+
+.gb-custom__tabs .gb-chip {
+  flex: 1;
+  height: 28px;
+}
+
+/* 栏位占用的六角格：与游戏的自定义强化画面一致 */
+.gb-hexrow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+.gb-hex {
+  display: inline-flex;
+  gap: 1px;
+}
+
+.gb-hex img {
+  display: block;
+  opacity: 0.9;
+}
+
+.gb-hexrow small {
+  font-family: var(--font-num);
+  font-size: var(--text-xs);
+  color: var(--c-text-3);
+}
+
 .gb-aug {
   display: grid;
   gap: 4px;
@@ -310,11 +346,21 @@
 
 .gb-aug li {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: 22px minmax(0, 1fr) auto;
   gap: var(--space-2);
   align-items: center;
   min-height: 34px;
   font-size: var(--text-sm);
+}
+
+.gb-aug--extend {
+  margin-top: 2px;
+  padding-top: 6px;
+  border-top: 1px dashed var(--c-line);
+}
+
+.gb-aug__fx--off {
+  color: var(--c-text-3);
 }
 
 .gb-aug__label {
@@ -587,6 +633,11 @@
   height: 26px;
   border: 1px dashed var(--c-line-strong);
   border-radius: 50%;
+}
+
+/* 未装备的栏位：图标已经换成灰色占位图，再压一点亮度让「空」更明确 */
+.gb-row[data-empty] .gb-icon {
+  opacity: 0.5;
 }
 
 .gb-row__text {
@@ -1017,11 +1068,73 @@
   color: var(--c-text-3);
 }
 
-.gb-picker__tabs {
-  display: flex;
-  gap: 4px;
+/* 筛选与排序：稀有度、自定义标签、排序方式各一行，窄屏自动换行 */
+.gb-picker__tools {
+  display: grid;
+  gap: 6px;
   padding: var(--space-2) var(--space-4);
   border-bottom: 1px solid var(--c-line);
+}
+
+.gb-picker__tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.gb-picker__sort {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--c-text-3);
+}
+
+.gb-picker__sort label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.gb-picker__sort select {
+  height: 26px;
+  padding-inline: 8px;
+  border-radius: var(--gb-radius);
+  background: var(--gb-slot);
+  box-shadow: inset 0 0 0 1px var(--c-line);
+  color: var(--c-text);
+  font-size: var(--text-xs);
+}
+
+.gb-chip[aria-pressed='true'] {
+  color: var(--c-accent);
+  background: var(--c-accent-soft);
+  box-shadow: inset 0 0 0 1px var(--c-accent);
+}
+
+.gb-chip:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* 稀有度标签用该稀有度的颜色 */
+.gb-chip--rar {
+  font-family: var(--font-num);
+  color: color-mix(in oklab, var(--rar) 70%, var(--c-text));
+}
+
+.gb-chip--rar[aria-pressed='true'] {
+  color: var(--c-text);
+  background: color-mix(in srgb, var(--rar) 22%, transparent);
+  box-shadow: inset 0 0 0 1px var(--rar);
+}
+
+.gb-picker__rar {
+  margin-right: 6px;
+  font-family: var(--font-num);
+  font-size: 10.5px;
+  font-weight: 700;
+  color: color-mix(in oklab, var(--rar) 65%, var(--c-text));
 }
 
 .gb-chip {
