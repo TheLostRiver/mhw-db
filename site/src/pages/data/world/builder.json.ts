@@ -11,6 +11,7 @@ import {
   loadMantles,
   loadMeta,
   loadSkills,
+  loadWeaponCustom,
   pick,
 } from '../../../data/world/load';
 
@@ -19,6 +20,7 @@ const L = 'zh-Hans' as const;
 export const GET: APIRoute = () => {
   const meta = loadMeta();
   const colors = loadColors();
+  const custom = loadWeaponCustom();
   const data: BuilderData = {
     meta: { steamBuildId: meta.steamBuildId, builtAt: meta.builtAt },
     colors: { rarity: colors.rarity, icon: colors.icon },
@@ -58,6 +60,23 @@ export const GET: APIRoute = () => {
     })),
     charms: loadCharms().map((c) => ({ id: c.id, name: pick(c.name, L), rarity: c.rarity, skills: c.skills })),
     mantles: loadMantles().map((m) => ({ id: m.id, name: pick(m.name, L), slots: m.slots, icon: m.icon })),
+    augments: {
+      levels: custom.augments.levels.map((a) => ({
+        id: a.id,
+        category: a.category,
+        level: a.level,
+        slotCost: a.slotCost,
+        name: pick(a.name, L),
+        desc: pick(a.desc, L),
+      })),
+      effects: {
+        attack: custom.augments.effects.attack,
+        affinity: custom.augments.effects.affinity,
+        defense: custom.augments.effects.defense,
+        element: custom.augments.effects.element,
+        elementMultiplier: custom.augments.effects.elementMultiplier,
+      },
+    },
   };
   return new Response(JSON.stringify(data), { headers: { 'content-type': 'application/json' } });
 };

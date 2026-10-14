@@ -109,3 +109,29 @@ test('饰品选择器：卡片网格，按单技能 / 复合珠筛选', async ({
   await dialog.getByRole('radio', { name: '单技能' }).click();
   await expect(cards.first().locator('.gb-skillrow')).toHaveCount(1);
 });
+
+test('自定义强化：攻击力强化Ⅱ 计入状态，镶嵌槽强化追加一个槽', async ({ page }) => {
+  await open(page);
+  await pick(page, '.gb-row__piece[aria-label^="武器"]', '黑龙玄刃');
+  await page.getByRole('radio', { name: '攻击力强化2' }).click();
+  await expect(page.locator('.gb-custom__cost b')).toHaveText('5');
+  // (340 + 10) × 4.8 = 1680
+  await expect(page.locator('section[aria-labelledby="gb-stats-h"]')).toContainText('1680');
+  await page.getByRole('radio', { name: '镶嵌槽强化1' }).click();
+  await expect(page.locator('.gb-row').first().locator('.gb-slot')).toHaveCount(3);
+});
+
+test('冥赤龙觉醒：不可重复的能力在选择器里禁用', async ({ page }) => {
+  await open(page);
+  await pick(page, '.gb-row__piece[aria-label^="武器"]', '赤龙断绝剑·火');
+  await pick(page, '.gb-awk__slot >> nth=0', '攻击力强化6');
+  await expect(page.locator('.gb-awk li').first()).toContainText('攻击力强化6');
+  await page.locator('.gb-awk__slot').nth(1).click();
+  const dialog = page.getByRole('dialog');
+  await dialog.getByRole('searchbox').fill('攻击力强化6');
+  await expect(dialog.getByRole('option').first()).toHaveAttribute('aria-disabled', 'true');
+  await expect(dialog).toContainText('此能力不能重复设定');
+  await page.keyboard.press('Enter');
+  await expect(dialog).toBeVisible();
+  await page.keyboard.press('Escape');
+});

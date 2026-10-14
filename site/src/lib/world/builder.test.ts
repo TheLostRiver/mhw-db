@@ -1,15 +1,40 @@
 import { describe, expect, it } from 'vitest';
 import {
+  augmentCost,
+  awakeningConflict,
   capFor,
+  chosenAwakening,
   computeSkills,
   computeStats,
   emptyBuild,
   fitDecos,
   makeIndex,
+  partTotals,
+  chosenParts,
+  setAugment,
+  weaponSlots,
+  type AugmentLevel,
+  type AwakeningData,
   type BuilderData,
   type SkillData,
   type WeaponData,
 } from './builder';
+
+function aug(id: number, category: AugmentLevel['category'], level: number, slotCost: number): AugmentLevel {
+  return { id, category, level, slotCost, name: `${category}${level}`, desc: '' };
+}
+
+const awk = (id: number, extra: Partial<AwakeningData>): AwakeningData => ({
+  id,
+  category: 'attack',
+  rank: 1,
+  name: `能力${id}`,
+  desc: '',
+  stackable: true,
+  onePerCategory: false,
+  setSkill: null,
+  ...extra,
+});
 
 const lv = (
   level: number,
@@ -88,6 +113,24 @@ const data: BuilderData = {
   ],
   charms: [{ id: 5, name: '攻击护石', rarity: 10, skills: [{ id: 19, level: 1 }] }],
   mantles: [{ id: 1, name: '隐身衣装', slots: [3, 3], icon: { id: 112, color: 0 } }],
+  // 栏位占用与效果取自 weapon-custom.json（new_lb 与 pl_param）
+  augments: {
+    levels: [
+      aug(4, 'attack', 1, 3),
+      aug(5, 'attack', 2, 5),
+      aug(8, 'affinity', 1, 2),
+      aug(12, 'defense', 1, 1),
+      aug(16, 'slot', 1, 3),
+      aug(17, 'slot', 2, 6),
+    ],
+    effects: {
+      attack: [5, 10, 15, 25],
+      affinity: [10, 15, 20, 25],
+      defense: [15, 25, 35, 50],
+      element: [3, 6, 9, 12],
+      elementMultiplier: { 'great-sword': 1.2 },
+    },
+  },
 };
 const weapons: WeaponData[] = [
   {
@@ -104,7 +147,22 @@ const weapons: WeaponData[] = [
     skill: null,
   },
 ];
-const idx = makeIndex(data, weapons);
+weapons.push(
+  { ...weapons[0]!, id: 300, name: '赤龙断绝剑·火', attack: 270, affinity: 5, slots: [4], awakened: true },
+  { ...weapons[0]!, id: 301, name: '上位大剑', rarity: 8, slots: [1] },
+);
+const awakening = [
+  awk(1, {}),
+  awk(6, { rank: 6, stackable: false }),
+  awk(97, { category: 'setBonus', rank: 3, stackable: false, onePerCategory: true, setSkill: 222 }),
+  awk(98, { category: 'setBonus', rank: 3, stackable: false, onePerCategory: true, setSkill: 62 }),
+];
+const parts = [
+  { id: 1, stage: 1, name: '大贼龙零件', desc: '', effect: { attack: 1 } },
+  { id: 2, stage: 2, name: '冰鱼龙零件', desc: '', effect: { defense: 10 } },
+  { id: 3, stage: 2, name: '猛牛龙零件', desc: '', effect: { attack: 1 } },
+];
+const idx = makeIndex(data, { weapons, parts, awakening });
 
 describe('computeSkills', () => {
   it('合计点数并受基础上限约束', () => {
@@ -198,5 +256,77 @@ describe('fitDecos', () => {
   it('换装备后只保留放得下的饰品', () => {
     expect(fitDecos([2, 1], [901, 900, 900], idx)).toEqual([null, null]);
     expect(fitDecos([4, 2], [901, 900], idx)).toEqual([901, 900]);
+  });
+});
+
+describe('自定义强化', () => {
+  it('每种只保留一个等级；攻击 / 会心 / 防御计入状态', () => {
+    const b = emptyBuild();
+    b.weapon = { id: 239, decos: [] };
+    b.custom = setAugment(b.custom, idx, 'attack', 1);
+    b.custom = setAugment(b.custom, idx, 'attack', 2);
+    b.custom = setAugment(b.custom, idx, 'affinity', 1);
+    expect(b.custom.augments).toEqual([5, 8]);
+    expect(augmentCost(b, idx)).toBe(7);
+    const st = computeStats(b, idx, computeSkills(b, idx));
+    expect(st.attack).toBe(350);
+    expect(st.affinity).toBe(-20);
+    b.custom = setAugment(b.custom, idx, 'attack', 0);
+    expect(b.custom.augments).toEqual([8]);
+  });
+
+  it('镶嵌槽强化追加一个槽；未满 10 稀有度与冥赤龙武器不能自定义强化', () => {
+    const b = emptyBuild();
+    b.weapon = { id: 239, decos: [] };
+    b.custom = setAugment(b.custom, idx, 'slot', 2);
+    expect(weaponSlots(b, idx)).toEqual([4, 4, 2]);
+    b.weapon = { id: 301, decos: [] };
+    expect(weaponSlots(b, idx)).toEqual([1]);
+    expect(augmentCost(b, idx)).toBe(0);
+    b.weapon = { id: 300, decos: [] };
+    expect(weaponSlots(b, idx)).toEqual([4]);
+  });
+
+  it('换成槽更少的设定时，多出来的饰品不再计入', () => {
+    const b = emptyBuild();
+    b.weapon = { id: 239, decos: [901, 901, 900] };
+    expect(computeSkills(b, idx).find((x) => x.skill.id === 62)).toBeUndefined();
+    b.custom = setAugment(b.custom, idx, 'slot', 1);
+    expect(computeSkills(b, idx).find((x) => x.skill.id === 62)?.counted).toBe(1);
+  });
+});
+
+describe('零件强化', () => {
+  it('按阶段取零件并合计效果；阶段对不上的忽略', () => {
+    const b = emptyBuild();
+    b.weapon = { id: 239, decos: [] };
+    b.custom.parts = [1, 3];
+    expect(partTotals(chosenParts(b, idx))).toEqual({ attack: 2 });
+    b.custom.parts = [2, 2];
+    expect(partTotals(chosenParts(b, idx))).toEqual({ defense: 10 });
+  });
+});
+
+describe('冥赤龙觉醒', () => {
+  it('不可重复的能力、同种类限一个的能力会被拒绝', () => {
+    const chosen = [awakening[1]!, awakening[2]!, null, null, null];
+    expect(awakeningConflict(chosen, 2, awakening[0]!)).toBeNull();
+    expect(awakeningConflict(chosen, 2, awakening[1]!)).toBe('此能力不能重复设定');
+    expect(awakeningConflict(chosen, 0, awakening[1]!)).toBeNull();
+    expect(awakeningConflict(chosen, 2, awakening[3]!)).toBe('无法设定复数系列技能');
+    expect(awakeningConflict(chosen, 1, awakening[3]!)).toBeNull();
+  });
+
+  it('系列技能能力计 1 件，只对冥赤龙武器生效', () => {
+    const b = emptyBuild();
+    b.weapon = { id: 300, decos: [] };
+    b.custom.awakening = [97, 1];
+    b.armor.head = { id: 1, decos: [] };
+    expect(chosenAwakening(b, idx).map((a) => a?.id ?? null)).toEqual([97, 1, null, null, null]);
+    const set = computeSkills(b, idx).find((x) => x.skill.id === 222)!;
+    expect(set.counted).toBe(2);
+    expect(set.activeSetLevels).toEqual([2]);
+    b.weapon = { id: 239, decos: [] };
+    expect(computeSkills(b, idx).find((x) => x.skill.id === 222)?.counted).toBe(1);
   });
 });

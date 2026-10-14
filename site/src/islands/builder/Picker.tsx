@@ -13,6 +13,8 @@ export interface PickerItem {
   icon?: ReactNode;
   meta?: ReactNode;
   side?: ReactNode;
+  /** 不能选时的原因（显示在条目上，点击无效） */
+  disabled?: string;
 }
 
 export interface PickerFilter {
@@ -105,7 +107,7 @@ export default function Picker({
     else if (inGrid && e.key === 'ArrowLeft' && e.target !== input.current) move(-1);
     else if (e.key === 'Enter') {
       const it = filtered[active];
-      if (it) onPick(it.id);
+      if (it && !it.disabled) onPick(it.id);
       return;
     } else return;
     e.preventDefault();
@@ -200,9 +202,10 @@ export default function Picker({
               data-index={i}
               aria-selected={i === active}
               data-current={it.id === current ? '' : undefined}
+              aria-disabled={it.disabled ? true : undefined}
               // 只跟随真实的鼠标移动：打开时指针（或手指）恰好停在列表上不应改变选中项
               onPointerMove={(e) => e.pointerType === 'mouse' && i !== active && setActive(i)}
-              onClick={() => onPick(it.id)}
+              onClick={() => !it.disabled && onPick(it.id)}
             >
               <span className="gb-picker__icon">
                 {it.icon}
@@ -215,6 +218,7 @@ export default function Picker({
               <span className="gb-picker__main">
                 <span className="gb-picker__name">{it.name}</span>
                 {it.meta && <span className="gb-picker__meta">{it.meta}</span>}
+                {it.disabled && <span className="gb-picker__why">{it.disabled}</span>}
               </span>
               {it.side && <span className="gb-picker__side">{it.side}</span>}
             </li>

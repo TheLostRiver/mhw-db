@@ -3,7 +3,20 @@
  */
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import type { Armor, Charm, Colors, Decoration, Item, Lang, Mantle, Meta, Skill, Weapon, WeaponType } from './schema';
+import type {
+  Armor,
+  Charm,
+  Colors,
+  Decoration,
+  Item,
+  Lang,
+  Mantle,
+  Meta,
+  Skill,
+  Weapon,
+  WeaponCustom,
+  WeaponType,
+} from './schema';
 
 const ROOT = new URL('../../../../data/world/', import.meta.url);
 const cache = new Map<string, unknown>();
@@ -22,6 +35,7 @@ export const loadArmor = () => read<{ armor: Armor[] }>('armor.json').armor;
 export const loadCharms = () => read<{ charms: Charm[] }>('charms.json').charms;
 export const loadMantles = () => read<{ mantles: Mantle[] }>('mantles.json').mantles;
 export const loadWeapons = (type: WeaponType) => read<{ weapons: Weapon[] }>(`weapons/${type}.json`).weapons;
+export const loadWeaponCustom = () => read<WeaponCustom>('weapon-custom.json');
 
 /** 取某语言文本，缺失时退回简中 */
 export const pick = (t: { [K in Lang]?: string | undefined } | undefined, lang: Lang): string =>

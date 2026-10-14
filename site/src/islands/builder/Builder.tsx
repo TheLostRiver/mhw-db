@@ -5,21 +5,28 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ARMOR_SLOTS,
+  augmentLevels,
+  awakeningConflict,
+  chosenAwakening,
   computeSkills,
   computeStats,
   emptyBuild,
+  emptyCustom,
   fitDecos,
   makeIndex,
+  setAugment,
   VERIFIED_BLOAT,
+  weaponSlots,
   type ArmorSlot,
   type Build,
   type BuilderData,
   type Index,
   type Piece,
   type SkillTotal,
-  type WeaponData,
+  type WeaponPayload,
 } from '../../lib/world/builder';
 import Picker from './Picker';
+import WeaponCustomPanel, { AWAKENING_GROUPS, ROMAN, awakeningMeta } from './WeaponCustom';
 import { GameIcon, iconUrl, LevelBoxes } from './icons';
 import './builder.css';
 
@@ -70,12 +77,15 @@ type Target =
   | { kind: 'mantle'; index: 0 | 1 };
 
 /** 正在打开的选择器 */
-type Picking = { target: Target; deco?: number } | null;
+type Picking = { target: Target; deco?: number; awakening?: number } | null;
 
 function loadSaved(): Build {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return { ...emptyBuild(), ...(JSON.parse(raw) as Build) };
+    if (raw) {
+      const saved = JSON.parse(raw) as Partial<Build>;
+      return { ...emptyBuild(), ...saved, custom: { ...emptyCustom(), ...saved.custom } };
+    }
   } catch {
     /* 忽略损坏的存档 */
   }
@@ -84,7 +94,7 @@ function loadSaved(): Build {
 
 export default function Builder() {
   const [data, setData] = useState<BuilderData | null>(null);
-  const [weapons, setWeapons] = useState<WeaponData[]>([]);
+  const [payload, setPayload] = useState<WeaponPayload>({ weapons: [], parts: [], awakening: [] });
   // 组件只在客户端渲染（client:only），可以直接从 localStorage 初始化
   const [build, setBuild] = useState<Build>(loadSaved);
   const [selected, setSelected] = useState<Target>({ kind: 'weapon' });
@@ -101,7 +111,7 @@ export default function Builder() {
   useEffect(() => {
     fetch(`/data/world/weapons/${build.weaponType}.json`)
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
-      .then((w: WeaponData[]) => setWeapons(w))
+      .then((w: WeaponPayload) => setPayload(w))
       .catch((e: unknown) => setError(`武器数据加载失败：${String(e)}`));
   }, [build.weaponType]);
 
@@ -113,7 +123,7 @@ export default function Builder() {
     }
   }, [build]);
 
-  const idx = useMemo(() => (data ? makeIndex(data, weapons) : null), [data, weapons]);
+  const idx = useMemo(() => (data ? makeIndex(data, payload) : null), [data, payload]);
   const skills = useMemo(() => (idx ? computeSkills(build, idx) : []), [build, idx]);
   const stats = useMemo(() => (idx ? computeStats(build, idx, skills) : null), [build, idx, skills]);
 
@@ -134,7 +144,7 @@ export default function Builder() {
   const slotsOf = (t: Target): number[] => {
     const p = pieceOf(t);
     if (!p || p.id == null) return [];
-    if (t.kind === 'weapon') return idx.weapons.get(p.id)?.slots ?? [];
+    if (t.kind === 'weapon') return weaponSlots(build, idx);
     if (t.kind === 'armor') return idx.armor.get(p.id)?.slots ?? [];
     if (t.kind === 'mantle') return idx.mantles.get(p.id)?.slots ?? [];
     return [];
@@ -147,6 +157,8 @@ export default function Builder() {
         return b;
       }
       const p = t.kind === 'weapon' ? b.weapon : t.kind === 'armor' ? b.armor[t.slot] : b.mantles[t.index];
+      // 换武器时客制一并清空（自定义强化、零件、觉醒都跟具体武器绑定）
+      if (t.kind === 'weapon' && p.id !== id) b.custom = emptyCustom();
       p.id = id;
       const slots =
         id == null
@@ -177,10 +189,50 @@ export default function Builder() {
       return b;
     });
 
+  const setAwakening = (slot: number, id: number | null) =>
+    update((b) => {
+      while (b.custom.awakening.length <= slot) b.custom.awakening.push(null);
+      b.custom.awakening[slot] = id;
+      return b;
+    });
+
   const pickerFor = (
     pk: NonNullable<Picking>,
   ): Omit<React.ComponentProps<typeof Picker>, 'onPick' | 'onClose'> => {
     const t = pk.target;
+    if (pk.awakening != null) {
+      const slot = pk.awakening;
+      const chosen = chosenAwakening(build, idx);
+      const group = (id: number) => AWAKENING_GROUPS[idx.awakening.get(id)?.category ?? ''] ?? '武器专属';
+      return {
+        title: `觉醒能力（第 ${slot + 1} 栏）`,
+        current: chosen[slot]?.id ?? null,
+        placeholder: '能力名称',
+        filters: [
+          { key: 'all', label: '全部', test: () => true },
+          ...['基础', '系列技能', '武器专属'].map((g) => ({
+            key: g,
+            label: g,
+            test: (id: number) => group(id) === g,
+          })),
+        ],
+        items: payload.awakening.map((a) => {
+          const conflict = awakeningConflict(chosen, slot, a);
+          return {
+            id: a.id,
+            name: a.name,
+            search: a.desc,
+            icon: (
+              <span className="gb-awk__rank" data-rank={a.rank}>
+                {ROMAN[a.rank]}
+              </span>
+            ),
+            meta: awakeningMeta(a),
+            ...(conflict ? { disabled: conflict } : {}),
+          };
+        }),
+      };
+    }
     if (pk.deco != null) {
       const size = slotsOf(t)[pk.deco] ?? 0;
       const deco = (id: number) => idx.decorations.get(id);
@@ -222,14 +274,14 @@ export default function Builder() {
         current: build.weapon.id,
         rankTabs: true,
         minRarity: 9,
-        items: weapons.map((w) => ({
+        items: payload.weapons.map((w) => ({
           id: w.id,
           name: w.name,
           rarity: w.rarity,
           icon: <GameIcon src={iconUrl.weapon(build.weaponType, w.rarity)} size={28} />,
           meta: (
             <>
-              攻击 {w.attack} · 会心 {w.affinity}%
+              {w.awakened ? '冥赤龙武器 · ' : ''}攻击 {w.attack} · 会心 {w.affinity}%
               {w.element ? ` · ${ELEMENT_NAMES[w.element.type] ?? ''} ${w.element.value * 10}` : ''}
             </>
           ),
@@ -312,6 +364,7 @@ export default function Builder() {
                   if (b.weaponType !== key) {
                     b.weaponType = key;
                     b.weapon = { id: null, decos: [] };
+                    b.custom = emptyCustom();
                   }
                   return b;
                 })
@@ -369,6 +422,22 @@ export default function Builder() {
             build={build}
             idx={idx}
             onChange={() => setPicking({ target: selected })}
+            custom={(w) => (
+              <WeaponCustomPanel
+                weapon={w}
+                build={build}
+                idx={idx}
+                onAugment={(category, level) =>
+                  update((b) => {
+                    b.custom = setAugment(b.custom, idx, category, level);
+                    b.weapon.decos = fitDecos(weaponSlots(b, idx), b.weapon.decos, idx);
+                    return b;
+                  })
+                }
+                onCustom={(fn) => update((b) => ({ ...b, custom: fn(b.custom) }))}
+                onPickAwakening={(slot) => setPicking({ target: { kind: 'weapon' }, awakening: slot })}
+              />
+            )}
           />
         </section>
 
@@ -390,7 +459,8 @@ export default function Builder() {
 
       <p className="gb-foot">
         数据版本：Steam 构建 {data.meta.steamBuildId ?? '—'}。状态 v0
-        只计入无条件技能（攻击、看破）；挑战者、弱点特效等条件技能、 武器客制、零件强化、冥赤龙觉醒尚未接入。
+        只计入无条件技能（攻击、看破）与自定义强化的攻击 / 会心 / 防御；挑战者、弱点特效等条件技能、
+        零件强化与觉醒能力的数值尚未计入。
       </p>
 
       {picking && (
@@ -398,7 +468,8 @@ export default function Builder() {
           {...pickerFor(picking)}
           onClose={() => setPicking(null)}
           onPick={(id) => {
-            if (picking.deco != null) setDeco(picking.target, picking.deco, id);
+            if (picking.awakening != null) setAwakening(picking.awakening, id);
+            else if (picking.deco != null) setDeco(picking.target, picking.deco, id);
             else setPiece(picking.target, id);
             setPicking(null);
           }}
@@ -553,11 +624,13 @@ function Detail({
   build,
   idx,
   onChange,
+  custom,
 }: {
   target: Target;
   build: Build;
   idx: Index;
   onChange: () => void;
+  custom: (w: NonNullable<ReturnType<Index['weapons']['get']>>) => React.ReactNode;
 }) {
   const head = (icon: string | null, name: string, rarity: number | null, kind: string) => (
     <header className="gb-detail__head">
@@ -593,6 +666,19 @@ function Detail({
         <EmptyDetail head={head(null, '未装备武器', null, WEAPON_TYPE_NAMES[build.weaponType] ?? '武器')} />
       );
     const bloat = VERIFIED_BLOAT[build.weaponType];
+    // 自定义强化后的数值（与游戏的强化画面一样，附上增加量）
+    const aug = augmentLevels(build, idx);
+    const plus = (key: 'attack' | 'affinity' | 'defense') => {
+      const a = aug.get(key);
+      return a ? (idx.effects[key][a.level - 1] ?? 0) : 0;
+    };
+    const withPlus = (base: number, add: number, fmt: (n: number) => string) => (
+      <>
+        {fmt(base + add)}
+        {add !== 0 && <small className="gb-plus">（+{fmt(add)}）</small>}
+      </>
+    );
+    const attackFmt = (n: number) => (bloat ? `${Math.round(n * bloat)}` : `${n}`);
     return (
       <>
         {head(
@@ -602,9 +688,20 @@ function Detail({
           WEAPON_TYPE_NAMES[build.weaponType] ?? '武器',
         )}
         <dl className="gb-kvs">
-          {kv('攻击力', bloat ? `${Math.round(w.attack * bloat)}` : `${w.attack}（真实值）`, 25)}
+          {kv(
+            '攻击力',
+            <>
+              {withPlus(w.attack, plus('attack'), attackFmt)}
+              {!bloat && '（真实值）'}
+            </>,
+            25,
+          )}
           {w.sharpness && kv('锐利度', <Sharpness bars={w.sharpness} />)}
-          {kv('会心率', `${w.affinity}%`, 27)}
+          {kv(
+            '会心率',
+            withPlus(w.affinity, plus('affinity'), (n) => `${n}%`),
+            27,
+          )}
           {kv(
             '属性',
             w.element ? `${ELEMENT_NAMES[w.element.type] ?? w.element.type} ${w.element.value * 10}` : '—',
@@ -613,16 +710,15 @@ function Detail({
           {w.hiddenElement &&
             kv('隐藏属性', `${ELEMENT_NAMES[w.hiddenElement.type] ?? ''} ${w.hiddenElement.value * 10}`)}
           {kv('龙封力', ELDERSEAL[w.elderseal] ?? '—')}
-          {kv('镶嵌槽', <SlotDots slots={w.slots} />, 55)}
-          {kv('防御力加成', w.defense ? `+${w.defense}` : '—', 26)}
+          {kv('镶嵌槽', <SlotDots slots={weaponSlots(build, idx)} />, 55)}
+          {kv(
+            '防御力加成',
+            w.defense + plus('defense') ? withPlus(w.defense, plus('defense'), (n) => `+${n}`) : '—',
+            26,
+          )}
           {w.skill != null && kv('武器技能', idx.skills.get(w.skill)?.name ?? `#${w.skill}`)}
         </dl>
-        <section className="gb-custom" aria-label="武器客制">
-          <h3 className="gb-h gb-h--sub">武器客制</h3>
-          <p className="gb-note">
-            自定义强化、零件强化、冥赤龙觉醒的数据结构已读出，规则整理中，下一版接入。
-          </p>
-        </section>
+        {custom(w)}
       </>
     );
   }

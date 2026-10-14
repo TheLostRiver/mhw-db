@@ -1,17 +1,24 @@
 /**
  * 每种武器的精简数据（简中）：构建时生成 /data/world/weapons/<种类>.json，配装器按需加载。
+ * 含该武器种的零件强化与冥赤龙觉醒能力；同名同数值的重复行（duplicateOf）不输出。
  */
 import type { APIRoute, GetStaticPaths } from 'astro';
-import type { WeaponData } from '../../../../lib/world/builder';
-import { loadWeapons, pick } from '../../../../data/world/load';
+import type { WeaponPayload } from '../../../../lib/world/builder';
+import { loadWeaponCustom, loadWeapons, pick } from '../../../../data/world/load';
 import { WEAPON_TYPES, type WeaponType } from '../../../../data/world/schema';
 
 export const getStaticPaths = (() => WEAPON_TYPES.map((type) => ({ params: { type } }))) satisfies GetStaticPaths;
 
+const L = 'zh-Hans' as const;
+
 export const GET: APIRoute = ({ params }) => {
-  const weapons: WeaponData[] = loadWeapons(params.type as WeaponType).map((w) => ({
+  const type = params.type as WeaponType;
+  const custom = loadWeaponCustom();
+  const weapons = loadWeapons(type)
+    .filter((w) => w.duplicateOf == null)
+    .map((w) => ({
     id: w.id,
-    name: pick(w.name, 'zh-Hans'),
+    name: pick(w.name, L),
     rarity: w.rarity,
     attack: w.attack,
     affinity: w.affinity,
@@ -22,6 +29,29 @@ export const GET: APIRoute = ({ params }) => {
     slots: w.slots,
     skill: w.skill,
     ...(w.sharpness ? { sharpness: w.sharpness.bars } : {}),
+    ...(w.awakened ? { awakened: true } : {}),
   }));
-  return new Response(JSON.stringify(weapons), { headers: { 'content-type': 'application/json' } });
+  const payload: WeaponPayload = {
+    weapons,
+    parts: (custom.parts[type] ?? []).map((p) => ({
+      id: p.id,
+      stage: p.stage,
+      name: pick(p.name, L),
+      desc: pick(p.desc, L),
+      effect: p.effect,
+    })),
+    awakening: custom.awakening
+      .filter((a) => a.weapons.includes(type))
+      .map((a) => ({
+        id: a.id,
+        category: a.category,
+        rank: a.rank,
+        name: pick(a.name, L),
+        desc: pick(a.desc, L),
+        stackable: a.stackable,
+        onePerCategory: a.onePerCategory,
+        setSkill: a.setSkill,
+      })),
+  };
+  return new Response(JSON.stringify(payload), { headers: { 'content-type': 'application/json' } });
 };

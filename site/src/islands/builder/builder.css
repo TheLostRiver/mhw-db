@@ -210,6 +210,248 @@
   color: var(--c-text-3);
 }
 
+/* ---------- 武器客制 ---------- */
+
+.gb-h--sub {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.gb-plus {
+  margin-left: 2px;
+  font-size: var(--text-xs);
+  color: var(--gb-gold);
+}
+
+.gb-custom__cost {
+  margin-left: auto;
+  font-size: var(--text-xs);
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--c-text-3);
+}
+
+.gb-custom__cost b {
+  font-family: var(--font-num);
+  font-size: var(--text-sm);
+  color: var(--gb-gold);
+}
+
+.gb-aug {
+  display: grid;
+  gap: 4px;
+}
+
+.gb-aug li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--space-2);
+  align-items: center;
+  min-height: 34px;
+  font-size: var(--text-sm);
+}
+
+.gb-aug__label {
+  display: grid;
+  min-width: 0;
+}
+
+.gb-aug__name {
+  color: var(--c-text-2);
+}
+
+/* 等级选择：游戏里的 Ⅰ–Ⅳ 级以分段按钮表示 */
+.gb-aug__levels {
+  display: inline-flex;
+  border-radius: var(--gb-radius);
+  box-shadow: inset 0 0 0 1px var(--c-line-strong);
+  overflow: hidden;
+}
+
+.gb-aug__levels button {
+  min-width: 28px;
+  height: 26px;
+  padding-inline: 6px;
+  font-family: var(--font-num);
+  font-size: var(--text-xs);
+  color: var(--c-text-3);
+  transition:
+    background-color var(--dur-fast) var(--ease-standard),
+    color var(--dur-fast) var(--ease-standard);
+}
+
+.gb-aug__levels button + button {
+  box-shadow: inset 1px 0 0 var(--c-line);
+}
+
+.gb-aug__levels button:hover {
+  color: var(--c-text);
+}
+
+.gb-aug__levels button[aria-checked='true'] {
+  background: color-mix(in srgb, var(--gb-gold) 22%, transparent);
+  color: var(--c-text);
+  font-weight: 700;
+}
+
+/* 「不强化」选中时不用金色，只是普通的按下状态 */
+.gb-aug__levels button:first-child[aria-checked='true'] {
+  background: var(--c-surface-3);
+  color: var(--c-text-2);
+  font-weight: 400;
+}
+
+.gb-aug__fx {
+  display: flex;
+  gap: var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--gb-gold);
+}
+
+.gb-aug__fx small {
+  font-family: var(--font-num);
+  color: var(--c-text-3);
+}
+
+.gb-parts {
+  display: grid;
+  gap: 4px;
+}
+
+.gb-parts label {
+  display: grid;
+  grid-template-columns: 4.5em minmax(0, 1fr);
+  gap: var(--space-2);
+  align-items: center;
+  font-size: var(--text-sm);
+}
+
+.gb-parts__stage {
+  font-family: var(--font-num);
+  font-size: var(--text-xs);
+  color: var(--c-text-3);
+}
+
+.gb-parts select {
+  min-width: 0;
+  height: 30px;
+  padding-inline: var(--space-2);
+  border-radius: var(--gb-radius);
+  background: var(--gb-slot);
+  box-shadow: inset 0 0 0 1px var(--c-line);
+  color: var(--c-text);
+  font-size: var(--text-sm);
+}
+
+.gb-awk {
+  display: grid;
+  gap: 4px;
+}
+
+.gb-awk li {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.gb-awk__slot {
+  display: flex;
+  flex: 1;
+  gap: var(--space-2);
+  align-items: center;
+  min-width: 0;
+  height: 34px;
+  padding-inline: 6px var(--space-3);
+  border-radius: var(--gb-radius);
+  background: var(--gb-slot);
+  text-align: left;
+  transition: box-shadow var(--dur-fast) var(--ease-standard);
+}
+
+.gb-awk__slot:hover {
+  box-shadow: inset 0 0 0 1px var(--c-accent);
+}
+
+.gb-awk li[data-empty] .gb-awk__name {
+  color: var(--c-text-3);
+}
+
+.gb-awk__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.gb-awk__group {
+  margin-left: auto;
+  font-size: var(--text-xs);
+  color: var(--c-text-3);
+}
+
+/* 觉醒能力等级：Ⅰ–Ⅵ 由冷到暖，Ⅵ 为特殊稀有度 */
+.gb-awk__rank {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  font-family: var(--font-num);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--c-text-3);
+  box-shadow: inset 0 0 0 1px var(--c-line-strong);
+  --rank: transparent;
+  background: color-mix(in srgb, var(--rank) 30%, transparent);
+}
+
+.gb-awk__rank[data-rank='1'] {
+  --rank: #8a9aa6;
+}
+
+.gb-awk__rank[data-rank='2'] {
+  --rank: #6fae7a;
+}
+
+.gb-awk__rank[data-rank='3'] {
+  --rank: #4e9bd6;
+}
+
+.gb-awk__rank[data-rank='4'] {
+  --rank: #9a77d6;
+}
+
+.gb-awk__rank[data-rank='5'] {
+  --rank: #e2a33c;
+}
+
+.gb-awk__rank[data-rank='6'] {
+  --rank: #e05b6b;
+}
+
+.gb-awk__rank:not([data-rank='0']) {
+  color: var(--c-text);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--rank) 70%, transparent);
+}
+
+.gb-awk__clear {
+  height: 26px;
+  font-size: var(--text-xs);
+}
+
+.gb-picker__list li[aria-disabled='true'] {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.gb-picker__why {
+  font-size: var(--text-xs);
+  color: var(--c-danger);
+}
+
 /* ---------- 装备一览（游戏式：左装备、右镶嵌槽） ---------- */
 
 .gb-equip {
