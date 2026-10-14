@@ -234,11 +234,16 @@ def build_mantles(s: Source, items: dict[int, dict]) -> list[dict]:
     texts = s.text("common/text/vfont/a_skill")
     out = []
     for row, r in enumerate(s.table(rel, S.MANTLE)):
-        k = r["mantle_id"] - 1
+        # 文本按文件行号排列（每件 4 条）；mantle_id 有跳号（13、14 不存在），不能拿来算文本序号
+        k = row
         item = items.get(r["item_id"])
         name = tr(texts, 4 * k) or (item["name"] if item else None)
         if not name:
             continue
+        if item and item["name"].get("zh-Hans") != name.get("zh-Hans"):
+            raise ValueError(
+                f"{rel} 行 {row}：衣装名 {name.get('zh-Hans')} 与物品名 {item['name'].get('zh-Hans')} 不一致"
+            )
         out.append(
             {
                 "id": r["mantle_id"],

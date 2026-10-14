@@ -159,6 +159,7 @@ const data: BuilderData = {
       defense: [15, 25, 35, 50],
       element: [3, 6, 9, 12],
       elementMultiplier: { 'great-sword': 1.2 },
+      hr: { attack: [5, 10, 15], affinity: [10, 15, 20], defense: [10, 20, 30] },
     },
   },
   bloat: { 'great-sword': 4.8, 'long-sword': 3.3 },
@@ -344,6 +345,9 @@ describe('零件强化', () => {
     expect(partTotals(chosenParts(b, idx))).toEqual({ attack: 2 });
     b.custom.parts = [2, 2];
     expect(partTotals(chosenParts(b, idx))).toEqual({ defense: 10 });
+    // 零件的攻击是真实值加值（用户核对：重弩 390 → 392）
+    b.custom.parts = [1, 3];
+    expect(computeStats(b, idx, computeSkills(b, idx)).attack).toBe(342);
   });
 });
 
@@ -463,5 +467,27 @@ describe('锐利度', () => {
     expect(st.effectiveAttack).toBeCloseTo(340 * (1 - 0.3 * 0.25) * 1.32);
     delete weapons[0]!.sharpness;
     delete weapons[0]!.handicraft;
+  });
+});
+
+describe('上位自定义强化', () => {
+  it('同一项可重复，按次数取累计加值；格数按稀有度', () => {
+    const hrIdx = makeIndex(data, {
+      weapons: [
+        { ...weapons[0]!, id: 302, name: '上位大剑R7', rarity: 7, attack: 210, affinity: 0, slots: [] },
+      ],
+      parts,
+      awakening,
+    });
+    const b = emptyBuild();
+    b.weapon = { id: 302, decos: [] };
+    b.custom.hr = ['attack'];
+    let st = computeStats(b, hrIdx, computeSkills(b, hrIdx));
+    expect(st.attack).toBe(215); // 用户核对：1008 → 1032（×4.8）
+    b.custom.hr = ['attack', 'attack', 'affinity']; // 稀有度 7 只有 2 格，第 3 格不计
+    st = computeStats(b, hrIdx, computeSkills(b, hrIdx));
+    expect([st.attack, st.affinity]).toEqual([220, 0]);
+    b.custom.hr = ['slot', 'slot'];
+    expect(weaponSlots(b, hrIdx)).toEqual([2]);
   });
 });

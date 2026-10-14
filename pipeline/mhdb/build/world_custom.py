@@ -86,7 +86,9 @@ def read_augment_effects(data: bytes) -> dict:
     def r(xs: list[float]) -> list[float]:
         return [round(x, 4) for x in xs]
 
-    take("12B")  # 上位：攻击 / 会心 / 防御 / 防御的减伤几率（各 3 级）
+    # 上位（稀有度 6–8）：同一强化可重复，第 n 次累计的加值（用户在游戏内核对：第 1 次攻击 +5、会心 +10%、防御 +10）
+    hr = {"attack": take("3B"), "affinity": take("3B"), "defense": take("3B")}
+    take("3B")  # 防御强化的减伤几率
     take("8f")  # 上位：减伤率 / 回复 / 未知 / 回复冷却
     mr = {
         "attack": take("4B"),
@@ -104,6 +106,7 @@ def read_augment_effects(data: bytes) -> dict:
     mult = r(take("14f"))
     mr["elementMultiplier"] = dict(zip(WEAPON_KEYS, mult, strict=True))
     mr["bowCoatingStatus"] = r(take("4f"))
+    mr["hr"] = hr
     return mr
 
 

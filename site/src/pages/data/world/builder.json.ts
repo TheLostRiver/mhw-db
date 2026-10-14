@@ -76,6 +76,7 @@ export const GET: APIRoute = () => {
         defense: custom.augments.effects.defense,
         element: custom.augments.effects.element,
         elementMultiplier: custom.augments.effects.elementMultiplier,
+        hr: custom.augments.effects.hr,
       },
     },
     bloat: loadConstants().weaponBloat,

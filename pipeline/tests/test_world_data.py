@@ -170,3 +170,13 @@ def test_sharpness_multipliers() -> None:
     assert c["sharpness"]["raw"] == [0.5, 0.75, 1.0, 1.05, 1.2, 1.32, 1.39]
     assert c["sharpness"]["element"][6] == 1.25
     assert (c["critMultiplier"], c["badCritMultiplier"]) == (1.25, 0.75)
+
+
+def test_mantle_names_follow_row_order() -> None:
+    # 用户指出缺少滑空衣装：文本按文件行号排列，不按 mantle_id
+    m = load("mantles.json", "mantles")
+    names = [x["name"]["zh-Hans"] for x in m]
+    assert "滑空衣装" in names and "回避衣装" in names
+    glider = by_name(m, "滑空衣装")
+    assert glider["slots"] == [4, 4]
+    assert all(x["slots"] == [] for x in m if x["name"]["zh-Hans"].endswith("烟筒"))

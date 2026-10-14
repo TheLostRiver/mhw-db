@@ -110,15 +110,20 @@ test('饰品选择器：卡片网格，按单技能 / 复合珠筛选', async ({
   await expect(cards.first().locator('.gb-skillrow')).toHaveCount(1);
 });
 
-test('自定义强化：攻击力强化Ⅱ 计入状态，镶嵌槽强化追加一个槽', async ({ page }) => {
+test('自定义强化：攻击力强化计入状态，镶嵌槽强化追加槽，超出格数上限的选项不可选', async ({ page }) => {
   await open(page);
   await pick(page, '.gb-row__piece[aria-label^="武器"]', '黑龙玄刃');
   await page.getByRole('radio', { name: '攻击力强化2' }).click();
-  await expect(page.locator('.gb-custom__cost b')).toHaveText('5');
+  await expect(page.locator('.gb-custom__cost')).toContainText('5 / 6');
   // (340 + 10) × 4.8 = 1680
   await expect(page.locator('section[aria-labelledby="gb-stats-h"]')).toContainText('1680');
+  // 稀有度 12 上限 6 格：攻击Ⅱ（5）+ 镶嵌槽Ⅰ（3）超出
+  await expect(page.getByRole('radio', { name: '镶嵌槽强化1' })).toBeDisabled();
+  await page.getByRole('radio', { name: '攻击力强化1' }).click();
   await page.getByRole('radio', { name: '镶嵌槽强化1' }).click();
+  await expect(page.locator('.gb-custom__cost')).toContainText('6 / 6');
   await expect(page.locator('.gb-row').first().locator('.gb-slot')).toHaveCount(3);
+  await expect(page.getByRole('radio', { name: '攻击力强化2' })).toBeDisabled();
 });
 
 test('冥赤龙觉醒：不可重复的能力在选择器里禁用', async ({ page }) => {

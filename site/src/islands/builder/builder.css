@@ -294,6 +294,15 @@
   color: var(--gb-gold);
 }
 
+.gb-custom__cost b[data-over] {
+  color: var(--c-danger);
+}
+
+.gb-aug__levels button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
 .gb-aug {
   display: grid;
   gap: 4px;

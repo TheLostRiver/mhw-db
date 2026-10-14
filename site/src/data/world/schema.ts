@@ -297,6 +297,13 @@ export const WeaponCustom = z
             bowgunStatusAmmo: Levels4,
             elementMultiplier: z.record(z.enum(WEAPON_TYPES), z.number().positive()),
             bowCoatingStatus: Levels4,
+            hr: z
+              .object({
+                attack: z.array(z.number()).length(3),
+                affinity: z.array(z.number()).length(3),
+                defense: z.array(z.number()).length(3),
+              })
+              .strict(),
             _src: z.object({ file: z.string(), offset: z.number().int() }).strict(),
           })
           .strict(),

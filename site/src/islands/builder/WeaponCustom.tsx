@@ -4,8 +4,13 @@
  */
 import {
   AUGMENT_ORDER,
+  HR_AUGMENTS,
+  HR_AUGMENT_SLOTS,
   PART_STAGES,
+  augmentCapacity,
   augmentCost,
+  hrCounts,
+  type HrAugment,
   augmentLevels,
   chosenAwakening,
   chosenParts,
@@ -104,28 +109,108 @@ export default function WeaponCustomPanel({
   if (kind === 'augment')
     return (
       <>
-        <AugmentPanel build={build} idx={idx} onAugment={onAugment} />
+        <AugmentPanel weapon={weapon} build={build} idx={idx} onAugment={onAugment} />
         <PartsPanel build={build} idx={idx} onCustom={onCustom} />
       </>
     );
+  if (kind === 'hr') return <HrAugmentPanel weapon={weapon} build={build} idx={idx} onCustom={onCustom} />;
   return (
     <section className="gb-custom" aria-label="武器客制">
       <h3 className="gb-h gb-h--sub">武器客制</h3>
-      <p className="gb-note">大师自定义强化从稀有度 10 开始；上位（稀有度 6–8）的自定义强化尚未接入。</p>
+      <p className="gb-note">这把武器没有自定义强化（上位为稀有度 6–8，大师为稀有度 10–12）。</p>
+    </section>
+  );
+}
+
+const HR_NAMES: Record<HrAugment, string> = {
+  attack: '强化攻击力',
+  affinity: '强化会心率',
+  defense: '强化防御力',
+  slot: '强化镶嵌槽',
+  health: '赋予回复能力',
+};
+
+/** 上位自定义强化：每格选一种，同种可重复；加值按次数累计 */
+function HrAugmentPanel({
+  weapon,
+  build,
+  idx,
+  onCustom,
+}: {
+  weapon: WeaponData;
+  build: Build;
+  idx: Index;
+  onCustom: (fn: (c: WeaponCustom) => WeaponCustom) => void;
+}) {
+  const slots = HR_AUGMENT_SLOTS[weapon.rarity] ?? 0;
+  const counts = hrCounts(build, idx);
+  const fx = idx.effects.hr;
+  const total = (a: HrAugment): string | null => {
+    const n = counts.get(a) ?? 0;
+    if (!n) return null;
+    if (a === 'attack') return `攻击 +${fx.attack[n - 1] ?? 0}`;
+    if (a === 'affinity') return `会心 +${fx.affinity[n - 1] ?? 0}%`;
+    if (a === 'defense') return `防御 +${fx.defense[n - 1] ?? 0}`;
+    if (a === 'slot') return `追加 ${Math.min(n, 3)} 级镶嵌槽`;
+    return `回复能力 ×${n}`;
+  };
+  const set = (i: number, a: HrAugment | null) =>
+    onCustom((c) => {
+      const hr = [...c.hr];
+      while (hr.length <= i) hr.push(null);
+      hr[i] = a;
+      return { ...c, hr };
+    });
+
+  return (
+    <section className="gb-custom" aria-label="自定义强化">
+      <h3 className="gb-h gb-h--sub">
+        自定义强化
+        <span className="gb-custom__cost" title="上位格数按稀有度 6 / 7 / 8 = 3 / 2 / 1，待确认">
+          {slots} 格
+        </span>
+      </h3>
+      <ol className="gb-parts">
+        {Array.from({ length: slots }, (_, i) => (
+          <li key={i}>
+            <label>
+              <span className="gb-parts__stage">第 {i + 1} 格</span>
+              <select
+                value={build.custom.hr[i] ?? ''}
+                onChange={(e) => set(i, (e.target.value || null) as HrAugment | null)}
+              >
+                <option value="">—</option>
+                {HR_AUGMENTS.map((a) => (
+                  <option key={a} value={a}>
+                    {HR_NAMES[a]}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </li>
+        ))}
+      </ol>
+      <p className="gb-note">
+        {HR_AUGMENTS.map(total).filter(Boolean).join('、') || '同一项可以重复强化，效果按次数累计。'}
+      </p>
     </section>
   );
 }
 
 function AugmentPanel({
+  weapon,
   build,
   idx,
   onAugment,
 }: {
+  weapon: WeaponData;
   build: Build;
   idx: Index;
   onAugment: (c: AugmentCategory, level: number) => void;
 }) {
   const chosen = augmentLevels(build, idx);
+  const capacity = augmentCapacity(weapon);
+  const used = augmentCost(build, idx);
   const levels = [...idx.augments.values()];
   const fx = idx.effects;
   const effectText = (c: AugmentCategory, lv: number): string | null => {
@@ -141,8 +226,11 @@ function AugmentPanel({
     <section className="gb-custom" aria-label="自定义强化">
       <h3 className="gb-h gb-h--sub">
         自定义强化
-        <span className="gb-custom__cost" title="自定义强化栏位上限待确认">
-          占用 <b>{augmentCost(build, idx)}</b> 格
+        <span
+          className="gb-custom__cost"
+          title="上限为扩充自定义栏后的最大格数（稀有度 10 / 11 / 12 = 9 / 8 / 6）"
+        >
+          占用 <b data-over={used > capacity ? '' : undefined}>{used}</b> / {capacity} 格
         </span>
       </h3>
       <ul className="gb-aug">
@@ -177,6 +265,8 @@ function AugmentPanel({
                     role="radio"
                     aria-checked={cur?.id === a.id}
                     aria-label={a.name}
+                    // 换成该等级后超出上限的选项不可选
+                    disabled={cur?.id !== a.id && used - (cur?.slotCost ?? 0) + a.slotCost > capacity}
                     title={`${a.name}：占用 ${a.slotCost} 格${a.desc ? `\n${a.desc}` : ''}`}
                     onClick={() => onAugment(c, a.level)}
                   >
@@ -189,8 +279,8 @@ function AugmentPanel({
         })}
       </ul>
       <p className="gb-note">
-        攻击 / 会心 /
-        防御的加值取自游戏数据（pl_param），已计入状态；各稀有度的栏位上限、属性强化的换算待确认。
+        攻击 / 会心 / 防御的加值取自游戏数据（pl_param），已计入状态；属性强化的换算待确认，未计入。
+        上限按扩充自定义栏后的最大格数计算。
       </p>
     </section>
   );

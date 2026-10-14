@@ -9,8 +9,10 @@
  * - 状态：技能数值全部取自 skill_data 的参数（与技能说明文本逐条对得上）；有发动条件的技能由用户打开开关后计入。
  *   ⚠ 推断：倍率类（火场怪力、攻击守势）乘在武器攻击力（含客制）上，再加上「基础攻击力 +N」类加值；
  *   属性强化为 基础属性 × 倍率 + 加值，未计属性上限；状态异常强化的「+10」不在参数里，暂不计入。
- * - 武器客制（docs/DATA.md 3.3）：大师自定义强化每种只取一个等级（⚠ 推断），攻击 / 会心 / 防御加值来自 pl_param；
- *   镶嵌槽强化追加一个等级 = 强化等级的槽；属性强化与零件强化的换算未确认，不计入状态。
+ * - 武器客制（docs/DATA.md 3.3）：
+ *   上位（稀有度 6–8）自定义强化：每格选一种，同种可重复，加值按次数取 pl_param 的累计表（用户已核对第 1 次）；
+ *   大师（稀有度 10–12）自定义强化：每种只取一个等级（⚠ 推断），占用格数不超过 9 / 8 / 6（用户提供，含扩充）；
+ *   镶嵌槽强化追加一个槽；零件强化的攻击为真实值加值（用户已核对），会心 / 属性 / 防御按同样单位计入（⚠ 推断）。
  *   冥赤龙觉醒：数值取自 em104lbr（攻击、会心、防御、属性 / 状态异常计入状态，镶嵌槽强化追加槽）；
  *   系列技能能力计 1 件（⚠ 推断，同武器的 skill 字段）。
  */
@@ -123,7 +125,18 @@ export interface AugmentEffects {
   defense: number[];
   element: number[];
   elementMultiplier: Partial<Record<string, number>>;
+  /** 上位自定义强化：第 n 次累计的加值 */
+  hr: { attack: number[]; affinity: number[]; defense: number[] };
 }
+
+/** 上位自定义强化的项目（教程：攻击力 / 会心率 / 防御力 / 镶嵌槽 / 回复能力） */
+export type HrAugment = 'attack' | 'affinity' | 'defense' | 'slot' | 'health';
+export const HR_AUGMENTS: HrAugment[] = ['attack', 'affinity', 'defense', 'slot', 'health'];
+
+/** 上位自定义强化的格数（⚠ 待确认：用户说明「有的武器有两个槽」，此处按稀有度 6 / 7 / 8 = 3 / 2 / 1） */
+export const HR_AUGMENT_SLOTS: Partial<Record<number, number>> = { 6: 3, 7: 2, 8: 1 };
+/** 大师自定义强化的格数上限（用户在游戏内确认，含扩充自定义栏） */
+export const MR_AUGMENT_CAPACITY: Partial<Record<number, number>> = { 10: 9, 11: 8, 12: 6 };
 
 export type PartEffectKey = 'attack' | 'affinity' | 'element' | 'defense' | 'sharpness';
 
@@ -189,8 +202,10 @@ export interface Piece {
 }
 
 export interface WeaponCustom {
-  /** 自定义强化：每种一个等级（AugmentLevel.id） */
+  /** 大师自定义强化：每种一个等级（AugmentLevel.id） */
   augments: number[];
+  /** 上位自定义强化：按格选的项目 */
+  hr: (HrAugment | null)[];
   /** 零件强化：第 i 个元素是第 i+1 阶段选的零件 */
   parts: (number | null)[];
   /** 冥赤龙觉醒能力 */
@@ -211,7 +226,7 @@ export interface Build {
 
 export const emptyPiece = (): Piece => ({ id: null, decos: [] });
 
-export const emptyCustom = (): WeaponCustom => ({ augments: [], parts: [], awakening: [] });
+export const emptyCustom = (): WeaponCustom => ({ augments: [], hr: [], parts: [], awakening: [] });
 
 export const emptyBuild = (weaponType = 'great-sword'): Build => ({
   weaponType,
@@ -273,11 +288,25 @@ export function makeIndex(data: BuilderData, payload: WeaponPayload = EMPTY_PAYL
 const weaponOf = (build: Build, idx: Index) =>
   build.weapon.id == null ? undefined : idx.weapons.get(build.weapon.id);
 
-/** 这把武器能用哪种客制 */
-export function customKind(w: WeaponData | undefined): 'awakening' | 'augment' | null {
+/** 这把武器能用哪种客制：冥赤龙觉醒 / 大师自定义强化 / 上位自定义强化 */
+export function customKind(w: WeaponData | undefined): 'awakening' | 'augment' | 'hr' | null {
   if (!w) return null;
   if (w.awakened) return 'awakening';
-  return w.rarity >= AUGMENT_MIN_RARITY ? 'augment' : null;
+  if (w.rarity >= AUGMENT_MIN_RARITY) return 'augment';
+  return HR_AUGMENT_SLOTS[w.rarity] ? 'hr' : null;
+}
+
+/** 大师自定义强化的格数上限 */
+export const augmentCapacity = (w: WeaponData | undefined) => (w ? (MR_AUGMENT_CAPACITY[w.rarity] ?? 0) : 0);
+
+/** 上位自定义强化：当前武器的各项次数 */
+export function hrCounts(build: Build, idx: Index): Map<HrAugment, number> {
+  const w = weaponOf(build, idx);
+  const out = new Map<HrAugment, number>();
+  if (customKind(w) !== 'hr' || !w) return out;
+  for (const a of build.custom.hr.slice(0, HR_AUGMENT_SLOTS[w.rarity] ?? 0))
+    if (a) out.set(a, (out.get(a) ?? 0) + 1);
+  return out;
 }
 
 /** 当前选中的自定义强化：种类 → 等级 */
@@ -314,8 +343,10 @@ export function setAugment(
 export function weaponSlots(build: Build, idx: Index): number[] {
   const w = weaponOf(build, idx);
   if (!w) return [];
+  // 上位：强化镶嵌槽的次数 = 追加槽的等级（「反复强化后，追加的镶嵌槽等级会上升」）
   const extra =
     augmentLevels(build, idx).get('slot')?.level ??
+    hrCounts(build, idx).get('slot') ??
     chosenAwakening(build, idx).find((a) => a?.effect?.kind === 'slotLevel')?.effect?.amount;
   return extra && w.slots.length < 3 ? [...w.slots, extra] : w.slots;
 }
@@ -328,6 +359,35 @@ export function awakeningTotal(build: Build, idx: Index, kind: AwakeningEffectKi
 }
 
 const STATUS_TYPES = new Set(['poison', 'paralysis', 'sleep', 'blast']);
+
+export interface CustomBonus {
+  attack: number;
+  affinity: number;
+  defense: number;
+  /** 属性 / 状态异常（真实值，显示 ×10） */
+  element: number;
+}
+
+/** 武器客制带来的加值合计（上位 / 大师自定义强化、零件强化、觉醒能力），详情与状态共用 */
+export function customBonus(build: Build, idx: Index): CustomBonus {
+  const out: CustomBonus = { attack: 0, affinity: 0, defense: 0, element: 0 };
+  const w = weaponOf(build, idx);
+  for (const [k, a] of augmentLevels(build, idx))
+    if (k === 'attack' || k === 'affinity' || k === 'defense') out[k] += idx.effects[k][a.level - 1] ?? 0;
+  for (const [k, n] of hrCounts(build, idx))
+    if (k === 'attack' || k === 'affinity' || k === 'defense') out[k] += idx.effects.hr[k][n - 1] ?? 0;
+  const parts = partTotals(chosenParts(build, idx));
+  out.attack += parts.attack ?? 0;
+  out.affinity += parts.affinity ?? 0;
+  out.defense += parts.defense ?? 0;
+  out.element += parts.element ?? 0;
+  out.attack += awakeningTotal(build, idx, 'attack');
+  out.affinity += awakeningTotal(build, idx, 'affinity');
+  out.defense += awakeningTotal(build, idx, 'defense');
+  if (w?.element)
+    out.element += awakeningTotal(build, idx, STATUS_TYPES.has(w.element.type) ? 'status' : 'element');
+  return out;
+}
 
 /** 当前武器的零件强化选择（只保留阶段对得上的零件） */
 export function chosenParts(build: Build, idx: Index): PartData[] {
@@ -588,13 +648,7 @@ export function computeStats(build: Build, idx: Index, skills: SkillTotal[]): St
   const lv = (id: number) => skills.find((s) => s.skill.id === id)?.level ?? 0;
   const atkSkill = idx.skills.get(SKILL_ATTACK);
   const eyeSkill = idx.skills.get(SKILL_CRITICAL_EYE);
-  const aug = augmentLevels(build, idx);
-  const fx = (key: 'attack' | 'affinity' | 'defense') => {
-    const a = aug.get(key);
-    return a ? (idx.effects[key][a.level - 1] ?? 0) : 0;
-  };
-
-  const awk = (kind: AwakeningEffectKind) => awakeningTotal(build, idx, kind);
+  const bonus = customBonus(build, idx);
   const on = new Set(
     availableConditions(skills)
       .filter((c) => build.conditions.includes(c.key))
@@ -605,7 +659,7 @@ export function computeStats(build: Build, idx: Index, skills: SkillTotal[]): St
     cond && !on.has(cond) ? 0 : paramAt(idx.skills.get(skill), lv(skill), i);
   const mul = (skill: number, cond: string) => (on.has(cond) && lv(skill) > 0 ? p(skill, 0) / 100 : 1);
 
-  const weaponRaw = (weapon?.attack ?? 0) + fx('attack') + awk('attack');
+  const weaponRaw = (weapon?.attack ?? 0) + bonus.attack;
   const attack =
     weaponRaw * mul(64, 'heroics') * mul(185, 'offensiveGuard') +
     paramAt(atkSkill, lv(SKILL_ATTACK), 0) +
@@ -616,8 +670,7 @@ export function computeStats(build: Build, idx: Index, skills: SkillTotal[]): St
   const wex = on.has('weakness') ? p(50, on.has('wound') ? 1 : 0) : 0;
   const affinity =
     (weapon?.affinity ?? 0) +
-    fx('affinity') +
-    awk('affinity') +
+    bonus.affinity +
     paramAt(atkSkill, lv(SKILL_ATTACK), 1) +
     paramAt(eyeSkill, lv(SKILL_CRITICAL_EYE), 0) +
     p(62, 1, 'agitator') +
@@ -627,10 +680,9 @@ export function computeStats(build: Build, idx: Index, skills: SkillTotal[]): St
     wex;
   const bloat = idx.bloat[build.weaponType];
 
-  let defense = (weapon?.defense ?? 0) + fx('defense') + awk('defense') + p(64, 1, 'heroics');
+  let defense = (weapon?.defense ?? 0) + bonus.defense + p(64, 1, 'heroics');
   const el = weapon?.element;
-  const elementPlus = el ? awk(STATUS_TYPES.has(el.type) ? 'status' : 'element') : 0;
-  let elementTrue = el ? el.value + elementPlus : 0;
+  let elementTrue = el ? el.value + bonus.element : 0;
   const elSkill = el ? ELEMENT_SKILLS[el.type] : undefined;
   if (el && elSkill != null && lv(elSkill) > 0)
     elementTrue = (elementTrue * p(elSkill, 1)) / 100 + p(elSkill, 0);

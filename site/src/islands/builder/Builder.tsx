@@ -5,9 +5,8 @@
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ARMOR_SLOTS,
-  augmentLevels,
   awakeningConflict,
-  awakeningTotal,
+  customBonus,
   availableConditions,
   sharpnessBar,
   SHARPNESS_COLORS,
@@ -69,7 +68,6 @@ const ELEMENT_NAMES: Record<string, string> = {
   blast: '爆破',
 };
 const RESIST = ['火', '水', '雷', '冰', '龙'] as const;
-const STATUS_ELEMENTS = new Set(['poison', 'paralysis', 'sleep', 'blast']);
 // 龙封力：3 = 大 已核对；1 / 2 按顺序推断
 const ELDERSEAL = ['—', '小', '中', '大'];
 const STORAGE_KEY = 'mhdb-builder-v0';
@@ -691,15 +689,10 @@ function Detail({
         <EmptyDetail head={head(null, '未装备武器', null, WEAPON_TYPE_NAMES[build.weaponType] ?? '武器')} />
       );
     const bloat = idx.bloat[build.weaponType];
-    // 自定义强化后的数值（与游戏的强化画面一样，附上增加量）
-    const aug = augmentLevels(build, idx);
-    const plus = (key: 'attack' | 'affinity' | 'defense') => {
-      const a = aug.get(key);
-      return (a ? (idx.effects[key][a.level - 1] ?? 0) : 0) + awakeningTotal(build, idx, key);
-    };
-    const elementPlus = w.element
-      ? awakeningTotal(build, idx, STATUS_ELEMENTS.has(w.element.type) ? 'status' : 'element')
-      : 0;
+    // 客制后的数值（与游戏的强化画面一样，附上增加量）
+    const bonus = customBonus(build, idx);
+    const plus = (key: 'attack' | 'affinity' | 'defense') => bonus[key];
+    const elementPlus = bonus.element;
     const withPlus = (base: number, add: number, fmt: (n: number) => string) => (
       <>
         {fmt(base + add)}
