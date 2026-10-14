@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "mhw-db 数据管线：解包、解析、图片转换、差异报告"
 requires-python = ">=3.12"
 dependencies = [
+    "cryptography>=43",
     "fonttools[woff]>=4.55",
     "pillow>=12",
     "texture2ddecoder>=1.0.5",

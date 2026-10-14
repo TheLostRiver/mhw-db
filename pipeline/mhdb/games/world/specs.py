@@ -96,9 +96,11 @@ RANGED = spec(
 
 AWAKENING = spec(
     "em104_limit_break.em104lb",
+    # category：能力种类（1 攻击 2 防御 3 会心 4 属性 5 镶嵌槽 6 锐利度 7 系列技能 9 以后为武器专属）；
+    # rank：能力等级（Ⅰ–Ⅵ，镶嵌槽为 3–6）；stackable：可否重复设定；rel_*：同链上的其他行号（含义未确认）
     """
-    skill_id:H group_id:I rarity:I unk_1:I has_upgrade:B prev_upgrade:H next_upgrade:H can_stack:B unk_2:B
-    lv_1:H lv_2:H lv_3:H lv_4:H lv_5:H
+    skill_id:H group:I category:I rank:I has_next:B prev:H next:H stackable:B unk_2:B
+    rel_1:H rel_2:H rel_3:H rel_4:H rel_5:H
     gs:B sns:B db:B ls:B hammer:B hh:B lance:B gl:B sa:B cb:B ig:B bow:B hbg:B lbg:B
     unk_3:B unk_4:B unk_5:B unk_6:B
     """,
@@ -106,11 +108,13 @@ AWAKENING = spec(
 
 AUGMENT = spec(
     "new_limit_break.new_lb",
+    # category：0 扩充自定义栏 1 攻击 2 会心 3 防御 4 镶嵌槽 5 回复能力 6 属性·状态异常；slot_cost 为该等级的总占用
     "category:I level:I slot_cost:I cost_r10:I cost_r11:I cost_r12:I",
 )
 
 CUSTOM_PART = spec(
     "customParts.cus_pa",
+    # 整文件 Blowfish 加密；cost 为强化阶段 × 100（与文本「强化阶段 N」一致，见测试）
     "id:I weapon_type:I part_id:I unk_1:B cost:I attack:H defense:H affinity:B element:H sharpness:B",
 )
 

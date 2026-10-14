@@ -208,6 +208,10 @@ export const Weapon = z
       })
       .strict()
       .optional(),
+    /** 冥赤龙武器（可设定觉醒能力） */
+    awakened: z.literal(true).optional(),
+    /** 同名同数值的重复行，指向保留的那一条 */
+    duplicateOf: z.number().int().optional(),
     _src: Src,
   })
   .strict();
@@ -232,6 +236,117 @@ export type WeaponType = (typeof WEAPON_TYPES)[number];
 
 export const RANGED: ReadonlySet<WeaponType> = new Set(['bow', 'heavy-bowgun', 'light-bowgun']);
 
+// ---------- 武器客制（weapon-custom.json） ----------
+
+const Levels4 = z.array(z.number()).length(4);
+
+export const AUGMENT_CATEGORIES = ['extend', 'attack', 'affinity', 'defense', 'slot', 'health', 'element'] as const;
+export const AWAKENING_CATEGORIES = [
+  'attack',
+  'defense',
+  'affinity',
+  'element',
+  'slot',
+  'sharpness',
+  'setBonus',
+  'melody',
+  'shelling',
+  'saPhial',
+  'cbPhial',
+  'coating',
+  'kinsect',
+  'ammoNormal',
+  'ammoPierce',
+  'ammoSpread',
+  'ammoElement',
+  'recoil',
+  'reload',
+  'deviation',
+  'status',
+] as const;
+
+export const WeaponCustom = z
+  .object({
+    augments: z
+      .object({
+        levels: z.array(
+          z
+            .object({
+              id: z.number().int().positive(),
+              category: z.enum(AUGMENT_CATEGORIES),
+              level: z.number().int().min(1).max(4),
+              slotCost: z.number().int().nonnegative(),
+              name: Text,
+              desc: OptText,
+              zenny: z.record(z.enum(['10', '11', '12']), z.number().int().nonnegative()),
+              _src: Src,
+            })
+            .strict(),
+        ),
+        effects: z
+          .object({
+            attack: Levels4,
+            affinity: Levels4,
+            defense: Levels4,
+            defenseGuardChance: Levels4,
+            defenseGuardRate: Levels4,
+            healthRegenRate: Levels4,
+            healthRegenCooldown: z.number(),
+            element: Levels4,
+            bowgunElementAmmo: Levels4,
+            bowgunStatusAmmo: Levels4,
+            elementMultiplier: z.record(z.enum(WEAPON_TYPES), z.number().positive()),
+            bowCoatingStatus: Levels4,
+            _src: z.object({ file: z.string(), offset: z.number().int() }).strict(),
+          })
+          .strict(),
+      })
+      .strict(),
+    parts: z.record(
+      z.enum(WEAPON_TYPES),
+      z.array(
+        z
+          .object({
+            id: z.number().int().positive(),
+            stage: z.number().int().min(1).max(7),
+            name: Text,
+            desc: OptText,
+            effect: z
+              .object({
+                attack: z.number().int().positive(),
+                affinity: z.number().int().positive(),
+                element: z.number().int().positive(),
+                defense: z.number().int().positive(),
+                sharpness: z.number().int().positive(),
+              })
+              .partial()
+              .strict(),
+            _src: Src,
+          })
+          .strict(),
+      ),
+    ),
+    awakening: z.array(
+      z
+        .object({
+          id: z.number().int().positive(),
+          category: z.enum(AWAKENING_CATEGORIES),
+          rank: z.number().int().min(1).max(6),
+          name: Text,
+          desc: OptText,
+          weapons: z.array(z.enum(WEAPON_TYPES)).min(1),
+          stackable: z.boolean(),
+          onePerCategory: z.boolean(),
+          setSkill: z.number().int().nullable(),
+          next: z.number().int().nullable(),
+          _src: Src,
+        })
+        .strict(),
+    ),
+  })
+  .strict();
+
+export type WeaponCustom = z.infer<typeof WeaponCustom>;
 export type Meta = z.infer<typeof Meta>;
 export type Colors = z.infer<typeof Colors>;
 export type Item = z.infer<typeof Item>;

@@ -4,7 +4,7 @@ import json
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from mhdb.formats import gmd
+from mhdb.formats import crypto, gmd
 from mhdb.formats.table import Spec, read_table
 
 # 游戏语言后缀 → 站内语言代码
@@ -21,8 +21,11 @@ class Source:
     def path(self, rel: str) -> Path:
         return self.root / rel
 
-    def table(self, rel: str, spec: Spec) -> list[dict[str, int]]:
-        return read_table(self.path(rel).read_bytes(), spec).rows
+    def table(self, rel: str, spec: Spec, *, encrypted: bool = False) -> list[dict[str, int]]:
+        data = self.path(rel).read_bytes()
+        if encrypted:
+            data = crypto.decrypt_file(rel, data)
+        return read_table(data, spec, padded=encrypted).rows
 
     def text(self, stem: str) -> dict[str, gmd.Gmd]:
         """stem 形如 common/text/steam/item，返回 {语言代码: Gmd}。"""
@@ -60,9 +63,9 @@ def write_records(path: Path, key: str, records: list[dict], meta: dict | None =
     body = ",\n".join(lines)
     prefix = json.dumps(head, ensure_ascii=False)[:-1]
     sep = "," if head else ""
-    path.write_text(f'{prefix}{sep}"{key}":[\n{body}\n]}}\n', encoding="utf-8")
+    path.write_text(f'{prefix}{sep}"{key}":[\n{body}\n]}}\n', encoding="utf-8", newline="\n")
 
 
 def write_json(path: Path, data: dict) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")

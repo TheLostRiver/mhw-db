@@ -5,7 +5,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { Colors, FILES, LANGS, Meta } from './schema';
+import { Colors, FILES, LANGS, Meta, WeaponCustom } from './schema';
 
 const ROOT = new URL('../../../../data/world/', import.meta.url);
 const read = (rel: string): unknown => JSON.parse(readFileSync(fileURLToPath(new URL(rel, ROOT)), 'utf-8'));
@@ -17,9 +17,10 @@ for (const [file, { key }] of Object.entries(FILES)) {
 }
 
 describe('结构', () => {
-  it('meta.json / colors.json', () => {
+  it('meta.json / colors.json / weapon-custom.json', () => {
     Meta.parse(read('meta.json'));
     Colors.parse(read('colors.json'));
+    WeaponCustom.parse(read('weapon-custom.json'));
   });
 
   for (const [file, { schema }] of Object.entries(FILES)) {
@@ -74,6 +75,15 @@ describe('引用完整', () => {
   it('饰品、衣装对应的物品存在', () => {
     for (const d of rows['decorations.json'] ?? []) expect(itemIds.has(d.id), `饰品 ${d.id}`).toBe(true);
     for (const m of rows['mantles.json'] ?? []) expect(itemIds.has(m.itemId as number), `衣装 ${m.id}`).toBe(true);
+  });
+
+  it('觉醒能力的系列技能与升级链存在', () => {
+    const custom = WeaponCustom.parse(read('weapon-custom.json'));
+    const ids = new Set(custom.awakening.map((a) => a.id));
+    for (const a of custom.awakening) {
+      if (a.setSkill != null) expect(skillIds.has(a.setSkill), `觉醒 ${a.id} 的系列技能`).toBe(true);
+      if (a.next != null) expect(ids.has(a.next), `觉醒 ${a.id} 的下一级`).toBe(true);
+    }
   });
 });
 

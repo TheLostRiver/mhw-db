@@ -79,3 +79,58 @@ def test_every_record_has_source() -> None:
     for name, key in (("items.json", "items"), ("armor.json", "armor"), ("decorations.json", "decorations")):
         for r in load(name, key):
             assert r["_src"]["file"].startswith("common/")
+
+
+# ---------- 武器客制（数值来自数据；与游戏画面的核对见 docs/DATA.md） ----------
+
+
+def custom() -> dict:
+    return json.loads((WORLD / "weapon-custom.json").read_text(encoding="utf-8"))
+
+
+def test_augment_levels_and_slot_costs() -> None:
+    levels = custom()["augments"]["levels"]
+    cost = {
+        c: [lv["slotCost"] for lv in levels if lv["category"] == c]
+        for c in ("attack", "affinity", "defense", "slot", "health", "element")
+    }
+    assert cost["attack"] == [3, 5, 7, 9]
+    assert cost["affinity"] == [2, 4, 6, 8]
+    assert cost["defense"] == [1, 2, 3, 5]
+    assert cost["health"] == [3, 5, 7, 9]
+    assert by_name(levels, "攻击力强化4")["level"] == 4
+    assert by_name(levels, "扩充自定义栏3")["category"] == "extend"
+
+
+def test_augment_effects_from_player_params() -> None:
+    fx = custom()["augments"]["effects"]
+    assert fx["attack"] == [5, 10, 15, 25]
+    assert fx["affinity"] == [10, 15, 20, 25]
+    assert fx["elementMultiplier"]["great-sword"] == 1.2
+
+
+def test_custom_parts_stages() -> None:
+    gs = custom()["parts"]["great-sword"]
+    assert [p["stage"] for p in gs] == sorted(p["stage"] for p in gs)
+    assert {p["stage"] for p in gs} == set(range(1, 8))
+    part = by_name(gs, "冥灯龙零件")
+    assert part["stage"] == 7
+    assert part["effect"] == {"sharpness": 1}
+
+
+def test_awakening_abilities() -> None:
+    aw = custom()["awakening"]
+    atk6 = by_name(aw, "攻击力强化6")
+    assert (atk6["category"], atk6["rank"], atk6["stackable"]) == ("attack", 6, False)
+    assert by_name(aw, "攻击力强化5")["stackable"] is True
+    assert by_name(aw, "冰牙龙的秘技")["setSkill"] == 188
+    sharp = by_name(aw, "锐利度强化1")
+    assert "bow" not in sharp["weapons"] and "great-sword" in sharp["weapons"]
+    assert all(a["weapons"] == ["hunting-horn"] for a in aw if a["category"] == "melody")
+
+
+def test_awakened_weapons_marked_and_deduplicated() -> None:
+    gs = load("weapons/great-sword.json", "weapons")
+    safi = [w for w in gs if w.get("awakened")]
+    assert len(safi) == 18
+    assert sum(1 for w in safi if "duplicateOf" not in w) == 9

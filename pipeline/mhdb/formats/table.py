@@ -47,14 +47,18 @@ class Table:
     rows: list[dict[str, int]]
 
 
-def read_table(data: bytes, s: Spec, *, check_magic: bool = True) -> Table:
+def read_table(data: bytes, s: Spec, *, check_magic: bool = True, padded: bool = False) -> Table:
+    """padded：解密后的表末尾有补齐用的 0 字节（Blowfish 按 8 字节分组），允许最多 16 字节且必须全为 0。"""
     if len(data) < HEADER.size:
         raise TableError(f"{s.name}: 文件过短")
     magic, version, count = HEADER.unpack_from(data, 0)
     if check_magic and magic != MAGIC:
         raise TableError(f"{s.name}: magic {magic:#x} 不符")
     body = len(data) - HEADER.size
-    if body != count * s.size:
+    extra = body - count * s.size
+    if padded and 0 <= extra <= 16 and not any(data[len(data) - extra :]):
+        pass
+    elif extra:
         raise TableError(f"{s.name}: 记录长度 {s.size} × {count} ≠ {body} 字节，结构定义与文件不符")
     names = [n for n, _ in s.fields]
     unpack = struct.Struct(s.fmt).unpack_from

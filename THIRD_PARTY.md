@@ -35,6 +35,9 @@ prettier（MIT）、prettier-plugin-astro（MIT）、@types/react、@types/react
 | fonttools | 4.66.x | MIT | 标题字体子集化 |
 | brotli | 1.2.x | MIT | woff2 压缩（fonttools 依赖） |
 | zopfli | 0.4.x | Apache-2.0 | 压缩（fonttools 依赖） |
+| cryptography | 50.0.x | Apache-2.0 OR BSD-3-Clause | Blowfish 解密（cus_pa、pl_param 等加密表） |
+| cffi | 2.1.x | MIT | cryptography 依赖 |
+| pycparser | 3.11 | BSD-3-Clause | cffi 依赖 |
 
 开发依赖：pytest（MIT）、ruff（MIT）。
 

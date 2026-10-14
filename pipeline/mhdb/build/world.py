@@ -9,6 +9,7 @@ import time
 from pathlib import Path
 
 from mhdb.build.common import Source, src, tr, write_json, write_records
+from mhdb.build.world_custom import build_weapon_custom
 from mhdb.games.world import specs as S
 
 PIPELINE_VERSION = 1
@@ -246,6 +247,10 @@ def build_mantles(s: Source, items: dict[int, dict]) -> list[dict]:
     return out
 
 
+# 冥赤龙武器（14 种武器的「赤龙」系列都在这棵派生树上，已逐种核对）
+AWAKENED_TREE = 87
+
+
 def build_weapons(s: Source) -> dict[str, list[dict]]:
     kire = s.table("common/equip/kireaji.kire", S.SHARPNESS)
     out: dict[str, list[dict]] = {}
@@ -253,6 +258,7 @@ def build_weapons(s: Source) -> dict[str, list[dict]]:
         rel = f"common/equip/{file}.wp_dat_g" if ranged else f"common/equip/{file}.wp_dat"
         names = s.text(f"common/text/steam/{text}")
         rows = []
+        seen: dict[str, int] = {}
         for row, r in enumerate(s.table(rel, S.RANGED if ranged else S.MELEE)):
             name = tr(names, r["name_index"])
             if not name:
@@ -295,6 +301,16 @@ def build_weapons(s: Source) -> dict[str, list[dict]]:
                     "specialAmmo": r["special_ammo"],
                     "parts": [r["muzzle"], r["barrel"], r["magazine"], r["scope"]],
                 }
+            if r["tree_id"] == AWAKENED_TREE:
+                w["awakened"] = True
+            # 同名同数值的重复行（如冥赤龙武器的第二套模型）只保留第一条供选择
+            sig = json.dumps(
+                {k: v for k, v in w.items() if k not in ("id", "_src", "desc", "cost")}, sort_keys=True
+            )
+            if sig in seen:
+                w["duplicateOf"] = seen[sig]
+            else:
+                seen[sig] = w["id"]
             rows.append(w)
         out[key] = rows
     return out
@@ -322,6 +338,7 @@ def build(raw: Path, out: Path, log=print) -> dict:
     armor, charms = build_armor(s)
     mantles = build_mantles(s, item_map)
     weapons = build_weapons(s)
+    custom = build_weapon_custom(s)
 
     write_json(out / "meta.json", meta)
     write_json(out / "colors.json", colors)
@@ -333,6 +350,7 @@ def build(raw: Path, out: Path, log=print) -> dict:
     write_records(out / "mantles.json", "mantles", mantles)
     for key, rows in weapons.items():
         write_records(out / "weapons" / f"{key}.json", "weapons", rows)
+    write_json(out / "weapon-custom.json", custom)
 
     counts = {
         "items": len(items),
@@ -342,6 +360,9 @@ def build(raw: Path, out: Path, log=print) -> dict:
         "charms": len(charms),
         "mantles": len(mantles),
         "weapons": sum(len(v) for v in weapons.values()),
+        "augmentLevels": len(custom["augments"]["levels"]),
+        "customParts": sum(len(v) for v in custom["parts"].values()),
+        "awakening": len(custom["awakening"]),
     }
     write_json(out / "counts.json", counts)
     log(f"写入 {out}：{counts}")
