@@ -3,7 +3,7 @@ import struct
 import pytest
 
 from mhdb.config import DATA_RAW
-from mhdb.formats.sobj import ANIMAL_CLASS, CLASS, SobjError, animal_areas, parse
+from mhdb.formats.sobj import ANIMAL_CLASS, CLASS, NPC_CLASS, SobjError, animal_areas, npcs, parse
 
 
 def prop(kind: int, value: bytes, name: str, type_name: str = "s32") -> bytes:
@@ -105,3 +105,22 @@ def test_ancient_forest_bug_areas() -> None:
     # 古代树森林的虫：苦虫、光虫、不死虫、雷光虫、美味虫
     assert {"EC_032_01", "EC_032_02", "EC_032_03", "EC_032_04", "EC_032_05"} <= names
     assert len(areas) == 43
+
+
+def npc_record(pos: tuple[float, float, float], floor: int, tag: str) -> bytes:
+    out = struct.pack("<I", 0x9ABC) + NPC_CLASS + struct.pack("<I", 4)
+    out += struct.pack("<9f", *pos, 0, 0, 0, 1, 1, 1)
+    out += bytes([0, 1]) + struct.pack("<ii", floor, -1) + bytes(9) + struct.pack("<I", 4)
+    return out + tag.encode() + b"\0npc01\0\0\0" + bytes(16)
+
+
+def test_parse_npcs() -> None:
+    data = (
+        npc_record((1.0, 2.0, 3.0), 0, "n002")
+        + npc_record((4.0, 5.0, 6.0), 6, "npc036_01")
+        + npc_record((7.0, 8.0, 9.0), 0, "")
+    )
+    got = [(n.npc, n.tag, n.floor) for n in npcs(data, default=954)]
+    assert got == [(2, "n002", 0), (36, "npc036_01", 6), (954, "", 0)]
+    with pytest.raises(SobjError):
+        npcs(npc_record((0.0, 0.0, 0.0), 0, ""))

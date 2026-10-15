@@ -133,3 +133,13 @@ test('交互环境生物', async ({ page }) => {
   await page.locator('.mv-node:has(.mv-node__icon[data-cat="creature"])').first().dispatchEvent('click');
   await expect(page.getByRole('article', { name: '所选节点' })).toContainText('生物');
 });
+
+test('NPC（默认不画，勾选后出现）', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/world/maps/ancient-forest/', { waitUntil: 'networkidle' });
+  const npcs = page.locator(".mv-node__icon[data-cat='npc']");
+  await expect(npcs).toHaveCount(0);
+  await page.getByRole('radio', { name: 'NPC' }).click();
+  await page.getByRole('button', { name: /接待员/ }).click();
+  expect(await npcs.count()).toBeGreaterThan(0);
+});

@@ -58,6 +58,7 @@ UI_ATLAS = {
     "common": "ui/common/tex/common00_ID.tex",
     "map": "ui/map/tex/map00_ID.tex",
     "other": "ui/common/tex/cmn_other00_ID.tex",
+    "overhead": "ui/common/tex/cmn_overhead00_ID.tex",
 }
 UI_SPRITES: dict[str, tuple[str, tuple[int, int, int, int]]] = {
     # 图标底框（黑 / 灰圆角方块）与选中框
@@ -98,6 +99,8 @@ UI_SPRITES: dict[str, tuple[str, tuple[int, int, int, int]]] = {
     "layer-disc": ("map", (64, 168, 96, 200)),
     # 大地图的营地图标（cmn_other00 的黄色帐篷；map.gui 的 camp 动画也引用这张图集）
     "camp": ("other", (128, 192, 192, 256)),
+    # NPC：头顶的对话气泡（cmn_overhead00 的第一格）
+    "npc": ("overhead", (0, 0, 64, 64)),
 }
 
 # 地区徽章：map.gui 的 searchinfo 动画里 tex_aIcon00–05 引用 cmn_stage00 的 6 个格子，

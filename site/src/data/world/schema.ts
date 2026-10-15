@@ -445,6 +445,7 @@ export const MapNodeKind = z
       'specialty',
       'bug',
       'creature',
+      'npc',
       'slinger',
       'carry',
       'other',

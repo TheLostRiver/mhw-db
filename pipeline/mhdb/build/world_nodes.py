@@ -1,4 +1,4 @@
-"""大地图标记：采集点、矿脉、骨冢、特产、虫与鱼饵、投射器弹、营地、交互环境生物，输出 data/world/map-nodes.json。
+"""大地图标记：采集点、矿脉、骨冢、特产、虫与鱼饵、投射器弹、营地、交互环境生物、NPC，输出 data/world/map-nodes.json。
 
 来源（布局见各解析器，推断过程见 docs/DATA.md 4.2）：
   stage/stXXX/common/set/stXXX_pop_map.sobj       常驻的采集点；cSetAnimalArea 里的 EC_032 是虫与鱼饵
@@ -7,6 +7,7 @@
   stage/stXXX/common/set/stXXX_gm.sobj            营地（gm013，带 mCampId）、少数矿脉
   stage/stXXX/common/set/stXXX_gm_map.sobj        投射器弹（gimmick.gcd 种类 1）、怪物的粪、交互环境生物
   stage/stXXX/common/set/stXXX_ec.sobj            环境生物（只取交互环境生物，如铁鲎）
+  stage/stXXX/common/set/stXXX_nNNN.sobj          野外 NPC（cVillageNpcSetter），名字在 chr_names 的 NNNN_NPC_NAME
   common/gimmick/gimmick.gcd                       物件种类 → 采集类型、两组抽选表
   common/item/pop_base.ppm                         采集类型 → 固定物品、采集次数、再生秒数
   stage/stXXX/common/data/stXXX[_1|_2].itlot       抽选表（下位 / 上位 / 大师）
@@ -149,6 +150,7 @@ class _Texts:
         self.animal = s.text("common/text/animal_names")
         self.quest = s.text("common/text/cm_quest")
         self.places = s.text("common/text/other_names")
+        self.npcs = s.text("common/text/chr_names")
         self.items = items
         self.animal_icon = gcd.animal_icons(s.path("common/gimmick/animal.gcd").read_bytes())
         # 投射器弹的物品：物品名与物件名相同的那一个（石块、光苔……）
@@ -279,6 +281,27 @@ def build_stage(
             else:
                 continue  # 其他环境生物：名字与物品的对应还没找到，暂不接入
             add(key, area.pos, area.floor, rel, r, min_rank)
+
+    # 野外 NPC（stXXX_nNNN.sobj）：同一人可能有几处位置（npc036_00–03），出现时机由任务 / 剧情决定。
+    # 同名、同位置的只留一个（古代龙人 n036 / n040 的四处位置相同）。
+    npc_seen: set[tuple[str, float, float]] = set()
+    for f in sorted(s.path(f"stage/st{stage}/common/set").glob(f"st{stage}_n*.sobj")):
+        rel = f.relative_to(s.root).as_posix()
+        default = int(m.group(1)) if (m := re.search(r"_n(\d+)", f.name)) else None
+        for npc in sobj.npcs(f.read_bytes(), default):
+            key = f"n{npc.npc:03d}"
+            name = _keyed(texts.npcs, f"N{npc.npc:03d}_NPC_NAME")
+            if name is None:
+                continue  # n951–954 没有名字
+            spot = (name["zh-Hans"], round(npc.pos[0]), round(npc.pos[2]))
+            if spot in npc_seen:
+                continue
+            npc_seen.add(spot)
+            if key not in kinds:
+                kinds[key] = _plain_kind(
+                    key, "npc", name, None, f"common/text/chr_names N{npc.npc:03d}_NPC_NAME"
+                )
+            add(key, npc.pos, npc.floor, rel, None, None)
 
     patches = stage_map["patches"]
     located = [_depth(masks, patches, n["x"], n["y"]) for n in nodes]

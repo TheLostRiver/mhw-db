@@ -64,6 +64,14 @@ export function NodeDetail({ stage, layers, index, rank, items, siblings, onFocu
         <button type="button" className="mv-detail__close" aria-label="关闭" onClick={onClose} />
       </header>
       {kind.desc && <p className="mv-detail__desc">{kind.desc['zh-Hans']}</p>}
+      {kind.category === 'npc' && (
+        <p className="mv-detail__desc">
+          出现时机由任务与剧情进度决定，有几处位置的会出现在其中一处
+          <span className="mv-unconfirmed" title="位置取自 stXXX_nNNN.sobj，何时出现在哪一处尚未核对">
+            未确认
+          </span>
+        </p>
+      )}
       {state && <p className="mv-detail__state">仅在「{state.name['zh-Hans']}」时出现</p>}
       {node.minRank && (
         <p className="mv-detail__state mv-detail__state--rank">

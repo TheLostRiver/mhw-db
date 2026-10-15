@@ -102,3 +102,14 @@ def test_interactive_endemic_life() -> None:
     assert creatures[101]["EC_018"] == ("麻痹瓦斯蛙", 17)
     assert creatures[102]["EC_043_01"] == ("仙人掌", 25)  # 键名写作 EC_043_1_NAME
     assert creatures[108]["EC_010_02"] == ("雪球虫", 23)
+
+
+@pytest.mark.game
+@pytest.mark.skipif(not NODES.is_file(), reason="需要先运行 mhdb nodes")
+def test_npcs() -> None:
+    af = stages()[101]
+    names = {k["key"]: k["name"]["zh-Hans"] for k in af["kinds"] if k["category"] == "npc"}
+    assert names["n002"] == "接待员" and names["n037"] == "孤高的鱼类调查员"
+    # 接待员在 4 个营地各有一处位置
+    handler = [n for n in af["nodes"] if n["kind"] == "n002"]
+    assert sorted(n["area"] for n in handler) == [1, 8, 11, 17]

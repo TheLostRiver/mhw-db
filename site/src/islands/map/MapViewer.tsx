@@ -32,6 +32,7 @@ const HALF_BELOW = -0.5;
 const FAR_BELOW = -1.25;
 /** 窄屏：节点详情浮在地图上，而不是放在右栏 */
 const NARROW = '(max-width: 900px)';
+const HIDDEN_BY_DEFAULT = new Set(['slinger', 'npc']);
 
 const toLatLng = (x: number, y: number): L.LatLngTuple => [-y, x];
 const patchBounds = (p: MapPatch): L.LatLngBoundsExpression => [
@@ -68,8 +69,8 @@ export default function MapViewer({ stage, nodes, items }: Props) {
   const [rank, setRank] = useState<Rank>(nodes?.ranks.at(-1) ?? 'master');
   const [envState, setEnvState] = useState<number>(nodes?.states[0]?.id ?? 0);
   const [selectedKinds, setSelectedKinds] = useState<Set<string>>(
-    // 投射器弹数量多、遍地都是，默认不画，需要时在列表里勾选
-    () => new Set(nodes?.kinds.filter((k) => k.category !== 'slinger').map((k) => k.key) ?? []),
+    // 投射器弹遍地都是、NPC 多半挤在营地里，默认不画，需要时在列表里勾选
+    () => new Set(nodes?.kinds.filter((k) => !HIDDEN_BY_DEFAULT.has(k.category)).map((k) => k.key) ?? []),
   );
   const [picked, setSelected] = useState<number | null>(null);
   const [hoverKind, setHoverKind] = useState<string | null>(null);

@@ -1,5 +1,5 @@
-"""关卡布置文件 .sobj（MHW:I）：解析 cAssetBasicSetObject（采集点、投射器弹、营地、机关等物件）
-与 cSetAnimalArea（环境生物的出现范围，采集用的虫也在这里）。
+"""关卡布置文件 .sobj（MHW:I）：解析 cAssetBasicSetObject（采集点、投射器弹、营地、机关等物件）、
+cSetAnimalArea（环境生物的出现范围，采集用的虫也在这里）与 cVillageNpcSetter（野外 NPC）。
 
 文件是一串记录，每条以 u32 类哈希 + 类名 \\0 开头；各类的记录长度不同，这里按类名定位记录，
 其余类跳过。布局由 stage/ 下全部 .sobj 对照推出（见 docs/DATA.md）：
@@ -21,6 +21,7 @@ cSetAnimalArea（没有物件名与属性表）：
   之后是出现半径与若干个出现点（未用）。
 """
 
+import re
 import struct
 from dataclasses import dataclass, field
 
@@ -111,22 +112,65 @@ class AnimalArea:
 _ANIMAL_TAIL = struct.Struct("<IIIIf")
 
 
-def animal_areas(data: bytes) -> list[AnimalArea]:
+@dataclass(frozen=True)
+class Placed:
+    """没有属性表的布置记录的公共部分：位置、floor、4 个字符串，以及字符串之后的偏移。"""
+
+    pos: tuple[float, float, float]
+    floor: int
+    strings: tuple[str, ...]
+    end: int
+
+
+def _placed(data: bytes, cls: bytes) -> list[Placed]:
+    """按类名找记录：u32 类哈希、类名 \\0、u32（=4）、f32×9 变换、u8、u8、s32 floor、s32（=−1）、9 字节、
+    u32（=4）、4 个字符串 \\0。cSetAnimalArea、cVillageNpcSetter 都是这样开头。"""
     out = []
-    start = data.find(ANIMAL_CLASS)
+    start = data.find(cls)
     while start != -1:
-        o = start + len(ANIMAL_CLASS) + 4
+        o = start + len(cls) + 4
         pos = struct.unpack_from("<3f", data, o)
         body = o + 36
         (floor,) = struct.unpack_from("<i", data, body + 2)
         if struct.unpack_from("<I", data, body + 19)[0] != 4:
-            raise SobjError(f"cSetAnimalArea @{start:#x}：字符串表头不符")
-        s = body + 23
+            raise SobjError(f"{cls[:-1].decode()} @{start:#x}：字符串表头不符")
+        s, strings = body + 23, []
         for _ in range(4):
-            _, s = _cstr(data, s)
-        ec, variant, _, _, one = _ANIMAL_TAIL.unpack_from(data, s + 69)
+            text, s = _cstr(data, s)
+            strings.append(text)
+        out.append(Placed(pos=pos, floor=floor, strings=tuple(strings), end=s))
+        start = data.find(cls, body)
+    return out
+
+
+def animal_areas(data: bytes) -> list[AnimalArea]:
+    out = []
+    for p in _placed(data, ANIMAL_CLASS):
+        ec, variant, _, _, one = _ANIMAL_TAIL.unpack_from(data, p.end + 69)
         if one != 1.0:
-            raise SobjError(f"cSetAnimalArea @{start:#x}：编号处不是（编号、变种、…、1.0），布局不符")
-        out.append(AnimalArea(pos=pos, floor=floor, ec=ec, variant=variant))
-        start = data.find(ANIMAL_CLASS, body)
+            raise SobjError(f"cSetAnimalArea @{p.end:#x}：编号处不是（编号、变种、…、1.0），布局不符")
+        out.append(AnimalArea(pos=p.pos, floor=p.floor, ec=ec, variant=variant))
+    return out
+
+
+NPC_CLASS = b"cVillageNpcSetter\0"
+
+
+@dataclass(frozen=True)
+class Npc:
+    pos: tuple[float, float, float]
+    floor: int
+    npc: int  # 第一个字符串 n002 / npc036_00 里的编号 → chr_names 的 N002_NPC_NAME
+    tag: str  # 第一个字符串原样（npc036_00、npc036_01 是同一人的几处位置）
+
+
+def npcs(data: bytes, default: int | None = None) -> list[Npc]:
+    """stXXX_nNNN.sobj：野外 NPC 的位置。字符串为空的记录（如 st108_n954）用文件名里的编号 default。"""
+    out = []
+    for p in _placed(data, NPC_CLASS):
+        m = re.match(r"n(?:pc)?(\d+)", p.strings[0])
+        npc = int(m.group(1)) if m else default
+        if npc is None:
+            raise SobjError(f"cVillageNpcSetter：认不出 NPC 编号 {p.strings[0]!r}")
+        out.append(Npc(pos=p.pos, floor=p.floor, npc=npc, tag=p.strings[0]))
     return out

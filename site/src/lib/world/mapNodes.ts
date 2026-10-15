@@ -22,12 +22,14 @@ export const CATEGORIES: { key: Category; label: string }[] = [
   { key: 'bonepile', label: '骨冢' },
   { key: 'specialty', label: '特产' },
   { key: 'creature', label: '交互环境生物' },
+  { key: 'npc', label: 'NPC' },
   { key: 'slinger', label: '投射器弹' },
   { key: 'carry', label: '搬运物' },
   { key: 'other', label: '其他' },
 ];
 
 export const CAMP_ICON = '/assets/game/world/ui/camp.webp';
+export const NPC_ICON = '/assets/game/world/ui/npc.webp';
 
 /** 种类在地图上的图标：营地用帐篷，交互环境生物用游戏地图上的图标，其余用代表物品的图标 */
 export function kindIconUrl(
@@ -37,6 +39,7 @@ export function kindIconUrl(
   items: MapItems,
 ): string | null {
   if (kind.category === 'camp') return CAMP_ICON;
+  if (kind.category === 'npc') return NPC_ICON;
   if (kind.actionIcon) return `/assets/game/world/action/${kind.actionIcon}.webp`;
   const id = mainItem(kind, stage, rank);
   return id !== null && items[id] ? itemIconUrl(items[id]) : null;
