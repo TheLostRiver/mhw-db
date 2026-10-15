@@ -12,6 +12,22 @@
   /* 极意突破的等级（游戏里也是紫色） */
   --gb-secret: #b48cf0;
   --gb-radius: 4px;
+  /* 游戏菜单零件（mhdb images 从 status00 / menu00 / itemMenu00 裁切，见 world_icons.UI_SPRITES） */
+  --ui-tile: url('/assets/game/world/ui/tile.webp');
+  --ui-tile-grey: url('/assets/game/world/ui/tile-grey.webp');
+  --ui-box-off: url('/assets/game/world/ui/box-off.webp');
+  --ui-box-on: url('/assets/game/world/ui/box-on.webp');
+  --ui-line: url('/assets/game/world/ui/line.webp');
+  --ui-line-end: url('/assets/game/world/ui/line-end.webp');
+  --ui-corner-tr: url('/assets/game/world/ui/corner-tr.webp');
+  --ui-win-tl: url('/assets/game/world/ui/win-tl.webp');
+  --ui-win-tr: url('/assets/game/world/ui/win-tr.webp');
+  --ui-bracket-tl: url('/assets/game/world/ui/bracket-tl.webp');
+  --ui-bracket-tr: url('/assets/game/world/ui/bracket-tr.webp');
+  --ui-bracket-bl: url('/assets/game/world/ui/bracket-bl.webp');
+  --ui-bracket-br: url('/assets/game/world/ui/bracket-br.webp');
+  --ui-pattern: url('/assets/game/world/ui/pattern.webp');
+
   display: grid;
   gap: var(--space-3);
   font-size: var(--text-sm);
@@ -899,26 +915,26 @@
   margin-top: 3px;
 }
 
+/* 等级格：游戏的空格 / 实心格（实心格是白方块，按金色正片叠底） */
 .gb-boxes i {
-  width: 11px;
+  width: 12px;
   height: 11px;
-  border-radius: 1px;
-  background: color-mix(in srgb, var(--c-text) 12%, transparent);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c-text) 18%, transparent);
+  background: var(--ui-box-off) center / 100% 100% no-repeat;
+  opacity: 0.7;
 }
 
 .gb-boxes i[data-on] {
-  background: var(--gb-gold);
-  box-shadow: 0 0 6px -1px color-mix(in srgb, var(--gb-gold) 70%, transparent);
+  background:
+    var(--ui-box-on) center / 100% 100% no-repeat,
+    var(--gb-gold);
+  background-blend-mode: multiply;
+  mask: var(--ui-box-on) center / 100% 100% no-repeat;
+  opacity: 1;
 }
 
+/* 还没解锁（极意）的等级 */
 .gb-boxes i[data-locked] {
-  opacity: 0.35;
-  background: repeating-linear-gradient(
-    -45deg,
-    color-mix(in srgb, var(--c-text) 25%, transparent) 0 1px,
-    transparent 1px 3px
-  );
+  opacity: 0.25;
 }
 
 .gb-over {

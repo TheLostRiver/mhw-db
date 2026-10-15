@@ -22,4 +22,7 @@ patterns = [
 
   # 界面贴图
   '^/ui/(common|common_menu|equip|status|item_menu|note|map)/tex/.*\.tex$',
+
+  # 界面布局（.gui 引用贴图并给出精灵的裁切坐标；只取配装相关的画面）
+  '^/ui/(status|equip|common_menu)/[^/]+\.gui$',
 ]

@@ -6,6 +6,7 @@
   cmn_status00 64px 网格：攻击、会心、属性等状态图标（彩色，原样输出）
   common00     非网格：镶嵌槽框与宝石，按坐标裁切
   equip_egc    非网格：自定义强化的格数六边形
+  status00 / menu00 / itemMenu00 / common00  菜单界面零件（UI_SPRITES），按坐标裁切
 着色方式见 mhdb/images/atlas.py（按游戏截图对比选定的近似）。
 """
 
@@ -46,6 +47,47 @@ AUGMENT_ICON = {"attack": 16, "affinity": 51, "defense": 17, "slot": 55, "health
 # common00 里的镶嵌槽（列表用小图标）与宝石，坐标为 (左, 上, 右, 下)
 SOCKET = {1: (347, 51, 380, 78), 2: (387, 51, 420, 78), 3: (427, 51, 460, 78), 4: (171, 144, 204, 174)}
 SOCKET_LARGE = {1: (244, 2, 300, 46), 2: (308, 2, 364, 46), 3: (372, 2, 428, 46), 4: (372, 97, 428, 142)}
+
+# 菜单界面的零件（窗口装饰、图标底框、等级格、分隔线），原样裁切，供配装器拼出游戏式的面板。
+# 坐标为 (左, 上, 右, 下)，按透明度连通域取得的精确边界；来源图集见 info_skill.gui 等布局文件的引用。
+UI_ATLAS = {
+    "status": "ui/status/tex/status00_ID.tex",
+    "menu": "ui/common_menu/tex/menu00_ID.tex",
+    "item": "ui/item_menu/tex/itemMenu00_ID.tex",
+    "common": "ui/common/tex/common00_ID.tex",
+}
+UI_SPRITES: dict[str, tuple[str, tuple[int, int, int, int]]] = {
+    # 图标底框（黑 / 灰圆角方块）与选中框
+    "tile": ("status", (2, 2, 38, 38)),
+    "tile-grey": ("status", (42, 2, 78, 38)),
+    "tile-frame": ("status", (2, 42, 38, 78)),
+    # 技能等级格：空格 / 实心格（白，前端按颜色正片叠底着色）
+    "box-off": ("status", (68, 85, 83, 99)),
+    "box-on": ("status", (28, 133, 43, 147)),
+    # 四角的折角刻线、金色菱形
+    "corner-tl": ("status", (7, 617, 21, 633)),
+    "corner-tr": ("status", (27, 617, 41, 633)),
+    "corner-bl": ("status", (6, 646, 21, 663)),
+    "corner-br": ("status", (27, 646, 42, 663)),
+    "diamond": ("status", (50, 617, 70, 639)),
+    # 窗口标题装饰线、窗口上角、下角括线、带箭头的分隔线
+    "title-line": ("menu", (9, 48, 367, 77)),
+    "win-tl": ("menu", (376, 48, 413, 94)),
+    "win-tr": ("menu", (451, 48, 488, 94)),
+    "bracket-bl": ("menu", (376, 104, 416, 126)),
+    "bracket-br": ("menu", (449, 104, 488, 126)),
+    "arrow-line": ("menu", (56, 605, 360, 620)),
+    # 细线与线头（◇ / ⧗）、带放射线的角饰、部族花纹
+    "line": ("item", (138, 361, 503, 366)),
+    "line-end": ("item", (501, 310, 511, 320)),
+    "line-end-hourglass": ("item", (502, 335, 512, 345)),
+    "ray-bl": ("item", (73, 270, 103, 303)),
+    "ray-br": ("item", (105, 270, 135, 303)),
+    "pattern": ("item", (33, 426, 438, 509)),
+    # 列表行底板（亮 / 暗）
+    "row-light": ("common", (62, 346, 512, 391)),
+    "row-dark": ("common", (62, 394, 512, 436)),
+}
 
 
 def _hex(rgb: str) -> tuple[int, int, int]:
@@ -133,6 +175,19 @@ def build(raw: Path, data: Path, out: Path, log=print) -> int:
         save(_square(common.crop(box)), f"socket/{lv}.webp")
     for lv, box in SOCKET_LARGE.items():
         save(_square(common.crop(box)), f"socket/large-{lv}.webp")
+
+    # 菜单界面零件：先确认裁切框里确实有图形，图集布局变了就报错而不是输出空图
+    atlases = {k: _atlas(raw, rel) for k, rel in UI_ATLAS.items()}
+    for name, (atlas, box) in UI_SPRITES.items():
+        part = atlases[atlas].crop(box)
+        bbox = part.getchannel("A").getbbox()
+        if not bbox or bbox[2] - bbox[0] < (box[2] - box[0]) // 2:
+            raise ValueError(f"UI 零件 {name} 的裁切框 {box} 里没有完整图形，图集可能变了")
+        save(part, f"ui/{name}.webp")
+    # 下角括线上下翻转即为上角括线（游戏里同一张零件翻转使用）
+    for side in ("l", "r"):
+        part = Image.open(out / f"ui/bracket-b{side}.webp").transpose(Image.Transpose.FLIP_TOP_BOTTOM)
+        save(part, f"ui/bracket-t{side}.webp")
 
     # 状态图标原样输出
     for i in range((status.width // 64) * (status.height // 64)):

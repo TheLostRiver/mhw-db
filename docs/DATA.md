@@ -128,6 +128,7 @@ uv run mhdb images    # → site/public/assets/game/world/（不入库）
 | `ui/common/tex/cmn_item00_ID.tex`（+ `cmn_item00M_ID.tex` 遮罩） | 64px 网格 16×16，灰度，运行时着色 | 技能徽章 96；饰品宝石 66 / 67 / 68 / 72（1–4 级）；防具 144–148；护石 149；衣装 112、烟筒 113；武器 160–173（顺序：片手剑、大剑、太刀、双剑、长枪、铳枪、大锤、狩猎笛、斩击斧、盾斧、操虫棍、轻弩、重弩、弓） |
 | `ui/common/tex/cmn_status00_ID.tex` | 64px 网格 8 列，彩色状态 / 技能效果图标 | 全部原样输出 |
 | `ui/common/tex/common00_ID.tex` | 镶嵌槽框（三角个数 = 等级）、宝石；非网格 | 按坐标裁切，见 `mhdb/images/world_icons.py` |
+| `ui/status/tex/status00_ID.tex`、`ui/common_menu/tex/menu00_ID.tex`、`ui/item_menu/tex/itemMenu00_ID.tex`、`common00` | 菜单界面零件：图标底框、技能等级格（空格 / 白色实心格）、四角折角、窗口角饰、括线、细线与 ◇ 线头、部族花纹、列表行底板 | `UI_SPRITES`（按透明度连通域取得的精确坐标）；这几张图集由 `ui/status/info_skill.gui`（技能信息画面）等布局文件引用。实心格在前端按颜色正片叠底着色 |
 
 - 格子编号都已按图形与游戏截图核对。饰品的宝石格由物品数据的 `icon_id` 直接给出（1–4 级分别是 66 / 67 / 68 / 72），
   衣装的图标由 `a_skill.ask` 的 `icon_id` / `color` 给出。

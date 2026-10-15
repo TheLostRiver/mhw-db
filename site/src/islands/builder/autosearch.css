@@ -121,29 +121,36 @@
 }
 
 .gb-as__levels button {
-  width: 13px;
+  width: 14px;
   height: 13px;
-  border-radius: 1px;
-  background: color-mix(in srgb, var(--c-text) 12%, transparent);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c-text) 18%, transparent);
-  transition:
-    background-color var(--dur-fast),
-    box-shadow var(--dur-fast);
+  background: var(--ui-box-off) center / 100% 100% no-repeat;
+  opacity: 0.7;
+  transition: opacity var(--dur-fast);
 }
 
+.gb-as__levels button:hover {
+  opacity: 1;
+}
+
+/* 超过基础上限的等级：下面一道紫线提示要极意 */
 .gb-as__levels button[data-secret] {
-  background: color-mix(in srgb, var(--gb-secret) 15%, transparent);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--gb-secret) 35%, transparent);
+  box-shadow: 0 2px 0 -1px var(--gb-secret);
 }
 
+/* 选中的等级：游戏的白方块按金 / 紫正片叠底 */
 .gb-as__levels button[data-on] {
-  background: var(--gb-gold);
-  box-shadow: 0 0 6px -1px color-mix(in srgb, var(--gb-gold) 70%, transparent);
+  --box: var(--gb-gold);
+  background:
+    var(--ui-box-on) center / 100% 100% no-repeat,
+    var(--box);
+  background-blend-mode: multiply;
+  mask: var(--ui-box-on) center / 100% 100% no-repeat;
+  box-shadow: none;
+  opacity: 1;
 }
 
 .gb-as__levels button[data-secret][data-on] {
-  background: var(--gb-secret);
-  box-shadow: 0 0 6px -1px color-mix(in srgb, var(--gb-secret) 70%, transparent);
+  --box: var(--gb-secret);
 }
 
 .gb-as__levels b {
@@ -289,46 +296,48 @@
   margin: 0 auto;
 }
 
-/* ---------- 方案卡片（照游戏的配装一览） ---------- */
+/* ---------- 方案卡片（照游戏的配装一览，零件取自游戏 UI 贴图） ---------- */
 
-/* 游戏界面的配色：暖灰底、橙色标题与数字，等级格金 / 绿 / 紫 */
+/*
+ * 游戏界面的配色：暖灰底、橙色标题与数字，等级格金 / 绿 / 紫。
+ * 零件（/assets/game/world/ui/，由 mhdb images 从 status00 / menu00 / itemMenu00 裁切）：
+ * 白色线稿类用作遮罩、按令牌着色，深浅主题通用；底框、等级格原样使用并正片叠底着色。
+ */
 .gb-as {
   --pl-bg: linear-gradient(180deg, #2d2c2f, #262528);
   --pl-edge: #5b574f;
+  --pl-ornament: #8a8478;
   --pl-cell: linear-gradient(180deg, #3b3a3f 0%, #302f34 100%);
   --pl-cell-edge: #57534b;
-  --pl-tile: #1a191c;
-  --pl-tile-edge: #45423c;
   --pl-text: #eeeae1;
   --pl-dim: #928d83;
   --pl-orange: #f3a53b;
-  --pl-box-off: #151417;
-  --pl-box-gold: #dcc17a;
-  --pl-box-green: #4fc35b;
-  --pl-box-purple: #9c86e6;
-  --pl-set-on: #c9a23c;
-  --pl-decos: #1f1e21;
+  --pl-box-gold: #e8c672;
+  --pl-box-green: #5ccf64;
+  --pl-box-purple: #a58cf0;
+  --pl-set-on: #e2b443;
+  --pl-pattern: rgb(255 255 255 / 0.035);
 }
 
 [data-theme='light'] .gb-as {
   --pl-bg: linear-gradient(180deg, #f6f3ec, #efebe2);
   --pl-edge: #cbc3b4;
+  --pl-ornament: #a39a89;
   --pl-cell: linear-gradient(180deg, #ffffff 0%, #f3efe7 100%);
   --pl-cell-edge: #d9d0c0;
-  --pl-tile: #e4ded2;
-  --pl-tile-edge: #cdc4b3;
   --pl-text: #2a261f;
   --pl-dim: #80786b;
   --pl-orange: #c06a00;
-  --pl-box-off: #ddd6c9;
-  --pl-box-gold: #c69d32;
-  --pl-box-green: #2f9e44;
-  --pl-box-purple: #7657d4;
-  --pl-set-on: #d8b24a;
-  --pl-decos: #e9e4da;
+  --pl-box-gold: #d4a63a;
+  --pl-box-green: #3aa64c;
+  --pl-box-purple: #8264dc;
+  --pl-set-on: #dcae3e;
+  --pl-pattern: rgb(80 60 30 / 0.05);
 }
 
 .gb-plan {
+  position: relative;
+  isolation: isolate;
   display: grid;
   gap: var(--space-2);
   padding: var(--space-2) var(--space-3) var(--space-3);
@@ -336,16 +345,58 @@
   border-radius: 8px;
   background: var(--pl-bg);
   color: var(--pl-text);
-  box-shadow: 0 1px 0 rgb(255 255 255 / 0.04) inset;
+}
+
+/* 窗口两个上角的角饰（menu00） */
+.gb-plan::before {
+  content: '';
+  position: absolute;
+  inset: 3px 3px auto;
+  height: 23px;
+  background: var(--pl-ornament);
+  mask:
+    var(--ui-win-tl) left top / 18px 23px no-repeat,
+    var(--ui-win-tr) right top / 18px 23px no-repeat;
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+/* 右下角淡淡的部族花纹（itemMenu00） */
+.gb-plan::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  z-index: -1;
+  width: 405px;
+  max-width: 70%;
+  height: 83px;
+  background: var(--pl-pattern);
+  mask: var(--ui-pattern) right bottom / contain no-repeat;
+  pointer-events: none;
 }
 
 .gb-plan__head {
+  position: relative;
   display: flex;
   align-items: center;
   gap: var(--space-3);
   flex-wrap: wrap;
-  min-height: 34px;
-  border-bottom: 1px dashed color-mix(in srgb, var(--pl-cell-edge) 70%, transparent);
+  min-height: 36px;
+  padding-inline: 14px 4px;
+}
+
+/* 标题下的分隔线：游戏的细线 + ◇ 线头 */
+.gb-plan__head::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 -3px;
+  height: 10px;
+  background: var(--pl-ornament);
+  mask:
+    var(--ui-line) left center / calc(100% - 12px) 3px no-repeat,
+    var(--ui-line-end) right center / 10px 10px no-repeat;
+  opacity: 0.6;
 }
 
 .gb-plan__head h3 {
@@ -383,12 +434,13 @@
 
 .gb-plan__apply:hover {
   background: var(--pl-orange);
-  color: var(--pl-tile);
+  color: #1a191c;
 }
 
 .gb-plan__body {
   display: grid;
   gap: var(--space-3);
+  padding-top: var(--space-1);
 }
 
 @media (min-width: 48rem) {
@@ -398,29 +450,27 @@
   }
 }
 
-/* 图标方块：装备、饰品、套装件数共用 */
+/* 图标底框：游戏的黑色圆角方块（status00） */
 .gb-plan__tile {
   display: inline-grid;
   place-items: center;
   flex: none;
-  width: 26px;
-  height: 26px;
-  border-radius: 3px;
-  background: var(--pl-tile);
-  box-shadow: inset 0 0 0 1px var(--pl-tile-edge);
+  width: 28px;
+  height: 28px;
+  background: var(--ui-tile) center / 100% 100% no-repeat;
 }
 
 /* ---- 装备 ---- */
 
 .gb-plan__equip {
   display: grid;
-  gap: 4px;
+  gap: 3px;
   align-content: start;
 }
 
 .gb-plan__equip li {
   display: grid;
-  grid-template-columns: 26px minmax(0, 1fr) auto auto;
+  grid-template-columns: 28px minmax(0, 1fr) auto auto;
   gap: var(--space-2);
   align-items: center;
   min-height: 30px;
@@ -504,23 +554,24 @@
   grid-template-rows: auto auto;
   column-gap: 6px;
   align-items: center;
-  padding: 3px 8px 4px 3px;
+  padding: 3px 10px 4px 3px;
   border-radius: 2px;
   background: var(--pl-cell);
   box-shadow: inset 0 1px 0 color-mix(in srgb, var(--pl-cell-edge) 60%, transparent);
 }
 
-/* 右上角的折角刻线 */
+/* 右上角的折角刻线（status00） */
 .gb-plan__skill::after,
 .gb-plan__set::after {
   content: '';
   position: absolute;
   top: 3px;
   right: 3px;
-  width: 7px;
-  height: 7px;
-  border-top: 1px solid var(--pl-cell-edge);
-  border-right: 1px solid var(--pl-cell-edge);
+  width: 9px;
+  height: 10px;
+  background: var(--pl-ornament);
+  mask: var(--ui-corner-tr) center / 100% 100% no-repeat;
+  opacity: 0.7;
   pointer-events: none;
 }
 
@@ -539,32 +590,37 @@
 .gb-plan__track {
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: 1px;
   min-width: 0;
 }
 
+/* 等级格：空格原样；实心格把游戏的白方块按颜色正片叠底，保留原有的明暗 */
 .gb-plan__track i {
   flex: none;
-  width: 11px;
+  width: 12px;
   height: 11px;
-  border-radius: 2px;
-  background: var(--pl-box-off);
-  box-shadow: inset 0 0 0 1px var(--pl-tile-edge);
+  /* 游戏的空格：暗心灰边；灰边在小尺寸下偏亮，压一点 */
+  background: var(--ui-box-off) center / 100% 100% no-repeat;
+  opacity: 0.7;
+}
+
+.gb-plan__track i[data-on] {
+  --box: var(--pl-box-green);
+  opacity: 1;
+  background:
+    var(--ui-box-on) center / 100% 100% no-repeat,
+    var(--box);
+  background-blend-mode: multiply;
+  mask: var(--ui-box-on) center / 100% 100% no-repeat;
 }
 
 /* 附带的技能：绿；搜索目标：金；极意突破的等级：紫 */
-.gb-plan__track i[data-on] {
-  background: var(--pl-box-green);
-  box-shadow: inset 0 -2px 0 rgb(0 0 0 / 0.2);
-}
-
 .gb-plan__skill[data-target] .gb-plan__track i[data-on] {
-  background: var(--pl-box-gold);
+  --box: var(--pl-box-gold);
 }
 
-/* 优先级要高过上面的「目标技能」金色 */
 .gb-plan__skill .gb-plan__track i[data-on][data-secret] {
-  background: var(--pl-box-purple);
+  --box: var(--pl-box-purple);
 }
 
 .gb-plan__track small {
@@ -574,12 +630,17 @@
   color: var(--pl-orange);
 }
 
+/* 格子后面拉到右边的细线 + ◇ 线头（itemMenu00） */
 .gb-plan__line {
   flex: 1;
-  min-width: 8px;
-  height: 1px;
-  margin-inline: 4px;
-  background: var(--pl-cell-edge);
+  min-width: 12px;
+  height: 10px;
+  margin-inline: 4px 6px;
+  background: var(--pl-ornament);
+  mask:
+    var(--ui-line) left center / calc(100% - 9px) 3px no-repeat,
+    var(--ui-line-end) right center / 9px 9px no-repeat;
+  opacity: 0.55;
 }
 
 .gb-plan__lv {
@@ -604,7 +665,7 @@
 .gb-plan__set {
   position: relative;
   display: grid;
-  gap: 4px;
+  gap: 5px;
   padding: 4px 8px 6px;
   border-radius: 2px;
   background: var(--pl-cell);
@@ -618,36 +679,51 @@
 
 .gb-plan__pieces {
   display: flex;
-  gap: 3px;
+  gap: 2px;
 }
 
 .gb-plan__pieces .gb-plan__tile {
-  width: 24px;
-  height: 24px;
+  width: 26px;
+  height: 26px;
 }
 
 .gb-plan__pieces .gb-plan__tile:not([data-set]) .gb-icon {
-  opacity: 0.35;
+  opacity: 0.3;
 }
 
-/* 计入套装的部位：金底 */
+/* 计入套装的部位：游戏的圆角方块做形状（黑方块不透明，灰方块半透明会发暗），填亮金 */
 .gb-plan__pieces .gb-plan__tile[data-on] {
-  background: var(--pl-set-on);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pl-set-on) 60%, #fff);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--pl-set-on) 70%, #fff), var(--pl-set-on));
+  mask: var(--ui-tile) center / 100% 100% no-repeat;
 }
 
 .gb-plan__pieces .gb-plan__tile[data-on] .gb-icon {
   opacity: 1;
-  filter: brightness(0.35);
+  filter: brightness(0.3);
 }
 
+/* 各档列表：四角是游戏的括线（menu00） */
 .gb-plan__tiers {
+  position: relative;
   display: grid;
   gap: 2px;
-  padding: 3px 8px;
-  border-inline: 1px solid var(--pl-cell-edge);
+  padding: 5px 12px;
   font-size: var(--text-xs);
   color: var(--pl-dim);
+}
+
+.gb-plan__tiers::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--pl-ornament);
+  mask:
+    var(--ui-bracket-tl) left top / 20px 11px no-repeat,
+    var(--ui-bracket-tr) right top / 20px 11px no-repeat,
+    var(--ui-bracket-bl) left bottom / 20px 11px no-repeat,
+    var(--ui-bracket-br) right bottom / 20px 11px no-repeat;
+  opacity: 0.7;
+  pointer-events: none;
 }
 
 .gb-plan__tiers li {
@@ -661,11 +737,10 @@
   place-items: center;
   width: 16px;
   height: 16px;
-  border-radius: 2px;
   font-family: var(--font-num);
   font-size: 11px;
-  background: var(--pl-tile);
-  box-shadow: inset 0 0 0 1px var(--pl-tile-edge);
+  color: var(--pl-dim);
+  background: var(--ui-tile) center / 100% 100% no-repeat;
 }
 
 .gb-plan__tiers span {
@@ -678,18 +753,33 @@
 }
 
 .gb-plan__tiers li[data-on] b {
-  background: color-mix(in srgb, var(--pl-orange) 30%, var(--pl-tile));
-  color: var(--pl-text);
+  color: #1a191c;
+  background:
+    var(--ui-tile-grey) center / 100% 100% no-repeat,
+    var(--pl-orange);
+  background-blend-mode: multiply;
 }
 
 /* ---- 饰品汇总 ---- */
 
 .gb-plan__decos {
+  position: relative;
   display: flex;
   flex-wrap: wrap;
   gap: 6px 14px;
-  padding: 6px var(--space-2);
-  border-top: 1px dashed color-mix(in srgb, var(--pl-cell-edge) 70%, transparent);
+  padding: 10px var(--space-2) 2px;
+}
+
+.gb-plan__decos::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 10px;
+  background: var(--pl-ornament);
+  mask:
+    var(--ui-line) left center / calc(100% - 12px) 3px no-repeat,
+    var(--ui-line-end) right center / 10px 10px no-repeat;
+  opacity: 0.45;
 }
 
 .gb-plan__decos li {
