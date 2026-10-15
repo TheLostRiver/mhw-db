@@ -113,3 +113,27 @@ def test_npcs() -> None:
     # 接待员在 4 个营地各有一处位置
     handler = [n for n in af["nodes"] if n["kind"] == "n002"]
     assert sorted(n["area"] for n in handler) == [1, 8, 11, 17]
+
+
+@pytest.mark.game
+@pytest.mark.skipif(not NODES.is_file(), reason="需要先运行 mhdb nodes")
+def test_environment_gimmicks() -> None:
+    st = stages()
+    env = {
+        sid: {
+            k["name"]["zh-Hans"]: (k["key"], k.get("actionIcon"))
+            for k in s["kinds"]
+            if k["category"] == "env"
+        }
+        for sid, s in st.items()
+    }
+    assert env[101]["藤蔓陷阱"] == ("gm011_000", 30)  # gm025_000 同名，并进来
+    assert env[101]["树冠堰堤"] == ("gm001_900", 29)
+    assert env[101]["回复露草"] == ("gm007_001", 3)
+    assert env[104]["腐肉"] == ("gm007_006", 31)
+    assert env[108]["温泉"] == ("gm908_200", None)  # 没有地图图标
+    assert "抓住" not in env[101]  # 攀爬点没有说明，不画
+    vines = [n for n in st[101]["nodes"] if n["kind"] == "gm011_000"]
+    assert len(vines) == 4
+    kinds = {k["key"]: k for k in st[101]["kinds"]}
+    assert "gm025_000" in kinds["gm011_000"]["_src"]["gimmick"] and kinds["gm011_000"]["desc"]["zh-Hans"]

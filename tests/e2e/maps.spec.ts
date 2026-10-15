@@ -139,6 +139,17 @@ test('交互环境生物', async ({ page }) => {
   await expect(page.getByRole('article', { name: '所选节点' })).toContainText('生物');
 });
 
+test('环境利用', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/world/maps/ancient-forest/', { waitUntil: 'networkidle' });
+  await page.getByRole('radio', { name: '环境利用' }).click();
+  await expect(page.getByRole('button', { name: /藤蔓陷阱/ }).first()).toBeVisible();
+  const vine = page.locator('.mv-node:has(img[src$="/action/30.webp"])');
+  await expect(vine).toHaveCount(4);
+  await vine.first().dispatchEvent('click');
+  await expect(page.getByRole('article', { name: '所选节点' })).toContainText('大自然陷阱');
+});
+
 test('NPC（默认不画，勾选后出现）', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/world/maps/ancient-forest/', { waitUntil: 'networkidle' });

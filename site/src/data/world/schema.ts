@@ -447,6 +447,7 @@ export const MapNodeKind = z
       'specialty',
       'bug',
       'creature',
+      'env',
       'npc',
       'slinger',
       'carry',
@@ -456,9 +457,9 @@ export const MapNodeKind = z
     name: Text.nullable(),
     /** 固定物品 */
     item: Int.positive().nullable(),
-    /** 交互环境生物的地图图标（cmn_action00 的格子编号） */
+    /** 交互环境生物、环境利用的地图图标（cmn_action00 的格子编号） */
     actionIcon: Int.min(1).optional(),
-    /** 交互环境生物的说明（animal_names） */
+    /** 交互环境生物、环境利用的说明（animal_names / gmk_names） */
     desc: Text.optional(),
     /** 抽选表行号（关卡 itlot），通常 / 第二组（用途未确认） */
     lots: z.array(Int.min(0)),

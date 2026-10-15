@@ -200,6 +200,7 @@ uv run mhdb nodes     # 大地图标记（采集点等）→ data/world/map-node
 | 抽选表 | `stage/stXXX/common/data/stXXX.itlot`（下位）、`_1`（上位）、`_2`（大师），Blowfish 加密 | 每行 10 个物品 × 数量 / 权重；exe 里三条路径字符串与等级对应 |
 | 节点名称 | `common/text/gmk_names` | 键名就是物件名：`gm000_012_00_NAME` 矿脉、`gm000_028_00_NAME` 骨冢、`gm000_206_NAME` 古龙的褪壳、`gm013_000_NAME` 营地 …… 没有键名的（药草等）用物品名 |
 | 营地图标、地区徽章 | `ui/common/tex/cmn_other00_ID.tex` 黄色帐篷；`cmn_stage00_ID.tex` | 徽章矩形取自 `map.gui` 的 `searchinfo` 动画 `tex_aIcon00–05`，按图形对应 st101–105、108 |
+| 环境利用 | `stXXX_gm.sobj`、`_gm_map.sobj` 里 `gmk_names` 同时有 `gmNNN_NNN_NAME` 与 `_DESC` 的物件（gimmick.gcd 种类不是采集 / 投射器弹） | 落石（巨型浮岩、冰柱岩）、树冠堰堤、流沙地带、崩落的雪原、熔岩喷出口、间歇泉岩石、藤蔓陷阱、回复露草、棉花孢子草、毒蔓草 / 毒鬼灯、冰耐草、鬼毬果、耐力雷虫、飞散核桃、腐肉、缆车、奇面族的捷径、温泉；同名的几种物件（藤蔓陷阱 gm011 / gm025 等）并成一种。图标是 gimmick.gcd +20 的 `cmn_action00` 格子（与 animal.gcd 同一字段，图形逐一对得上：孢子 1、毒 2、草 3、红草 4、「!」陷阱 29、藤蔓 30、肉 31）；缆车 49、奇面族的捷径 50 超出图集里有图的格子，温泉为 0，这三种画成墨点。攀爬点「抓住」（gm014 / gm051）没有说明，不画 |
 | 野外 NPC | `stXXX_nNNN.sobj` 的 `cVillageNpcSetter`（开头与 `cSetAnimalArea` 相同：位置、floor、4 个字符串） | 第一个字符串 `n002` / `npc036_00` 里的编号 → `chr_names` 的 `N002_NPC_NAME`；字符串为空的（st108_n954）用文件名里的编号。同一人有几处位置（`_00`–`_03`）；同名同位置的去重；n951–954 没有名字，不显示。图标用 `cmn_overhead00` 的对话气泡；默认不显示 |
 
 - **坐标换算**：雷达 2×2 瓦片（1640 单位）覆盖世界坐标 ±50000，纸片像素 × 比例 = 雷达单位，
@@ -219,7 +220,7 @@ uv run mhdb nodes     # 大地图标记（采集点等）→ data/world/map-node
   pop_base 的数量字段（螺旋果实等是 40，像是弹药数）。页面上标「未确认」，数量只显示抽选表里的。
 - 虫的采集次数、再生时间没有找到来源（pop_base 第 14–17 行是这几种虫，但没有物件引用），页面不显示这两项。
 - 尚未接入：钓点（`cSetFishArea`，记录里位置为 0，区域在别处）、其余环境生物（`cSetAnimalArea` 的其他 EC，r0 / r1 里还有一个
-  没有名字的 EC_054）、兽人族（`ot` 系列）、`gm000_242`（「分享的祝福」寻宝提示点，文本在 `treasure_stXXX`）。
+  没有名字的 EC_054）、兽人族（`ot` 系列）、没有名字的机关（gm001_001 等落石点、gm005、gm009 …… `gmk_names` 里没有键）、`gm000_242`（「分享的祝福」寻宝提示点，文本在 `treasure_stXXX`）。
 - `cPlJumpPos`（`stXXX_pl.sobj`）是玩家的出现位置，`tent_gm_ofs_*` 是营地布置的偏移，都不是营地本身。
 - **交互环境生物**：`cSetAnimalArea` 里 `animal.gcd` +20 不为 0 的（回复蜜虫、瓦斯蛙、闪光翅虫、粪金龟、铁鲎、仙人掌、雪球虫……），
   +20 是 `cmn_action00` 的图标格子（按图形逐一核对），名字与说明在 `animal_names`。永霜冻土的 EC_051 有图标但没有名字，暂不显示。

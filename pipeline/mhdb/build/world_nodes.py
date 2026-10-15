@@ -1,11 +1,13 @@
-"""大地图标记：采集点、矿脉、骨冢、特产、虫与鱼饵、投射器弹、营地、交互环境生物、NPC，输出 data/world/map-nodes.json。
+"""大地图标记：采集点、矿脉、骨冢、特产、虫与鱼饵、投射器弹、营地、交互环境生物、环境利用、NPC，
+输出 data/world/map-nodes.json。
 
 来源（布局见各解析器，推断过程见 docs/DATA.md 4.2）：
   stage/stXXX/common/set/stXXX_pop_map.sobj       常驻的采集点；cSetAnimalArea 里的 EC_032 是虫与鱼饵
   stage/stXXX/common/set/stXXX_pop_high_map.sobj  结晶矿脉，由 stXXX_high.sobjl 单独加载（推断为上位起）
   stage/stXXX/common/set/stXXX_pop_rN.sobj        环境状态（「矿脉增殖中」等）时追加的采集点
-  stage/stXXX/common/set/stXXX_gm.sobj            营地（gm013，带 mCampId）、少数矿脉
-  stage/stXXX/common/set/stXXX_gm_map.sobj        投射器弹（gimmick.gcd 种类 1）、怪物的粪、交互环境生物
+  stage/stXXX/common/set/stXXX_gm.sobj            营地（gm013，带 mCampId）、少数矿脉、环境利用（落石、堰堤……）
+  stage/stXXX/common/set/stXXX_gm_map.sobj        投射器弹（gimmick.gcd 种类 1）、怪物的粪、交互环境生物、
+                                                   环境利用（回复露草、藤蔓陷阱……：gmk_names 有名字与说明的物件）
   stage/stXXX/common/set/stXXX_ec.sobj            环境生物（只取交互环境生物，如铁鲎）
   stage/stXXX/common/set/stXXX_nNNN.sobj          野外 NPC（cVillageNpcSetter），名字在 chr_names 的 NNNN_NPC_NAME
   common/gimmick/gimmick.gcd                       物件种类 → 采集类型、两组抽选表
@@ -14,6 +16,7 @@
   common/text/gmk_names                            物件名，键名就是物件名（gm000_012_00_NAME → 矿脉）
   common/text/animal_names                         虫与交互环境生物的名字（EC_032_01_NAME → 苦虫）
   common/gimmick/animal.gcd                        环境生物的地图图标（有图标的是交互环境生物，见 mhdb/formats/gcd.py）
+  common/gimmick/gimmick.gcd +20                   环境利用的地图图标（同一图集）
   common/text/other_names                          营地名（ST101_Camp02 → 南西营地(1)），按括号里的区域号对应
 
 地图坐标：雷达 2×2 块瓦片（1640 雷达单位）覆盖世界坐标 ±50000，纸片像素 × 比例 = 雷达单位（maps.json 的
@@ -32,6 +35,7 @@ import numpy as np
 from mhdb.build.common import Source, Text, tr
 from mhdb.formats import gcd, sobj
 from mhdb.games.world.specs import ITEM_LOT, POP_BASE
+from mhdb.images.world_icons import action_cells
 from mhdb.images.world_maps import RADAR_PER_WORLD, patch_masks
 
 # 环境状态：pop_rN 的 N → cm_quest 文本序号。r0 / r1 是各地区的两种特产（与文件里物件的抽选表物品、
@@ -152,7 +156,9 @@ class _Texts:
         self.places = s.text("common/text/other_names")
         self.npcs = s.text("common/text/chr_names")
         self.items = items
-        self.animal_icon = gcd.animal_icons(s.path("common/gimmick/animal.gcd").read_bytes())
+        self.animal_icon = gcd.map_icons(s.path("common/gimmick/animal.gcd").read_bytes())
+        self.gimmick_icon = gcd.map_icons(s.path("common/gimmick/gimmick.gcd").read_bytes())
+        self.action = set(action_cells(s.root))  # cmn_action00 里有图的格子
         # 投射器弹的物品：物品名与物件名相同的那一个（石块、光苔……）
         self.by_name: dict[str, int] = {}
         for i in sorted(items.values(), key=lambda i: i["id"]):
@@ -204,6 +210,7 @@ def build_stage(
 
     kinds: dict[str, dict] = {}
     kind_states: dict[str, set[int]] = {}
+    env_keys: dict[str, str] = {}  # 环境利用：名字 → 种类键
     nodes, seen, states = [], set(), {}
 
     def add(key: str, pos, floor: int, rel: str, r: int | None, min_rank: str | None, **extra) -> None:
@@ -244,6 +251,20 @@ def build_stage(
                 add(obj.name, obj.pos, obj.floor, rel, r, min_rank)
                 continue
             if g.kind != GCD_GATHER:
+                # 环境利用：有名字和说明的物件（落石、藤蔓陷阱、回复露草……），同名的几种物件并成一种；
+                # 攀爬点「抓住」没有说明，不画
+                gm = obj.gimmick
+                name, desc = texts.gimmick(gm), _keyed(texts.gmk, f"{gm}_DESC")
+                if name and desc and not gm.startswith(CAMP_PREFIX):
+                    key = env_keys.setdefault(name["zh-Hans"], gm)
+                    if key not in kinds:
+                        kinds[key] = _plain_kind(key, "env", name, None, f"common/gimmick/gimmick.gcd {gm}")
+                        kinds[key]["desc"] = desc
+                        if (icon := texts.gimmick_icon.get(gm, 0)) and icon in texts.action:
+                            kinds[key]["actionIcon"] = icon
+                    elif gm not in kinds[key]["_src"]["gimmick"]:
+                        kinds[key]["_src"]["gimmick"] += f" / {gm}"
+                    add(key, obj.pos, obj.floor, rel, r, min_rank)
                 continue
             pop = pops[g.pop]
             pick = obj.props.get("mPickItem")
