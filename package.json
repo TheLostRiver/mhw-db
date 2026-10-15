@@ -17,7 +17,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "verify": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm data:check && pnpm build",
-    "data:check": "pnpm --filter site data:check"
+    "data:check": "pnpm --filter site data:check",
+    "deploy": "pnpm build && npx --yes wrangler@4 deploy"
   },
   "devDependencies": {
     "@playwright/test": "^1.64.0",
