@@ -448,6 +448,7 @@ export const MapNodeKind = z
       'bug',
       'creature',
       'endemic',
+      'fishing',
       'env',
       'treasure',
       'npc',
@@ -496,6 +497,8 @@ export const MapNode = z
     label: Text.nullable().optional(),
     /** 环境生物、虫：出现范围的四个角（地图坐标），节点位置是它的中心 */
     quad: z.array(z.tuple([z.number(), z.number()])).length(4).optional(),
+    /** 钓点：能钓到的鱼（物品编号） */
+    fish: z.array(Int.positive()).optional(),
     /** 寻宝：这一张的第几处（0 起） */
     step: Int.min(0).optional(),
     _src: z.object({ file: z.string().startsWith('stage/') }).strict(),

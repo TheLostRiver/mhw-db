@@ -191,3 +191,71 @@ def npcs(data: bytes, default: int | None = None) -> list[Npc]:
             raise SobjError(f"cVillageNpcSetter：认不出 NPC 编号 {p.strings[0]!r}")
         out.append(Npc(pos=p.pos, floor=p.floor, npc=npc, tag=p.strings[0]))
     return out
+
+
+FISH_CLASS = b"cSetFishArea\0"
+# cSetFishArea::cFishSetParam 的类哈希（DTI 结构表里的 CRC32 0x32AB1B14），每种鱼一条
+_FISH_PARAM = bytes.fromhex("141bab32")
+_SHAPE = struct.Struct("<ff16f")  # 半径、高度、4 个角（vector4）
+
+
+@dataclass(frozen=True)
+class Fish:
+    ec: int
+    variant: int
+    num: int  # 配置数（DTI 字段 mAnimalNum，未使用）
+
+    @property
+    def name(self) -> str:
+        return f"EC_{self.ec:03d}" + (f"_{self.variant:02d}" if self.variant else "")
+
+
+@dataclass(frozen=True)
+class FishArea:
+    floor: int
+    fish: tuple[Fish, ...]
+    height: float  # 钓点范围（记录里最后一个形状）的高度
+    corners: tuple[tuple[float, float], ...]
+
+    @property
+    def center(self) -> tuple[float, float, float]:
+        xs, zs = zip(*self.corners, strict=True)
+        return (sum(xs) / len(xs), self.height, sum(zs) / len(zs))
+
+
+def _shape_at(data: bytes, o: int) -> tuple[float, tuple[tuple[float, float], ...]] | None:
+    """形状签名：半径 > 0、4 个角与高度相同且 w = 0、角不全重合。"""
+    if o + _SHAPE.size > len(data):
+        return None
+    radius, height, *v = _SHAPE.unpack_from(data, o)
+    if not 0 < radius < 1e5 or not abs(height) < 1e5:
+        return None
+    quad = [v[i : i + 4] for i in range(0, 16, 4)]
+    if any(y != height or w != 0.0 or not abs(x) < 1e6 or not abs(z) < 1e6 for x, y, z, w in quad):
+        return None
+    corners = tuple((x, z) for x, _, z, _ in quad)
+    return (height, corners) if len(set(corners)) > 1 else None
+
+
+def fish_areas(data: bytes) -> list[FishArea]:
+    """stXXX_ec.sobj 的钓点。开头与 cSetAnimalArea 相同（位置全为 0，不用），+69 起是 u32 鱼种数，随后是各鱼种的
+    cFishSetParam（类哈希、u32 环境生物编号、u32 变种、u32 配置数……，长度不一，带各自的「喜好范围」），最后是钓点自己的范围。
+    子项的变长部分没有理清，这里按类哈希找鱼种、按形状签名找范围，取最后一个形状为钓点范围。"""
+    bounds = sorted(
+        m.start() - 4 for cls in (FISH_CLASS, ANIMAL_CLASS) for m in re.finditer(re.escape(cls), data)
+    )
+    out = []
+    for p in _placed(data, FISH_CLASS):
+        (count,) = struct.unpack_from("<I", data, p.end + 69)
+        start = p.end + 73
+        end = next((b for b in bounds if b > start), len(data))
+        params = [m.start() for m in re.finditer(re.escape(_FISH_PARAM), data[start:end])]
+        if len(params) != count or params[:1] != [0]:
+            raise SobjError(f"cSetFishArea @{start:#x}：鱼种数 {count} 与子项 {len(params)} 条对不上")
+        fish = tuple(Fish(*struct.unpack_from("<III", data, start + o + 4)) for o in params)
+        shapes = [s for o in range(start, end) if (s := _shape_at(data, o))]
+        if not shapes:
+            raise SobjError(f"cSetFishArea @{start:#x}：没有找到范围")
+        height, corners = shapes[-1]
+        out.append(FishArea(p.floor, fish, height, corners))
+    return out

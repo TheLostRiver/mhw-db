@@ -117,6 +117,18 @@ export function NodeDetail({ stage, layers, index, rank, items, siblings, onFocu
           )}
         </dl>
       )}
+      {node.fish && node.fish.length > 0 && (
+        <ul className="mv-loot" aria-label="能钓到的鱼">
+          {node.fish.map((f) =>
+            items[f] ? (
+              <li key={f} className="mv-loot__row">
+                <img src={itemIconUrl(items[f]!)} alt="" width={64} height={64} />
+                <span className="mv-loot__name">{items[f]!.name}</span>
+              </li>
+            ) : null,
+          )}
+        </ul>
+      )}
       {kind.item !== null && items[kind.item] && (
         <ul className="mv-loot">
           <li className="mv-loot__row">

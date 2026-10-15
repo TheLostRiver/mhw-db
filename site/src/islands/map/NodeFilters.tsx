@@ -9,6 +9,7 @@ import {
   RANK_LABEL,
   kindIconUrl,
   kindName,
+  fishNames,
   lotItemNames,
   type Category,
   type MapItems,
@@ -117,7 +118,11 @@ function KindList({
   const rows = useMemo(
     () =>
       nodes.kinds.map((k) => {
-        const lot = k.lots.length ? lotItemNames(k, nodes, rank, items) : [];
+        const lot = k.lots.length
+          ? lotItemNames(k, nodes, rank, items)
+          : k.category === 'fishing'
+            ? fishNames(nodes, k.key, items)
+            : [];
         return {
           kind: k,
           name: kindName(k, nodes, rank, items),

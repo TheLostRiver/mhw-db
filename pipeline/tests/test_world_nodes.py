@@ -179,3 +179,15 @@ def test_endemic_life_names_from_notes() -> None:
     for sid, s in st.items():
         off = [n for n in s["nodes"] if n["layer"] is None and n["_src"]["file"].endswith("_ec.sobj")]
         assert not off, sid
+
+
+@pytest.mark.game
+@pytest.mark.skipif(not NODES.is_file(), reason="需要先运行 mhdb nodes")
+def test_fishing_spots() -> None:
+    st = stages()
+    af = [n for n in st[101]["nodes"] if n["kind"] == "fishing"]
+    assert len(af) == 12  # 13 条记录，大王旗鱼那条与另一个钓点同位置，合并
+    assert all(n["layer"] is not None for n in af)
+    king = [n for n in af if 715 in n["fish"]]  # 大王旗鱼
+    assert len(king) == 1 and len(king[0]["fish"]) > 1
+    assert any(681 in n["fish"] for n in af)  # 破裂龙鱼

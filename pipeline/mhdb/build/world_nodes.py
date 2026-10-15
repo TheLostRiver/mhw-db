@@ -1,4 +1,4 @@
-"""大地图标记：采集点、矿脉、骨冢、特产、虫与鱼饵、投射器弹、营地、交互环境生物、环境生物、环境利用、寻宝、NPC，
+"""大地图标记：采集点、矿脉、骨冢、特产、虫与鱼饵、投射器弹、营地、交互环境生物、环境生物、钓点、环境利用、寻宝、NPC，
 输出 data/world/map-nodes.json。
 
 来源（布局见各解析器，推断过程见 docs/DATA.md 4.2）：
@@ -8,7 +8,7 @@
   stage/stXXX/common/set/stXXX_gm.sobj            营地（gm013，带 mCampId）、少数矿脉、环境利用（落石、堰堤……）
   stage/stXXX/common/set/stXXX_gm_map.sobj        投射器弹（gimmick.gcd 种类 1）、怪物的粪、交互环境生物、
                                                    环境利用（回复露草、藤蔓陷阱……：gmk_names 有名字与说明的物件）
-  stage/stXXX/common/set/stXXX_ec.sobj            环境生物（cSetAnimalArea：出现范围的中心）
+  stage/stXXX/common/set/stXXX_ec.sobj            环境生物（cSetAnimalArea：出现范围的中心）、钓点（cSetFishArea）
   stage/stXXX/common/set/stXXX_nNNN.sobj          野外 NPC（cVillageNpcSetter），名字在 chr_names 的 NNNN_NPC_NAME
   common/gimmick/gimmick.gcd                       物件种类 → 采集类型、两组抽选表
   common/item/pop_base.ppm                         采集类型 → 固定物品、采集次数、再生秒数
@@ -229,6 +229,7 @@ def build_stage(
     env_keys: dict[str, str] = {}  # 环境利用：名字 → 种类键
     unnamed: set[str] = set()
     treasure: list[tuple[int, sobj.SetObject, str]] = []
+    pools: list[tuple[sobj.FishArea, str]] = []
     nodes, seen, states = [], set(), {}
 
     def add(key: str, pos, floor: int, rel: str, r: int | None, min_rank: str | None, **extra) -> None:
@@ -250,6 +251,8 @@ def build_stage(
         if not s.path(rel).is_file():
             continue
         data = s.path(rel).read_bytes()
+        if fname.endswith("_ec.sobj"):
+            pools += [(fa, rel) for fa in sobj.fish_areas(data)]
         for obj in sobj.parse(data):
             if isinstance(hint := obj.props.get("mTeasureHintNo"), int) and hint > 0:
                 treasure.append((hint, obj, rel))  # 寻宝的一处；也可能是骨冢等采集点，照常往下处理
@@ -336,6 +339,28 @@ def build_stage(
             # 位置取出现范围（四个角）的中心；记录开头的位置不是出现位置（见 mhdb/formats/sobj.py）
             quad = [[round(x * to_map, 1), round(z * to_map, 1)] for x, z in area.corners]
             add(key, area.center, area.floor, rel, r, min_rank, quad=quad)
+
+    # 钓点（cSetFishArea）：位置取钓点范围的中心，鱼种按调查笔记换成物品。同一位置的几条记录合并
+    # （永霜冻土的大王旗鱼单独一条，与别的鱼共用一个钓点）。
+    merged: dict[tuple[int, int], tuple[sobj.FishArea, list[int], str]] = {}
+    for fa, rel in pools:
+        fish = []
+        for f in fa.fish:
+            if f.name in texts.ec_note:
+                fish.append(texts.ec_note[f.name][0])
+            elif f.name not in unnamed:
+                unnamed.add(f.name)
+                log(f"  注意：st{stage} 钓点的鱼 {f.name} 不在调查笔记里，跳过")
+        spot = (round(fa.center[0]), round(fa.center[2]))
+        if spot in merged:
+            merged[spot][1].extend(fish)
+        else:
+            merged[spot] = (fa, fish, rel)
+    if merged:
+        kinds["fishing"] = _plain_kind("fishing", "fishing", None, None, "cSetFishArea（鱼种见各点的 fish）")
+    for fa, fish, rel in merged.values():
+        quad = [[round(x * to_map, 1), round(z * to_map, 1)] for x, z in fa.corners]
+        add("fishing", fa.center, fa.floor, rel, None, None, quad=quad, fish=list(dict.fromkeys(fish)))
 
     # 寻宝（古代树森林「分享的祝福」、陆珊瑚台地「传说的骑士 手札」……每张图一个系列）：
     # 物件属性 mTeasureHintNo = 第几张 × 100 + 第几处（0 起）。多数是 gm000_242 提示点，

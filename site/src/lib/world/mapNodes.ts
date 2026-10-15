@@ -23,6 +23,7 @@ export const CATEGORIES: { key: Category; label: string }[] = [
   { key: 'specialty', label: '特产' },
   { key: 'creature', label: '交互环境生物' },
   { key: 'endemic', label: '环境生物' },
+  { key: 'fishing', label: '钓点' },
   { key: 'env', label: '环境利用' },
   { key: 'treasure', label: '寻宝' },
   { key: 'npc', label: 'NPC' },
@@ -34,6 +35,8 @@ export const CATEGORIES: { key: Category; label: string }[] = [
 export const CAMP_ICON = '/assets/game/world/ui/camp.webp';
 export const NPC_ICON = '/assets/game/world/ui/npc.webp';
 export const TREASURE_ICON = '/assets/game/world/ui/treasure.webp';
+/** 钓点：游戏里鱼类物品的图标（白色那一种） */
+export const FISHING_ICON = '/assets/game/world/item/95-0.webp';
 
 /** 种类在地图上的图标：营地用帐篷，交互环境生物、环境利用用游戏地图上的图标，其余用代表物品的图标 */
 export function kindIconUrl(
@@ -45,6 +48,7 @@ export function kindIconUrl(
   if (kind.category === 'camp') return CAMP_ICON;
   if (kind.category === 'npc') return NPC_ICON;
   if (kind.category === 'treasure') return TREASURE_ICON;
+  if (kind.category === 'fishing') return FISHING_ICON;
   if (kind.actionIcon) return `/assets/game/world/action/${kind.actionIcon}.webp`;
   const id = mainItem(kind, stage, rank);
   return id !== null && items[id] ? itemIconUrl(items[id]) : null;
@@ -83,7 +87,15 @@ export function mainItem(kind: MapNodeKind, stage: MapNodeStage, rank: Rank): nu
 export function kindName(kind: MapNodeKind, stage: MapNodeStage, rank: Rank, items: MapItems): string {
   if (kind.name) return kind.name['zh-Hans'];
   const id = mainItem(kind, stage, rank);
-  return (id !== null && items[id]?.name) || kind.key;
+  return (
+    (id !== null && items[id]?.name) || CATEGORIES.find((c) => c.key === kind.category)?.label || kind.key
+  );
+}
+
+/** 某种类（钓点）各点能钓到的鱼名（去重），用作列表里的副标题与搜索 */
+export function fishNames(stage: MapNodeStage, key: string, items: MapItems): string[] {
+  const ids = new Set(stage.nodes.filter((n) => n.kind === key).flatMap((n) => n.fish ?? []));
+  return [...ids].map((i) => items[i]?.name).filter((n): n is string => !!n);
 }
 
 /** 抽选表里的物品名（去重，按第一张表的顺序），用作列表里的副标题与搜索 */

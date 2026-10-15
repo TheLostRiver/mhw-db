@@ -183,6 +183,18 @@ test('环境生物（默认不画，选中后画出出现范围）', async ({ pa
   await expect(page.locator('path.mv-range')).toHaveCount(1);
 });
 
+test('钓点：能钓到的鱼，按鱼名搜索', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/world/maps/ancient-forest/', { waitUntil: 'networkidle' });
+  await expect(page.locator(".mv-node__icon[data-cat='fishing']")).toHaveCount(12);
+  await page.getByRole('searchbox').fill('大王旗鱼');
+  await expect(page.getByRole('button', { name: /钓点/ }).first()).toBeVisible();
+  await page.locator('.mv-node:has(.mv-node__icon[data-cat="fishing"])').first().dispatchEvent('click');
+  const fish = page.getByRole('list', { name: '能钓到的鱼' });
+  await expect(fish).toBeVisible();
+  expect(await fish.getByRole('listitem').count()).toBeGreaterThan(0);
+});
+
 test('NPC（默认不画，勾选后出现）', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/world/maps/ancient-forest/', { waitUntil: 'networkidle' });

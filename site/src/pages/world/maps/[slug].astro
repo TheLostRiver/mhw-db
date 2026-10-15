@@ -11,9 +11,10 @@ export function getStaticPaths() {
   const items = loadItems();
   return loadMaps().map((stage) => {
     const st = nodes.get(stage.id) ?? null;
-    // 只把这张图用到的物品（固定物品、抽选表里的物品）交给地图岛
+    // 只把这张图用到的物品（固定物品、抽选表里的物品、钓点的鱼）交给地图岛
     const used = new Set<number>();
     for (const k of st?.kinds ?? []) if (k.item !== null) used.add(k.item);
+    for (const n of st?.nodes ?? []) for (const f of n.fish ?? []) used.add(f);
     for (const rows of Object.values(st?.lots ?? {}))
       for (const e of Object.values(rows).flat()) used.add(e.item);
     const subset: MapItems = Object.fromEntries(
