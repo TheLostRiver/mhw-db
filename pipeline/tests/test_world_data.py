@@ -67,6 +67,14 @@ def test_secret_skill_unlocks() -> None:
     assert ("黑龙的传说", 2) in unlocks
 
 
+def test_set_bonus_level_names() -> None:
+    # 套装技能每一档的名字（游戏内套装技能一览）：黑龙的传说 2 件「继承」、4 件「超越」；普通技能的等级没有名字
+    skills = load("skills.json", "skills")
+    fatalis = by_name(skills, "黑龙的传说")
+    assert [(lv["level"], lv["name"]["zh-Hans"]) for lv in fatalis["levels"]] == [(2, "继承"), (4, "超越")]
+    assert all("name" not in lv for lv in by_name(skills, "攻击")["levels"])
+
+
 def test_charm_and_armor() -> None:
     charm = by_name(load("charms.json", "charms"), "挑战护石5")
     assert charm["rarity"] == 12

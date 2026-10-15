@@ -168,6 +168,38 @@ describe('searchBuilds', () => {
     expect(first.levels[62]).toBe(7);
   });
 
+  it('武器固定提供的技能点与套装件数计入', () => {
+    const dragon = (id: number) =>
+      armor(id, 'head', 12, 180, [{ id: 62, level: 2 }], [], { id: 222, points: 1 });
+    const index: SearchIndex = {
+      armor: {
+        head: [dragon(1)],
+        chest: [dragon(2)],
+        arms: [dragon(3)],
+        waist: [armor(4, 'waist', 12, 150, [])],
+        legs: [armor(5, 'legs', 12, 150, [])],
+      },
+      charms: [],
+      decorations: [],
+      skills: [skill(62, 7, false, 5, undefined, [{ skill: 222, level: 4 }]), skill(222, 4, true, 4, [2, 4])],
+    };
+    const query: SearchQuery = { skills: [{ id: 62, level: 7 }], weaponSlots: [] };
+    const run = (q: SearchQuery) => {
+      const out: SearchResult[] = [];
+      searchBuilds(index, q, (r) => {
+        out.push(r);
+      });
+      return out;
+    };
+    // 3 件黑龙只有 2 档，挑战者被卡在 5；点数也只有 6
+    expect(run(query)).toHaveLength(0);
+    // 武器提供挑战者 +1、黑龙 +1 件 → 4 件解锁、点数 7
+    const out = run({ ...query, fixedSkills: [{ id: 62, level: 1 }], fixedSets: [{ id: 222, points: 1 }] });
+    expect(out.length).toBeGreaterThan(0);
+    expect(out[0]!.levels[62]).toBe(7);
+    expect(out[0]!.setLevels[222]).toBe(4);
+  });
+
   it('maxResults 限制返回数量', () => {
     const index: SearchIndex = {
       armor: {

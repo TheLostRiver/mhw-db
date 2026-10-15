@@ -104,9 +104,12 @@ def build_skills(s: Source) -> list[dict]:
     by_skill: dict[int, list[dict]] = {}
     for i, r in enumerate(levels):
         unlocks = [ref(r[f"unlock_{k}"]) for k in range(1, 7) if r[f"unlock_{k}"]]
+        # 套装技能的每一档有自己的名字（如黑龙的传说 2 件「继承」、4 件「超越」），普通技能为空
+        level_name = tr(level_text, 2 * i)
         by_skill.setdefault(r["skill_id"], []).append(
             {
                 "level": r["level"],
+                **({"name": level_name} if level_name else {}),
                 "desc": tr(level_text, 2 * i + 1, markup=True) or {},
                 "params": [r[f"param_{k}"] for k in range(1, 5)],
                 **({"unlockedBy": unlocks} if unlocks else {}),

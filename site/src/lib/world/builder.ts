@@ -27,6 +27,8 @@ export interface SkillRef {
 
 export interface SkillLevelData {
   level: number;
+  /** 套装技能每一档的名字（如黑龙的传说 2 件「继承」） */
+  name?: string;
   desc: string;
   params: number[];
   unlockedBy?: { skill: number; level: number }[];

@@ -1,0 +1,713 @@
+/* 自动配装（gb-as 前缀） */
+
+.gb-as {
+  display: grid;
+  gap: var(--space-4);
+  font-size: var(--text-sm);
+}
+
+@media (min-width: 76rem) {
+  .gb-as {
+    grid-template-columns: 360px minmax(0, 1fr);
+  }
+}
+
+/* ---------- 搜索表单 ---------- */
+
+.gb-as__form {
+  display: grid;
+  gap: var(--space-4);
+  align-content: start;
+  padding: var(--space-3);
+  border-radius: var(--gb-radius);
+}
+
+.gb-as__group {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.gb-as__group .gb-h--sub {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.gb-as__add {
+  font-size: var(--text-xs);
+}
+
+.gb-as__weapon {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.gb-as__radio {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+  padding: var(--space-2);
+  border-radius: var(--gb-radius);
+  background: var(--gb-row);
+  cursor: pointer;
+  transition: background-color var(--dur-fast);
+}
+
+.gb-as__radio:hover:not([data-disabled]) {
+  background: var(--gb-row-hover);
+}
+
+.gb-as__radio[data-disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.gb-as__radio input {
+  accent-color: var(--c-accent);
+}
+
+.gb-as__radio > span:not([class]) {
+  flex: 1;
+  min-width: 8rem;
+}
+
+.gb-as__radio small {
+  display: block;
+  margin-top: 2px;
+  font-size: var(--text-xs);
+  color: var(--c-text-2);
+}
+
+.gb-as__slotpick {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.gb-as__slotpick select {
+  width: 4.5rem;
+  font-size: var(--text-xs);
+}
+
+.gb-as__sloticons {
+  display: flex;
+  gap: 4px;
+}
+
+.gb-as__skills {
+  display: grid;
+  gap: 6px;
+}
+
+.gb-as__skills li {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr) auto auto;
+  gap: var(--space-2);
+  align-items: center;
+  padding: 4px 6px;
+  border-radius: var(--gb-radius);
+  background: var(--gb-row);
+}
+
+.gb-as__skillname {
+  font-weight: 500;
+}
+
+.gb-as__levels {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.gb-as__levels button {
+  width: 13px;
+  height: 13px;
+  border-radius: 1px;
+  background: color-mix(in srgb, var(--c-text) 12%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c-text) 18%, transparent);
+  transition:
+    background-color var(--dur-fast),
+    box-shadow var(--dur-fast);
+}
+
+.gb-as__levels button[data-secret] {
+  background: color-mix(in srgb, var(--gb-secret) 15%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--gb-secret) 35%, transparent);
+}
+
+.gb-as__levels button[data-on] {
+  background: var(--gb-gold);
+  box-shadow: 0 0 6px -1px color-mix(in srgb, var(--gb-gold) 70%, transparent);
+}
+
+.gb-as__levels button[data-secret][data-on] {
+  background: var(--gb-secret);
+  box-shadow: 0 0 6px -1px color-mix(in srgb, var(--gb-secret) 70%, transparent);
+}
+
+.gb-as__levels b {
+  margin-left: 4px;
+  font-family: var(--font-num);
+  font-size: var(--text-xs);
+  color: var(--c-text-2);
+}
+
+.gb-as__tiers {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.gb-as__remove {
+  width: 22px;
+  height: 22px;
+  border-radius: var(--gb-radius);
+  font-size: 18px;
+  line-height: 1;
+  color: var(--c-text-2);
+  transition:
+    background-color var(--dur-fast),
+    color var(--dur-fast);
+}
+
+.gb-as__remove:hover {
+  background: color-mix(in srgb, var(--c-danger) 15%, transparent);
+  color: var(--c-danger);
+}
+
+.gb-as__opts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+}
+
+.gb-as__opts label {
+  display: grid;
+  gap: 4px;
+}
+
+.gb-as__opts select {
+  font-size: var(--text-xs);
+}
+
+.gb-as__exclude {
+  display: grid;
+  grid-template-columns: 4rem minmax(0, 1fr);
+  gap: var(--space-2);
+  align-items: start;
+}
+
+.gb-as__exlabel {
+  padding-top: 4px;
+  font-size: var(--text-xs);
+  color: var(--c-text-2);
+}
+
+.gb-as__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.gb-as__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: var(--text-xs);
+  background: var(--gb-row);
+  transition:
+    background-color var(--dur-fast),
+    color var(--dur-fast);
+}
+
+.gb-as__chip:hover {
+  background: var(--gb-row-hover);
+}
+
+.gb-as__chip span {
+  opacity: 0.6;
+}
+
+.gb-as__chip--add {
+  background: transparent;
+  border: 1px dashed var(--c-line);
+}
+
+.gb-as__actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+/* ---------- 结果列表 ---------- */
+
+.gb-as__results {
+  display: grid;
+  gap: var(--space-3);
+  align-content: start;
+}
+
+.gb-as__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.gb-as__head .gb-h {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.gb-as__sort {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-xs);
+}
+
+.gb-as__sort select {
+  min-width: 10rem;
+  font-size: var(--text-xs);
+}
+
+.gb-as__empty {
+  margin-top: var(--space-4);
+}
+
+.gb-plans {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.gb-as__more {
+  width: fit-content;
+  margin: 0 auto;
+}
+
+/* ---------- 方案卡片（照游戏的配装一览） ---------- */
+
+/* 游戏界面的配色：暖灰底、橙色标题与数字，等级格金 / 绿 / 紫 */
+.gb-as {
+  --pl-bg: linear-gradient(180deg, #2d2c2f, #262528);
+  --pl-edge: #5b574f;
+  --pl-cell: linear-gradient(180deg, #3b3a3f 0%, #302f34 100%);
+  --pl-cell-edge: #57534b;
+  --pl-tile: #1a191c;
+  --pl-tile-edge: #45423c;
+  --pl-text: #eeeae1;
+  --pl-dim: #928d83;
+  --pl-orange: #f3a53b;
+  --pl-box-off: #151417;
+  --pl-box-gold: #dcc17a;
+  --pl-box-green: #4fc35b;
+  --pl-box-purple: #9c86e6;
+  --pl-set-on: #c9a23c;
+  --pl-decos: #1f1e21;
+}
+
+[data-theme='light'] .gb-as {
+  --pl-bg: linear-gradient(180deg, #f6f3ec, #efebe2);
+  --pl-edge: #cbc3b4;
+  --pl-cell: linear-gradient(180deg, #ffffff 0%, #f3efe7 100%);
+  --pl-cell-edge: #d9d0c0;
+  --pl-tile: #e4ded2;
+  --pl-tile-edge: #cdc4b3;
+  --pl-text: #2a261f;
+  --pl-dim: #80786b;
+  --pl-orange: #c06a00;
+  --pl-box-off: #ddd6c9;
+  --pl-box-gold: #c69d32;
+  --pl-box-green: #2f9e44;
+  --pl-box-purple: #7657d4;
+  --pl-set-on: #d8b24a;
+  --pl-decos: #e9e4da;
+}
+
+.gb-plan {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3) var(--space-3);
+  border: 1px solid var(--pl-edge);
+  border-radius: 8px;
+  background: var(--pl-bg);
+  color: var(--pl-text);
+  box-shadow: 0 1px 0 rgb(255 255 255 / 0.04) inset;
+}
+
+.gb-plan__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  min-height: 34px;
+  border-bottom: 1px dashed color-mix(in srgb, var(--pl-cell-edge) 70%, transparent);
+}
+
+.gb-plan__head h3 {
+  font-size: var(--text-md);
+  font-weight: 700;
+  color: var(--pl-orange);
+}
+
+.gb-plan__meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--text-xs);
+  color: var(--pl-dim);
+}
+
+.gb-plan__meta b {
+  font-family: var(--font-num);
+  color: var(--pl-text);
+}
+
+.gb-plan__apply {
+  margin-left: auto;
+  padding: 3px 12px;
+  border: 1px solid var(--pl-orange);
+  border-radius: 3px;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--pl-orange);
+  background: transparent;
+  transition:
+    background-color var(--dur-fast),
+    color var(--dur-fast);
+}
+
+.gb-plan__apply:hover {
+  background: var(--pl-orange);
+  color: var(--pl-tile);
+}
+
+.gb-plan__body {
+  display: grid;
+  gap: var(--space-3);
+}
+
+@media (min-width: 48rem) {
+  .gb-plan__body {
+    grid-template-columns: 14.5rem minmax(0, 1fr);
+    align-items: start;
+  }
+}
+
+/* 图标方块：装备、饰品、套装件数共用 */
+.gb-plan__tile {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 3px;
+  background: var(--pl-tile);
+  box-shadow: inset 0 0 0 1px var(--pl-tile-edge);
+}
+
+/* ---- 装备 ---- */
+
+.gb-plan__equip {
+  display: grid;
+  gap: 4px;
+  align-content: start;
+}
+
+.gb-plan__equip li {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr) auto auto;
+  gap: var(--space-2);
+  align-items: center;
+  min-height: 30px;
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.gb-plan__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gb-plan__equip li[data-empty] {
+  font-weight: 500;
+  color: var(--pl-dim);
+}
+
+.gb-plan__equip li[data-empty] .gb-icon {
+  opacity: 0.45;
+}
+
+.gb-plan__alts {
+  padding: 0 6px;
+  border-radius: 999px;
+  font-family: var(--font-num);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--pl-orange);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pl-orange) 50%, transparent);
+}
+
+.gb-plan__ex {
+  width: 20px;
+  height: 20px;
+  border-radius: 3px;
+  font-size: 15px;
+  line-height: 1;
+  color: var(--pl-dim);
+  opacity: 0;
+  transition:
+    opacity var(--dur-fast),
+    background-color var(--dur-fast),
+    color var(--dur-fast);
+}
+
+.gb-plan__equip li:hover .gb-plan__ex,
+.gb-plan__ex:focus-visible {
+  opacity: 1;
+}
+
+.gb-plan__ex:hover {
+  background: color-mix(in srgb, var(--c-danger) 18%, transparent);
+  color: var(--c-danger);
+}
+
+/* ---- 技能格 ---- */
+
+.gb-plan__skills {
+  display: grid;
+  gap: 4px;
+  align-content: start;
+}
+
+.gb-plan__grid {
+  display: grid;
+  gap: 4px;
+}
+
+@media (min-width: 40rem) {
+  .gb-plan__grid,
+  .gb-plan__sets {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.gb-plan__skill {
+  position: relative;
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  column-gap: 6px;
+  align-items: center;
+  padding: 3px 8px 4px 3px;
+  border-radius: 2px;
+  background: var(--pl-cell);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--pl-cell-edge) 60%, transparent);
+}
+
+/* 右上角的折角刻线 */
+.gb-plan__skill::after,
+.gb-plan__set::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 7px;
+  height: 7px;
+  border-top: 1px solid var(--pl-cell-edge);
+  border-right: 1px solid var(--pl-cell-edge);
+  pointer-events: none;
+}
+
+.gb-plan__skill > .gb-icon {
+  grid-row: 1 / span 2;
+}
+
+.gb-plan__skname {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--text-xs);
+  font-weight: 700;
+}
+
+.gb-plan__track {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+}
+
+.gb-plan__track i {
+  flex: none;
+  width: 11px;
+  height: 11px;
+  border-radius: 2px;
+  background: var(--pl-box-off);
+  box-shadow: inset 0 0 0 1px var(--pl-tile-edge);
+}
+
+/* 附带的技能：绿；搜索目标：金；极意突破的等级：紫 */
+.gb-plan__track i[data-on] {
+  background: var(--pl-box-green);
+  box-shadow: inset 0 -2px 0 rgb(0 0 0 / 0.2);
+}
+
+.gb-plan__skill[data-target] .gb-plan__track i[data-on] {
+  background: var(--pl-box-gold);
+}
+
+/* 优先级要高过上面的「目标技能」金色 */
+.gb-plan__skill .gb-plan__track i[data-on][data-secret] {
+  background: var(--pl-box-purple);
+}
+
+.gb-plan__track small {
+  margin-left: 2px;
+  font-family: var(--font-num);
+  font-size: 10px;
+  color: var(--pl-orange);
+}
+
+.gb-plan__line {
+  flex: 1;
+  min-width: 8px;
+  height: 1px;
+  margin-inline: 4px;
+  background: var(--pl-cell-edge);
+}
+
+.gb-plan__lv {
+  flex: none;
+  font-size: 11px;
+  color: var(--pl-dim);
+}
+
+.gb-plan__lv b {
+  font-family: var(--font-num);
+  font-size: var(--text-xs);
+  color: var(--pl-orange);
+}
+
+/* ---- 套装 ---- */
+
+.gb-plan__sets {
+  display: grid;
+  gap: 4px;
+}
+
+.gb-plan__set {
+  position: relative;
+  display: grid;
+  gap: 4px;
+  padding: 4px 8px 6px;
+  border-radius: 2px;
+  background: var(--pl-cell);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--pl-cell-edge) 60%, transparent);
+}
+
+.gb-plan__setname {
+  font-size: var(--text-xs);
+  font-weight: 700;
+}
+
+.gb-plan__pieces {
+  display: flex;
+  gap: 3px;
+}
+
+.gb-plan__pieces .gb-plan__tile {
+  width: 24px;
+  height: 24px;
+}
+
+.gb-plan__pieces .gb-plan__tile:not([data-set]) .gb-icon {
+  opacity: 0.35;
+}
+
+/* 计入套装的部位：金底 */
+.gb-plan__pieces .gb-plan__tile[data-on] {
+  background: var(--pl-set-on);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pl-set-on) 60%, #fff);
+}
+
+.gb-plan__pieces .gb-plan__tile[data-on] .gb-icon {
+  opacity: 1;
+  filter: brightness(0.35);
+}
+
+.gb-plan__tiers {
+  display: grid;
+  gap: 2px;
+  padding: 3px 8px;
+  border-inline: 1px solid var(--pl-cell-edge);
+  font-size: var(--text-xs);
+  color: var(--pl-dim);
+}
+
+.gb-plan__tiers li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.gb-plan__tiers b {
+  display: inline-grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 2px;
+  font-family: var(--font-num);
+  font-size: 11px;
+  background: var(--pl-tile);
+  box-shadow: inset 0 0 0 1px var(--pl-tile-edge);
+}
+
+.gb-plan__tiers span {
+  font-size: 9px;
+}
+
+.gb-plan__tiers li[data-on] {
+  font-weight: 700;
+  color: var(--pl-orange);
+}
+
+.gb-plan__tiers li[data-on] b {
+  background: color-mix(in srgb, var(--pl-orange) 30%, var(--pl-tile));
+  color: var(--pl-text);
+}
+
+/* ---- 饰品汇总 ---- */
+
+.gb-plan__decos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  padding: 6px var(--space-2);
+  border-top: 1px dashed color-mix(in srgb, var(--pl-cell-edge) 70%, transparent);
+}
+
+.gb-plan__decos li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--text-xs);
+  font-weight: 600;
+}
+
+.gb-plan__decos b {
+  font-family: var(--font-num);
+  color: var(--pl-orange);
+}
+
+/* 触屏没有悬停：排除按钮常显 */
+@media (hover: none) {
+  .gb-plan__ex {
+    opacity: 0.7;
+  }
+}

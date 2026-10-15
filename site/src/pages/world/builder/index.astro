@@ -6,9 +6,11 @@ import Builder from '../../../islands/builder/Builder';
 <SiteLayout title="配装器" current="builder" wide>
   <div class="page-head">
     <h1>
-      配装器 <span class="b-label">v0 · 手动配装</span>
+      配装器 <span class="b-label">v0 · 手动 / 自动配装</span>
     </h1>
-    <p>布局贴近游戏装备界面：左侧点装备名更换装备，点右侧的镶嵌槽放入饰品。配装自动保存在本机浏览器。</p>
+    <p>
+      手动配装贴近游戏装备界面：点装备名更换装备，点镶嵌槽放入饰品；自动配装按想要的技能搜索所有可行的组合。配装与搜索条件保存在本机浏览器。
+    </p>
   </div>
   <Builder client:only="react" />
 </SiteLayout>

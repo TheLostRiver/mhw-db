@@ -112,6 +112,10 @@ export interface SearchQuery {
   minRarity?: number;
   /** 指定部位只能用这些防具（不填表示不限） */
   limitArmor?: Partial<Record<ArmorSlot, number[]>>;
+  /** 武器等固定提供的技能点（如武器技能） */
+  fixedSkills?: Array<{ id: number; level: number }>;
+  /** 固定提供的套装件数（如冥赤龙武器的系列技能觉醒算 1 件） */
+  fixedSets?: Array<{ id: number; points: number }>;
 }
 
 /** 一个完整方案 */
@@ -366,11 +370,18 @@ export function searchBuilds(
   }
 
   // ---------- DFS ----------
-  const have = new Int16Array(k); // 已选防具的技能点
+  const have = new Int16Array(k); // 已选防具（及武器固定提供）的技能点
+  const fixed = new Int16Array(k);
+  for (const { id, level } of query.fixedSkills ?? []) {
+    const i = at.get(id);
+    if (i != null) fixed[i] = fixed[i]! + level;
+  }
+  have.set(fixed);
   const slotPot = new Int16Array(k); // 已选防具槽 + 武器槽最多能给的点
   slotPot.set(weaponBound);
   let slotPotTotal = weaponTotal;
   const setCount = new Map<number, number>();
+  for (const { id, points } of query.fixedSets ?? []) setCount.set(id, (setCount.get(id) ?? 0) + points);
   const chosen: Array<Cand | null> = [null, null, null, null, null];
   const limit = query.maxResults ?? Infinity;
   const stats: SearchStats = {
@@ -516,7 +527,7 @@ export function searchBuilds(
     }
     result.freeSlots.sort((a, b) => b - a);
     // 最终等级（目标技能）：防具 + 护石 + 饰品
-    const total = new Int16Array(k);
+    const total = Int16Array.from(fixed);
     for (let si = 0; si < 5; si++)
       for (const { id, level } of chosen[si]!.piece.skills) {
         const i = at.get(id);
@@ -814,6 +825,17 @@ function fillDecorations(gap: Int16Array, slots: number[], plan: DecoPlan): Arra
     if (spare) for (let i = 0; i < v.length; i += 2) total[v[i]!] = total[v[i]!]! - v[i + 1]!;
     else keep.push(d);
   }
+  // 有溢出的技能：把它的单技能大饰品（+L）换成小饰品（+1），只要换完仍够数；能省下 4 级槽
+  for (let j = 0; j < keep.length; j++) {
+    const v = plan.vecOf.get(keep[j]!)!;
+    if (v.length !== 2) continue;
+    const i = v[0]!;
+    const sm = plan.small[i];
+    if (!sm || v[1]! <= 1 || total[i]! < v[1]! - 1) continue;
+    total[i] = total[i]! - (v[1]! - 1);
+    keep[j] = sm.id;
+  }
+  keep.sort((a, b) => plan.sizeOf.get(b)! - plan.sizeOf.get(a)!);
   // 摆放：饰品从大到小，各自放进还空着的、最小的能放下的槽（slots 从大到小，所以从后往前找）
   for (const d of keep) {
     const size = plan.sizeOf.get(d)!;

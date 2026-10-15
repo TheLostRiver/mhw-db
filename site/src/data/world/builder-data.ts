@@ -34,6 +34,7 @@ export function makeBuilderData(): BuilderData {
       baseMaxLevel: s.baseMaxLevel,
       levels: s.levels.map((l) => ({
         level: l.level,
+        ...(l.name ? { name: pick(l.name, L) } : {}),
         desc: pick(l.desc, L),
         params: l.params,
         ...(l.unlockedBy ? { unlockedBy: l.unlockedBy } : {}),

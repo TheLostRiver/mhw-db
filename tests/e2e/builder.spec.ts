@@ -169,3 +169,55 @@ test('发动条件：打开「怪物发怒」后挑战者计入状态', async ({
   // 挑战者 2：基础攻击力 +8 → (340 + 8) × 4.8 = 1670
   await expect(stats).toContainText('1670');
 });
+
+test('自动配装：按技能搜索，应用方案后写回手动配装', async ({ page }) => {
+  const errors = watchErrors(page);
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await open(page);
+  await pick(page, '.gb-row__piece[aria-label^="武器"]', '黑龙玄刃');
+  await page.getByRole('tab', { name: /自动配装/ }).click();
+  const form = page.locator('.gb-as__form');
+  await expect(form).toBeVisible();
+
+  // 添加技能：攻击 7、弱点特效 3
+  for (const [name, level] of [
+    ['攻击', 7],
+    ['弱点特效', 3],
+  ] as const) {
+    await form.getByRole('button', { name: '＋ 添加' }).first().click();
+    const dialog = page.getByRole('dialog');
+    await dialog.getByRole('searchbox').fill(name);
+    await dialog
+      .locator('.gb-picker__list [role="option"]', { hasText: new RegExp(`^${name}`) })
+      .first()
+      .click();
+    await form
+      .getByRole('radiogroup', { name: `${name} 等级` })
+      .getByRole('radio', { name: `${level} 级` })
+      .click();
+  }
+  await form.getByRole('button', { name: '搜索', exact: true }).click();
+  const plans = page.locator('.gb-plan');
+  await expect(plans.first()).toBeVisible({ timeout: 15_000 });
+  await expect(page.locator('.gb-as__head')).toContainText('搜到');
+
+  // 从方案卡片排除一件防具，排除列表里出现它
+  const firstArmor = plans.first().locator('.gb-plan__equip li').nth(1);
+  const armorName = (await firstArmor.locator('.gb-plan__name').innerText()).trim();
+  await firstArmor.hover();
+  await firstArmor.getByRole('button', { name: `排除 ${armorName}` }).click();
+  await expect(form.locator('.gb-as__chip', { hasText: armorName })).toBeVisible();
+
+  // 重新搜索后应用第一个方案
+  await form.getByRole('button', { name: '搜索', exact: true }).click();
+  await expect(plans.first()).toBeVisible({ timeout: 15_000 });
+  await plans.first().getByRole('button', { name: '应用此方案' }).click();
+  await expect(page.getByRole('tab', { name: '手动配装' })).toHaveAttribute('aria-selected', 'true');
+  await expect(page.locator('.gb-row').first()).toContainText('黑龙玄刃');
+  const attack = page.locator('.gb-skills li', { hasText: /^攻击/ }).first();
+  await expect(attack.locator('.gb-skills__lv b')).toHaveText('7');
+  const weakness = page.locator('.gb-skills li', { hasText: '弱点特效' });
+  await expect(weakness.locator('.gb-skills__lv b')).toHaveText('3');
+  await expect(page.locator('.gb-equip')).not.toContainText(armorName);
+  expect(errors).toEqual([]);
+});

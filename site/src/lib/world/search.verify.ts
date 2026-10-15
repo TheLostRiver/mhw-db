@@ -26,6 +26,8 @@ export function verifyResult(index: SearchIndex, query: SearchQuery, r: SearchRe
     return null;
   };
 
+  for (const s of query.fixedSkills ?? []) add(s.id, s.level);
+  for (const s of query.fixedSets ?? []) sets.set(s.id, (sets.get(s.id) ?? 0) + s.points);
   let err = placeDecos(query.weaponSlots, r.decorations.weapon, '武器');
   if (err) return err;
   let defense = 0;

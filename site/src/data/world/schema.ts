@@ -76,6 +76,8 @@ export const Item = z
 const SkillLevel = z
   .object({
     level: z.number().int().min(1),
+    /** 套装技能每一档的名字（如「继承」） */
+    name: Text.optional(),
     desc: OptText,
     params: z.array(z.number().int()).length(4),
     unlockedBy: z.array(z.object({ skill: z.number().int(), level: z.number().int() }).strict()).optional(),

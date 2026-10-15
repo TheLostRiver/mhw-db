@@ -13,7 +13,7 @@
 | 数据管线 | **Python 3.12**（uv 管理环境） | — | 你的 `mhw_chunk.py`（Oodle ctypes）、`questdata.py`（Blowfish）都是 Python，直接复用改写；`struct` 解析二进制简单可靠。解析器全部用 Python 贯穿到底。 |
 | 图片处理 | 自写 `.tex` 解析 + `texture2ddecoder`（BCn 解码）+ Pillow | MIT / MIT-CMU | 一条 Python 管线出 PNG→WebP/AVIF 多尺寸与地图瓦片，不依赖 .NET 工具。`texconv`（MIT）作为备用。不用 `sharp`：其预编译包含 LGPL 的 libvips。 |
 | 数据校验 | **zod** 定义 schema（TS 侧，单一来源）→ 导出 JSON Schema 给 Python 侧 pytest 复用 | MIT | 前端直接拿到类型；`pnpm data:check` 做 schema + 引用断链检查，构建前强制执行，失败即中断。 |
-| 配装求解 | **Rust → WASM**（wasm-bindgen），跑在 Web Worker 池 | MIT/Apache-2.0 | 「追加技能搜索」要对上百个候选技能各跑一次完整可行性搜索，计算量远大于单次配装；Rust 性能稳定、可多 Worker 并行切分搜索空间。本机已有 cargo。 |
+| 配装求解 | **Rust → WASM**（wasm-bindgen），跑在 Web Worker 池 | MIT/Apache-2.0 | 「追加技能搜索」要对上百个候选技能各跑一次完整可行性搜索，计算量远大于单次配装；Rust 性能稳定、可多 Worker 并行切分搜索空间。本机已有 cargo。<br>**现状（2026-10-15）**：先用 TypeScript 实现（`site/src/lib/world/search.ts`，跑在 Web Worker），典型查询 30 ms 内搜完，暂不需要 Rust；做追加技能搜索时若不够快再迁移。 |
 | 封面生成 | **Konva** + react-konva | MIT | 自带拖拽 / 缩放 / 旋转变换手柄（Transformer）、命中检测、图层与按倍率导出（1080p / 2K / 4K 只是 `pixelRatio` 不同）。自己从零写这些要多花数周；吸附对齐、批量生成在其上自己实现。配装图片导出共用同一套渲染。 |
 | 地图 | **Leaflet**（`CRS.Simple`） | BSD-2 | 游戏地图是图片坐标，不是经纬度；Leaflet 的平面坐标系最直接，插件少依赖少。MapLibre 偏向矢量瓦片与地理坐标，用在这里得绕路。 |
 | 搜索 | MiniSearch + 构建期生成拼音 / 首字母（pinyin-pro）+ 繁简 | MIT | 名称本身就有游戏官方的简中 / 繁中 / 日 / 英四份，全部入索引；拼音和首字母在构建期生成（多音字生成多个变体）；查询端只带一张由站内用字裁剪出的繁→简小字表，不加载完整 OpenCC。 |
@@ -156,7 +156,8 @@ mhw-db/
   属性攻击强化、超会心、锐利度（匠延长、倍率取自 em_common_param）与期望攻击力；显示倍率已从 exe 取得。
   待做：道具 / 饭技能增益、计算顺序核对、属性的锐利度倍率与属性期望
 - [ ] 4.4 分享链接（配装编码进 URL）、撤销 / 重做
-- [ ] 4.5 自动配装（Rust → WASM）+ 追加技能搜索
+- [~] 4.5 自动配装：按技能 / 套装技能搜索（武器槽、稀有度、排除防具 / 护石 / 饰品、结果上限），结果为游戏式方案卡片，
+  可一键应用；搜索核心有真实数据的逐条复核与随机暴力交叉验证。待做：追加技能搜索、限定部位的界面、性别 / 外观筛选
 
 ## 5. 视觉方向（先描述，确认后做静态稿）
 

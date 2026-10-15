@@ -30,6 +30,8 @@ import {
   type SkillTotal,
   type WeaponPayload,
 } from '../../lib/world/builder';
+import type { SearchResult } from '../../lib/world/search';
+import AutoSearch from './AutoSearch';
 import Picker, { type PickerSort } from './Picker';
 import WeaponCustomPanel, { AWAKENING_GROUPS, ROMAN, awakeningMeta } from './WeaponCustom';
 import { GameIcon, iconUrl, LevelBoxes } from './icons';
@@ -73,6 +75,7 @@ const RESIST = ['火', '水', '雷', '冰', '龙'] as const;
 // 龙封力：3 = 大 已核对；1 / 2 按顺序推断
 const ELDERSEAL = ['—', '小', '中', '大'];
 const STORAGE_KEY = 'mhdb-builder-v0';
+const MODE_KEY = 'mhdb-builder-mode';
 
 /** 选中的装备栏位 */
 type Target =
@@ -110,6 +113,21 @@ export default function Builder() {
   const [selected, setSelected] = useState<Target>({ kind: 'weapon' });
   const [picking, setPicking] = useState<Picking>(null);
   const [error, setError] = useState<string | null>(null);
+  // 手动配装 / 自动配装
+  const [mode, setMode] = useState<'manual' | 'auto'>(() => {
+    try {
+      return localStorage.getItem(MODE_KEY) === 'auto' ? 'auto' : 'manual';
+    } catch {
+      return 'manual';
+    }
+  });
+  useEffect(() => {
+    try {
+      localStorage.setItem(MODE_KEY, mode);
+    } catch {
+      /* 存储不可用时忽略 */
+    }
+  }, [mode]);
 
   useEffect(() => {
     fetch('/data/world/builder.json')
@@ -393,8 +411,35 @@ export default function Builder() {
   // 稀有度颜色取自游戏的 ui_colortable（--gb-rarity-1 … 12）
   const rarityVars = Object.fromEntries(data.colors.rarity.map((c, i) => [`--gb-rarity-${i + 1}`, c]));
 
+  /** 把自动配装的方案写回手动配装：替换防具、护石与饰品，武器与衣装保留 */
+  const applyPlan = (plan: SearchResult) => {
+    update((b) => {
+      for (const s of ARMOR_SLOTS) {
+        const id = plan.armor[s];
+        b.armor[s] = {
+          id,
+          decos: id == null ? [] : fitDecos(idx.armor.get(id)?.slots ?? [], plan.decorations.armor[s], idx),
+        };
+      }
+      b.charm = plan.charm;
+      if (b.weapon.id != null) b.weapon.decos = fitDecos(weaponSlots(b, idx), plan.decorations.weapon, idx);
+      return b;
+    });
+    setSelected({ kind: 'weapon' });
+    setMode('manual');
+  };
+
   return (
     <div className="gb" style={rarityVars}>
+      <div className="gb-modes" role="tablist" aria-label="配装方式">
+        <button type="button" role="tab" aria-selected={mode === 'manual'} onClick={() => setMode('manual')}>
+          手动配装
+        </button>
+        <button type="button" role="tab" aria-selected={mode === 'auto'} onClick={() => setMode('auto')}>
+          自动配装
+          <small>按技能搜索</small>
+        </button>
+      </div>
       <div className="gb-toolbar">
         <div className="gb-weapon-types" role="radiogroup" aria-label="武器种类">
           {Object.entries(WEAPON_TYPE_NAMES).map(([key, name]) => (
@@ -419,131 +464,147 @@ export default function Builder() {
             </button>
           ))}
         </div>
-        <label className="gb-switch" data-on={build.mantleActive ? '' : undefined}>
-          <input
-            type="checkbox"
-            checked={build.mantleActive}
-            onChange={(e) => update((b) => ({ ...b, mantleActive: e.target.checked }))}
-          />
-          <i aria-hidden="true" />
-          衣装生效
-        </label>
-        <button
-          type="button"
-          className="gb-btn gb-btn--ghost"
-          title="卸下所有装备与饰品"
-          onClick={() => setBuild(emptyBuild(build.weaponType))}
-        >
-          清空
-        </button>
-        <button
-          type="button"
-          className="gb-btn gb-btn--ghost"
-          title="只卸下五件防具（武器、护石、衣装保留）"
-          onClick={() =>
-            update((b) => {
-              for (const s of ARMOR_SLOTS) b.armor[s] = emptyPiece();
-              return b;
-            })
-          }
-        >
-          清空防具
-        </button>
-        <button
-          type="button"
-          className="gb-btn gb-btn--ghost"
-          title="清掉所有镶嵌槽里的饰品（装备保留）"
-          onClick={() =>
-            update((b) => {
-              b.weapon.decos = [];
-              for (const s of ARMOR_SLOTS) b.armor[s].decos = [];
-              for (const m of b.mantles) m.decos = [];
-              return b;
-            })
-          }
-        >
-          清空珠子
-        </button>
+        {mode === 'manual' && (
+          <>
+            <label className="gb-switch" data-on={build.mantleActive ? '' : undefined}>
+              <input
+                type="checkbox"
+                checked={build.mantleActive}
+                onChange={(e) => update((b) => ({ ...b, mantleActive: e.target.checked }))}
+              />
+              <i aria-hidden="true" />
+              衣装生效
+            </label>
+            <button
+              type="button"
+              className="gb-btn gb-btn--ghost"
+              title="卸下所有装备与饰品"
+              onClick={() => setBuild(emptyBuild(build.weaponType))}
+            >
+              清空
+            </button>
+            <button
+              type="button"
+              className="gb-btn gb-btn--ghost"
+              title="只卸下五件防具（武器、护石、衣装保留）"
+              onClick={() =>
+                update((b) => {
+                  for (const s of ARMOR_SLOTS) b.armor[s] = emptyPiece();
+                  return b;
+                })
+              }
+            >
+              清空防具
+            </button>
+            <button
+              type="button"
+              className="gb-btn gb-btn--ghost"
+              title="清掉所有镶嵌槽里的饰品（装备保留）"
+              onClick={() =>
+                update((b) => {
+                  b.weapon.decos = [];
+                  for (const s of ARMOR_SLOTS) b.armor[s].decos = [];
+                  for (const m of b.mantles) m.decos = [];
+                  return b;
+                })
+              }
+            >
+              清空珠子
+            </button>
+          </>
+        )}
       </div>
 
-      <div className="gb-main">
-        <section className="gb-panel gb-equip" aria-label="装备">
-          {rows.map(({ target, label }) => (
-            <EquipRow
-              key={label}
-              label={label}
-              target={target}
-              build={build}
-              idx={idx}
-              selected={same(selected, target)}
-              slots={slotsOf(target)}
-              onSelect={() => setSelected(target)}
-              onPickPiece={() => {
-                setSelected(target);
-                setPicking({ target });
-              }}
-              onPickDeco={(i) => {
-                setSelected(target);
-                setPicking({ target, deco: i });
-              }}
-            />
-          ))}
-        </section>
+      {mode === 'auto' && (
+        <AutoSearch
+          data={data}
+          idx={idx}
+          build={build}
+          weaponTypeName={WEAPON_TYPE_NAMES[build.weaponType] ?? '武器'}
+          onApply={applyPlan}
+        />
+      )}
 
-        <section className="gb-panel gb-detail" aria-label="装备详情">
-          <Detail
-            target={selected}
-            build={build}
-            idx={idx}
-            onChange={() => setPicking({ target: selected })}
-            custom={(w) => (
-              <WeaponCustomPanel
-                weapon={w}
+      {mode === 'manual' && (
+        <div className="gb-main">
+          <section className="gb-panel gb-equip" aria-label="装备">
+            {rows.map(({ target, label }) => (
+              <EquipRow
+                key={label}
+                label={label}
+                target={target}
                 build={build}
                 idx={idx}
-                onAugment={(category, level) =>
-                  update((b) => {
-                    b.custom = setAugment(b.custom, idx, category, level);
-                    // 取消扩充后可能超上限，按当前格数裁一遍
-                    b.custom = pruneAugments(b.custom, idx, idx.weapons.get(b.weapon.id ?? -1));
-                    b.weapon.decos = fitDecos(weaponSlots(b, idx), b.weapon.decos, idx);
-                    return b;
-                  })
-                }
-                onCustom={(fn) => update((b) => ({ ...b, custom: fn(b.custom) }))}
-                onPickAwakening={(slot) => setPicking({ target: { kind: 'weapon' }, awakening: slot })}
+                selected={same(selected, target)}
+                slots={slotsOf(target)}
+                onSelect={() => setSelected(target)}
+                onPickPiece={() => {
+                  setSelected(target);
+                  setPicking({ target });
+                }}
+                onPickDeco={(i) => {
+                  setSelected(target);
+                  setPicking({ target, deco: i });
+                }}
               />
-            )}
-          />
-        </section>
+            ))}
+          </section>
 
-        <aside className="gb-side">
-          <section className="gb-panel" aria-labelledby="gb-skills-h">
-            <h2 id="gb-skills-h" className="gb-h">
-              技能
-            </h2>
-            <SkillList skills={skills} mantleActive={build.mantleActive} />
-          </section>
-          <section className="gb-panel" aria-labelledby="gb-stats-h">
-            <h2 id="gb-stats-h" className="gb-h">
-              状态
-            </h2>
-            <Conditions
-              skills={skills}
-              on={build.conditions}
-              onToggle={(key) =>
-                update((b) => ({
-                  ...b,
-                  conditions: b.conditions.includes(key)
-                    ? b.conditions.filter((k) => k !== key)
-                    : [...b.conditions, key],
-                }))
-              }
+          <section className="gb-panel gb-detail" aria-label="装备详情">
+            <Detail
+              target={selected}
+              build={build}
+              idx={idx}
+              onChange={() => setPicking({ target: selected })}
+              custom={(w) => (
+                <WeaponCustomPanel
+                  weapon={w}
+                  build={build}
+                  idx={idx}
+                  onAugment={(category, level) =>
+                    update((b) => {
+                      b.custom = setAugment(b.custom, idx, category, level);
+                      // 取消扩充后可能超上限，按当前格数裁一遍
+                      b.custom = pruneAugments(b.custom, idx, idx.weapons.get(b.weapon.id ?? -1));
+                      b.weapon.decos = fitDecos(weaponSlots(b, idx), b.weapon.decos, idx);
+                      return b;
+                    })
+                  }
+                  onCustom={(fn) => update((b) => ({ ...b, custom: fn(b.custom) }))}
+                  onPickAwakening={(slot) => setPicking({ target: { kind: 'weapon' }, awakening: slot })}
+                />
+              )}
             />
-            <StatusList stats={stats} />
           </section>
-        </aside>
-      </div>
+
+          <aside className="gb-side">
+            <section className="gb-panel" aria-labelledby="gb-skills-h">
+              <h2 id="gb-skills-h" className="gb-h">
+                技能
+              </h2>
+              <SkillList skills={skills} mantleActive={build.mantleActive} />
+            </section>
+            <section className="gb-panel" aria-labelledby="gb-stats-h">
+              <h2 id="gb-stats-h" className="gb-h">
+                状态
+              </h2>
+              <Conditions
+                skills={skills}
+                on={build.conditions}
+                onToggle={(key) =>
+                  update((b) => ({
+                    ...b,
+                    conditions: b.conditions.includes(key)
+                      ? b.conditions.filter((k) => k !== key)
+                      : [...b.conditions, key],
+                  }))
+                }
+              />
+              <StatusList stats={stats} />
+            </section>
+          </aside>
+        </div>
+      )}
 
       <p className="gb-foot">
         {`数据版本：Steam 构建 ${data.meta.steamBuildId ?? '—'}。`}
