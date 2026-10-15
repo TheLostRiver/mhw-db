@@ -2,7 +2,7 @@
  * 地图标记（采集点等）的显示规则：名称、图标、抽选概率、楼层分布。
  * 数据见 map-nodes.json（pipeline/mhdb/build/world_nodes.py）。
  */
-import type { MapNode, MapNodeKind, MapNodeStage, Rank } from '../../data/world/schema';
+import { RANKS, type MapNode, type MapNodeKind, type MapNodeStage, type Rank } from '../../data/world/schema';
 
 /** 页面传给地图岛的物品摘要（只含用到的物品） */
 export interface MapItem {
@@ -15,13 +15,19 @@ export type MapItems = Record<number, MapItem>;
 export type Category = MapNodeKind['category'];
 
 export const CATEGORIES: { key: Category; label: string }[] = [
+  { key: 'camp', label: '营地' },
   { key: 'gather', label: '采集点' },
+  { key: 'bug', label: '虫与鱼饵' },
   { key: 'mining', label: '矿脉' },
   { key: 'bonepile', label: '骨冢' },
   { key: 'specialty', label: '特产' },
+  { key: 'slinger', label: '投射器弹' },
   { key: 'carry', label: '搬运物' },
   { key: 'other', label: '其他' },
 ];
+
+export const CAMP_ICON = '/assets/game/world/ui/camp.webp';
+export const stageEmblemUrl = (stageId: number): string => `/assets/game/world/ui/stage-${stageId}.webp`;
 
 export const RANK_LABEL: Record<Rank, string> = { low: '下位', high: '上位', master: '大师' };
 
@@ -51,7 +57,7 @@ export function mainItem(kind: MapNodeKind, stage: MapNodeStage, rank: Rank): nu
   return rows.reduce<LotRow | null>((a, b) => (a && a.chance >= b.chance ? a : b), null)?.item ?? null;
 }
 
-/** 物件名称（矿脉、骨冢、特产名），没有时用代表物品的名字 */
+/** 物件名称（gmk_names / animal_names 里有的），没有时用代表物品的名字 */
 export function kindName(kind: MapNodeKind, stage: MapNodeStage, rank: Rank, items: MapItems): string {
   if (kind.name) return kind.name['zh-Hans'];
   const id = mainItem(kind, stage, rank);
@@ -67,6 +73,12 @@ export function lotItemNames(kind: MapNodeKind, stage: MapNodeStage, rank: Rank,
 
 /** 当前环境状态下出现的点：常驻的 + 该状态追加的 */
 export const nodeVisibleIn = (n: MapNode, state: number): boolean => n.state === null || n.state === state;
+
+/** 该等级下会出现的点：按抽选表采集的物件要求该等级有这张表；上位起的点不在下位出现 */
+export function nodeInRank(n: MapNode, kind: MapNodeKind, stage: MapNodeStage, rank: Rank): boolean {
+  if (n.minRank && RANKS.indexOf(rank) < RANKS.indexOf(n.minRank)) return false;
+  return kind.lots.length === 0 || kind.lots.some((i) => stage.lots[rank]?.[String(i)] !== undefined);
+}
 
 /** 各楼层的点数（只数落在地图上的） */
 export function layerCounts(nodes: MapNode[], layers: number): number[] {

@@ -8,7 +8,7 @@
 2. 纸片里浅色的路面、浅水 ≈ 雷达上的可走区域。对每块纸片做 FFT 归一化互相关，先扫出整张图统一的
    「纸片像素 → 雷达单位」比例，再在各区域边线附近找平移。
 3. exe 里的纸片表（mhdb.games.world.exe.MAP_PATCHES）给出每块纸片的层、雷达层与区域号；
-   用匈牙利算法把图集里的纸片与表里的行一一对上。
+   用匈牙利算法把图集里的纸片与表里的行一一对上，再按落位与区域边线包围盒的重叠、营地名里的区域号复核区域号。
 配准得分写进 maps.json，偏低的纸片在构建日志里提示，需要人工看一眼。
 """
 
@@ -38,6 +38,7 @@ STAGES: dict[int, tuple[int, str]] = {
     108: (58, "field"),
 }
 HALF = 820  # 雷达瓦片边长（雷达单位）
+RADAR_PER_WORLD = 2 * HALF / 100000  # 雷达 2×2 块瓦片覆盖世界坐标 ±50000
 RES = 0.5  # 搜索时每雷达单位的工作像素
 LETTERS = "ABCDEFGHIJKLMNOPQ"
 LOW_SCORE = 0.3
@@ -189,7 +190,116 @@ def _best_in_region(
     return float(sub[k]), int(k[1]) + max(0, lo_x), int(k[0]) + max(0, lo_y)
 
 
-def register(raw: Path, radar_gui: guifmt.Gui, stage: int, log=print) -> dict:
+@dataclass
+class Camps:
+    """营地：位置（雷达坐标）与 floor，以及营地名里括号中的区域号（与营地对应的顺序未知，只知道集合）。"""
+
+    points: list[tuple[float, float, int]]
+    areas: list[int]
+
+
+def camps_of(src: Source, stage: int) -> Camps:
+    """营地物件 gm013_*（带 mCampId）在 stXXX_gm.sobj；营地名 ST{stage}_CampNN 在 other_names。"""
+    from mhdb.formats import sobj
+
+    rel = f"stage/st{stage}/common/set/st{stage}_gm.sobj"
+    points = []
+    if src.path(rel).is_file():
+        for o in sobj.parse(src.path(rel).read_bytes()):
+            if o.name.startswith("gm013_") and "mCampId" in o.props:
+                points.append((o.pos[0] * RADAR_PER_WORLD, o.pos[2] * RADAR_PER_WORLD, o.floor))
+    names = src.text("common/text/other_names")["zh-Hans"]
+    areas = []
+    for i, k in names.keys.items():
+        if k.startswith(f"ST{stage}_Camp") and (m := re.search(r"[(（](\d+)[)）]\s*$", names.get(i) or "")):
+            areas.append(int(m.group(1)))
+    return Camps(points, areas)
+
+
+def _relabel(pieces, rows, match, unions, scale, region_of, camps: Camps, stage: int, log) -> dict[int, int]:
+    """区域号复核：按相关性配对时，长得像的相邻地面纸片会互换区域号（营地名里的区域号证实了这一点）。
+    这里先按配对结果求出每块纸片的落位，再按「纸片不透明处落在各区域边线包围盒里的比例」在同一层内重新配对；
+    营地是锚点：每个营地必须落在营地名所写区域的纸片上（营地与营地名的对应未知，按包含关系做一一配对）。
+    """
+    place: dict[int, tuple[float, float]] = {}
+    for j, (_, _, fl, area) in enumerate(rows):
+        p = pieces[match[j]]
+        _, tx, ty = _best_in_region(_ncc(unions[fl], p, scale, RES), p, scale, RES, region_of(fl, area))
+        place[match[j]] = (tx / RES - HALF, ty / RES - HALF)
+    alpha = {
+        i: (p.signed != 0) | ndimage.binary_dilation(p.signed != 0, iterations=40)
+        for i, p in enumerate(pieces)
+    }
+
+    def covers(i: int, x: float, y: float) -> bool:
+        u, v = int((x - place[i][0]) / scale), int((y - place[i][1]) / scale)
+        a = alpha[i]
+        return 0 <= v < a.shape[0] and 0 <= u < a.shape[1] and bool(a[v, u])
+
+    layer_of = {match[j]: rows[j][1] for j in range(len(rows))}
+    score = np.full((len(pieces), len(rows)), -10.0)
+    for i in range(len(pieces)):
+        ys, xs = np.nonzero(alpha[i][::4, ::4])
+        rx, ry = place[i][0] + xs * 4 * scale, place[i][1] + ys * 4 * scale
+        for j, (_, layer, fl, _area) in enumerate(rows):
+            if layer != layer_of[i] or not len(xs):
+                continue  # 层由配准（各层雷达的相关性）决定，只在同一层里重排区域号
+            box = region_of(fl, _area)
+            if box is None:
+                score[i, j] = 0.0
+                continue
+            x0, y0, x1, y1 = box
+            score[i, j] = float(((rx >= x0) & (rx <= x1) & (ry >= y0) & (ry <= y1)).mean())
+    current = {i: j for j, i in match.items()}
+    for i, j in current.items():
+        score[i, j] += 0.25  # 重叠差不多时保留原配对
+
+    def solve(s: np.ndarray) -> dict[int, int]:
+        pi, rj = linear_sum_assignment(-s)
+        return dict(zip(rj.tolist(), pi.tolist(), strict=True))
+
+    new = solve(score)
+    # 营地锚点：营地 ↔ 营地名区域号一一配对（营地落在某区域的纸片上得 1 分），配不上的营地按排除法对应剩下的名字
+    if camps.points and len(camps.areas) == len(camps.points):
+        area_of = {i: rows[j][3] for j, i in new.items()}
+        fit = np.array(
+            [
+                [float(any(covers(i, x, y) and area_of[i] == a for i in area_of)) for a in camps.areas]
+                for x, y, _ in camps.points
+            ]
+        )
+        ci, ai = linear_sum_assignment(-fit)
+        for c, k in zip(ci, ai, strict=True):
+            if fit[c, k]:
+                continue
+            x, y, floor = camps.points[c]
+            want = camps.areas[k]
+            # 只在营地的 floor 属于该区域纸片的雷达层时作锚点（floor 是雷达上没有的值时，营地落在哪一层说不准）
+            target = [j for j, r in enumerate(rows) if r[3] == want and floor in r[2]]
+            if not target:
+                log(f"  注意：st{stage} 营地（{want} 区）的 floor {floor} 不在该区域纸片的雷达层里，不作锚点")
+                continue
+            hits = [
+                i
+                for i in range(len(pieces))
+                if covers(i, x, y) and any(layer_of[i] == rows[j][1] for j in target)
+            ]
+            if not hits:
+                log(f"  注意：st{stage} 营地（{want} 区）不在任何可以是 {want} 区的纸片上")
+                continue
+            for j in target:
+                for i in hits:
+                    if layer_of[i] == rows[j][1]:
+                        score[i, j] += 5
+            log(f"  st{stage}：按营地名把营地所在的纸片定为 {want} 区")
+        new = solve(score)
+    changed = sorted(rows[j][3] for j in new if new[j] != match[j])
+    if changed:
+        log(f"  st{stage}：按区域边线重叠重排了 {len(changed)} 块纸片的区域号：{changed}")
+    return new
+
+
+def register(raw: Path, radar_gui: guifmt.Gui, stage: int, camps: Camps, log=print) -> dict:
     """返回 {scale, patches: [...]}；纸片坐标为雷达单位（左上角）。"""
     atlas = _rgba(raw, f"ui/map/tex/maptex/st{stage}/m_st{stage}_patch_ID.tex")
     pieces = cut_pieces(atlas)
@@ -240,13 +350,26 @@ def register(raw: Path, radar_gui: guifmt.Gui, stage: int, log=print) -> dict:
         for j, i in zip(sorted(js, key=lambda j: rows[j][1]), ps, strict=True):
             match[j] = i
 
+    before = dict(match)
+    match = _relabel(pieces, rows, match, unions, scale, region_of, camps, stage, log)
+    row_of = {i: j for j, i in before.items()}
+
     # 精修：在工作分辨率 1 下复算一次平移
     floors_full = radar_floors(raw, stage, 1.0)
     full = {fl: _union(floors_full, fl) for fl in unions}
     patches = []
     for j, (letter_index, layer, fl, area) in enumerate(rows):
         p = pieces[match[j]]
-        s, tx, ty = _best_in_region(_ncc(full[fl], p, scale, 1.0), p, scale, 1.0, region_of(fl, area))
+        ncc = _ncc(full[fl], p, scale, 1.0)
+        s, tx, ty = _best_in_region(ncc, p, scale, 1.0, region_of(fl, area))
+        # 重排了区域号的纸片：落位取新旧两个区域里相关性更高的那个（区域号错时落位往往还是对的）
+        old = rows[row_of[match[j]]]
+        if old[3] != area:
+            s0, tx0, ty0 = _best_in_region(
+                _ncc(full[old[2]], p, scale, 1.0), p, scale, 1.0, region_of(old[2], old[3])
+            )
+            if s0 > s:
+                s, tx, ty = s0, tx0, ty0
         x, y = tx - HALF, ty - HALF
         # 区域号标签：可走区域里离边缘最远的点（纸片像素）
         walk = _walkable(atlas[p.rect[1] : p.rect[1] + p.rect[3], p.rect[0] : p.rect[0] + p.rect[2]])
@@ -306,7 +429,7 @@ def build(raw: Path, data_out: Path, img_out: Path, only: list[int] | None = Non
             stages.append(previous[stage])
             continue
         log(f"st{stage}：配准纸片……")
-        reg = register(raw, radar_gui, stage, log)
+        reg = register(raw, radar_gui, stage, camps_of(src, stage), log)
         atlas = Image.fromarray(_rgba(raw, f"ui/map/tex/maptex/st{stage}/m_st{stage}_patch_ID.tex"))
         scale = reg["scale"]
         # 地图坐标 = 纸片像素，原点与雷达原点重合（雷达单位 ÷ 比例）

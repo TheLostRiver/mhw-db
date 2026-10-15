@@ -4,7 +4,7 @@ import MapViewer from '../../../islands/map/MapViewer';
 import { loadItems, loadMapNodes, loadMaps } from '../../../data/world/load';
 import type { MapNodeStage, MapStage } from '../../../data/world/schema';
 import { stageSlug } from '../../../lib/world/maps';
-import type { MapItems } from '../../../lib/world/mapNodes';
+import { stageEmblemUrl, type MapItems } from '../../../lib/world/mapNodes';
 
 export function getStaticPaths() {
   const nodes = new Map(loadMapNodes().map((s) => [s.id, s]));
@@ -44,12 +44,13 @@ const nodeCount = nodes?.nodes.filter((n) => n.layer !== null).length ?? 0;
   </nav>
   <div class="page-head">
     <h1>
+      <span class="emblem" style={`--emblem: url('${stageEmblemUrl(stage.id)}')`} aria-hidden="true" />
       {stage.name['zh-Hans']}
       {stage.name.en && <span class="b-label">{stage.name.en}</span>}
     </h1>
     <p>
       {areaCount} 个区域{stage.layers > 1 && `，分 ${stage.layers} 层`}
-      {nodeCount > 0 && `，${nodeCount} 个采集节点`}
+      {nodeCount > 0 && `，${nodeCount} 个节点`}
       。滚轮或双指缩放，拖动平移；点标记查看采集物与概率{stage.layers > 1 && '，地图左上角切换楼层'}。
     </p>
   </div>
@@ -69,6 +70,16 @@ const nodeCount = nodes?.nodes.filter((n) => n.layer !== null).length ?? 0;
 
   .page-head {
     margin-bottom: var(--space-4);
+  }
+
+  .emblem {
+    align-self: center;
+    width: 40px;
+    height: 40px;
+    flex: none;
+    background: var(--c-text);
+    -webkit-mask: var(--emblem) center / contain no-repeat;
+    mask: var(--emblem) center / contain no-repeat;
   }
 
   .page-head h1 {

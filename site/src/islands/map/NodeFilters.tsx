@@ -5,6 +5,7 @@ import { useId, useMemo, useState, type KeyboardEvent } from 'react';
 import type { MapNodeStage, MapPatch, MapStage, Rank } from '../../data/world/schema';
 import { layerName } from '../../lib/world/maps';
 import {
+  CAMP_ICON,
   CATEGORIES,
   RANK_LABEL,
   itemIconUrl,
@@ -124,7 +125,12 @@ function KindList({
           kind: k,
           name: kindName(k, nodes, rank, items),
           sub: lot.join('・'),
-          icon: main !== null ? items[main] : undefined,
+          icon:
+            k.category === 'camp'
+              ? CAMP_ICON
+              : main !== null && items[main]
+                ? itemIconUrl(items[main])
+                : null,
           count: counts.get(k.key) ?? 0,
           // 搜索：名称、抽选表里的物品
           text: [kindName(k, nodes, rank, items), ...lot].join(' ').toLowerCase(),
@@ -223,7 +229,7 @@ function KindList({
             >
               <span className="mv-kind__check" aria-hidden="true" />
               {r.icon ? (
-                <img className="mv-kind__icon" src={itemIconUrl(r.icon)} alt="" width={64} height={64} />
+                <img className="mv-kind__icon" src={r.icon} alt="" width={64} height={64} />
               ) : (
                 <span className="mv-kind__icon" />
               )}

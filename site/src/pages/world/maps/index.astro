@@ -1,9 +1,11 @@
 ---
 import SiteLayout from '../../../layouts/SiteLayout.astro';
-import { loadMaps } from '../../../data/world/load';
+import { loadMapNodes, loadMaps } from '../../../data/world/load';
 import { MAP_GROUPS, stageSlug, thumbUrl } from '../../../lib/world/maps';
+import { stageEmblemUrl } from '../../../lib/world/mapNodes';
 
 const stages = loadMaps();
+const nodeCounts = new Map(loadMapNodes().map((s) => [s.id, s.nodes.filter((n) => n.layer !== null).length]));
 const groups = (Object.keys(MAP_GROUPS) as (keyof typeof MAP_GROUPS)[])
   .map((g) => ({ key: g, title: MAP_GROUPS[g], items: stages.filter((s) => s.group === g) }))
   .filter((g) => g.items.length > 0);
@@ -16,10 +18,11 @@ const groups = (Object.keys(MAP_GROUPS) as (keyof typeof MAP_GROUPS)[])
 >
   <div class="page-head">
     <h1>
-      地图 <span class="b-label">v0 · 区域与楼层</span>
+      地图 <span class="b-label">区域 · 楼层 · 采集节点</span>
     </h1>
     <p>
-      游戏原版的羊皮纸大地图，由各区域的纸片拼成：纸片的位置由管线把纸片与雷达小地图配准求出。采集点、营地等标记整理中。
+      游戏原版的羊皮纸大地图，由各区域的纸片拼成：纸片的位置由管线把纸片与雷达小地图配准求出。
+      营地、采集点、矿脉、骨冢、特产、虫与鱼饵、投射器弹都取自关卡布置文件，可按等级与环境状态查看。
     </p>
   </div>
 
@@ -37,11 +40,17 @@ const groups = (Object.keys(MAP_GROUPS) as (keyof typeof MAP_GROUPS)[])
                 {s.thumb && <img src={thumbUrl(s.thumb)} alt="" loading="lazy" decoding="async" />}
               </div>
               <div class="map-card__body">
+                <span
+                  class="map-card__emblem"
+                  style={`--emblem: url('${stageEmblemUrl(s.id)}')`}
+                  aria-hidden="true"
+                />
                 <strong>{s.name['zh-Hans']}</strong>
                 {s.name.en && <span class="b-label">{s.name.en}</span>}
                 <span class="map-card__meta">
                   {new Set(s.patches.map((p) => p.area)).size} 个区域
                   {s.layers > 1 && ` · ${s.layers} 层`}
+                  {nodeCounts.get(s.id) && ` · ${nodeCounts.get(s.id)} 个节点`}
                 </span>
               </div>
             </a>
@@ -143,8 +152,30 @@ const groups = (Object.keys(MAP_GROUPS) as (keyof typeof MAP_GROUPS)[])
 
   .map-card__body {
     display: grid;
-    gap: 2px;
+    grid-template-columns: 44px minmax(0, 1fr);
+    column-gap: var(--space-3);
+    row-gap: 2px;
+    align-items: center;
     padding: var(--space-3) var(--space-4) var(--space-4);
+  }
+
+  .map-card__body > :not(.map-card__emblem) {
+    grid-column: 2;
+  }
+
+  /* 地区徽章：游戏菜单里的白色剪影，按主题文字色着色 */
+  .map-card__emblem {
+    grid-row: 1 / span 3;
+    width: 44px;
+    height: 44px;
+    background: var(--c-text-2);
+    -webkit-mask: var(--emblem) center / contain no-repeat;
+    mask: var(--emblem) center / contain no-repeat;
+    transition: background-color var(--dur-fast);
+  }
+
+  .map-card:hover .map-card__emblem {
+    background: var(--c-text);
   }
 
   .map-card__body strong {

@@ -99,8 +99,8 @@ def cmd_nodes(_args: argparse.Namespace) -> int:
     from mhdb.build.world_nodes import build
     from mhdb.config import DATA
 
-    if not (DATA / "world" / "maps.json").is_file():
-        print("先运行 mhdb maps", file=sys.stderr)
+    if not (DATA / "world" / "maps.json").is_file() or not (DATA / "world" / "items.json").is_file():
+        print("先运行 mhdb parse 与 mhdb maps", file=sys.stderr)
         return 1
     build(DATA_RAW / "world", DATA / "world")
     return 0

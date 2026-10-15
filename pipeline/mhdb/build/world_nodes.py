@@ -1,12 +1,17 @@
-"""大地图标记：采集点、矿脉、骨冢、特产、搬运物，输出 data/world/map-nodes.json。
+"""大地图标记：采集点、矿脉、骨冢、特产、虫与鱼饵、投射器弹、营地，输出 data/world/map-nodes.json。
 
 来源（布局见各解析器，推断过程见 docs/DATA.md 4.2）：
-  stage/stXXX/common/set/stXXX_pop_map.sobj       常驻的采集点
-  stage/stXXX/common/set/stXXX_pop_high_map.sobj  常驻的结晶矿脉（低位表里也有，不是「上位限定」）
+  stage/stXXX/common/set/stXXX_pop_map.sobj       常驻的采集点；cSetAnimalArea 里的 EC_032 是虫与鱼饵
+  stage/stXXX/common/set/stXXX_pop_high_map.sobj  结晶矿脉，由 stXXX_high.sobjl 单独加载（推断为上位起）
   stage/stXXX/common/set/stXXX_pop_rN.sobj        环境状态（「矿脉增殖中」等）时追加的采集点
+  stage/stXXX/common/set/stXXX_gm.sobj            营地（gm013，带 mCampId）、少数矿脉
+  stage/stXXX/common/set/stXXX_gm_map.sobj        投射器弹（gimmick.gcd 种类 1）、怪物的粪
   common/gimmick/gimmick.gcd                       物件种类 → 采集类型、两组抽选表
   common/item/pop_base.ppm                         采集类型 → 固定物品、采集次数、再生秒数
   stage/stXXX/common/data/stXXX[_1|_2].itlot       抽选表（下位 / 上位 / 大师）
+  common/text/gmk_names                            物件名，键名就是物件名（gm000_012_00_NAME → 矿脉）
+  common/text/animal_names                         虫的名字（EC_032_01_NAME → 苦虫）
+  common/text/other_names                          营地名（ST101_Camp02 → 南西营地(1)），按括号里的区域号对应
 
 地图坐标：雷达 2×2 块瓦片（1640 雷达单位）覆盖世界坐标 ±50000，纸片像素 × 比例 = 雷达单位（maps.json 的
 scale），所以 纸片像素 = 世界坐标 × 1640 / 100000 / scale，原点重合。比例 0.5 的图是 1 像素 = 30.49 世界单位，
@@ -15,20 +20,20 @@ scale），所以 纸片像素 = 世界坐标 × 1640 / 100000 / scale，原点�
 """
 
 import json
+import re
 from collections import Counter
 from pathlib import Path
 
 import numpy as np
 
-from mhdb.build.common import Source, tr
+from mhdb.build.common import Source, Text, tr
 from mhdb.formats import gcd, sobj
 from mhdb.games.world.specs import ITEM_LOT, POP_BASE
-from mhdb.images.world_maps import patch_masks
+from mhdb.images.world_maps import RADAR_PER_WORLD, patch_masks
 
-RADAR_PER_WORLD = 1640 / 100000
-
-# 环境状态：pop_rN 的 N → cm_quest 文本序号。r0 / r1 是各地区的两种特产（与文件里物件的抽选表物品逐一核对过），
-# r2、r3 都是矿脉增殖（古代树等图两份内容相同，永霜冻土只有 r3），r4 骨冢、r5 消耗道具，r6 为空。
+# 环境状态：pop_rN 的 N → cm_quest 文本序号。r0 / r1 是各地区的两种特产（与文件里物件的抽选表物品、
+# gmk_names 的物件名逐一核对过），r2、r3 都是矿脉增殖（古代树等图两份内容相同，永霜冻土只有 r3），
+# r4 骨冢、r5 消耗道具，r6 为空。
 STATE_TEXT = {
     101: {0: 77, 1: 78},
     102: {0: 79, 1: 80},
@@ -39,17 +44,8 @@ STATE_TEXT = {
 }
 COMMON_STATE_TEXT = {2: 87, 3: 87, 4: 88, 5: 89}
 NO_STATE_TEXT = 74  # 无特注事项
-# 特产采集点的名称（gmk_names 序号），按所在的环境状态文件 r0 / r1 对应，与状态文本一致
-SPECIALTY_NAME = {
-    101: {0: 88, 1: 44},
-    102: {0: 92, 1: 96},
-    103: {0: 100, 1: 104},
-    104: {0: 108, 1: 112},
-    105: {0: 116, 1: 120},
-    108: {0: 194, 1: 198},
-}
-MINING_NAME, BONEPILE_NAME = 18, 42  # gmk_names：矿脉、骨冢
 BONE_STATE = 4  # pop_r4：骨冢增殖中，里面的物件就是骨冢
+SPECIALTY_STATES = {0, 1}
 
 # 各图开放的等级与对应的抽选表文件。龙结晶之地上位才开放，没有 _1，无后缀的表里是上位素材
 # （良质硬骨、谜之头骨等）；永霜冻土只有大师级，无后缀的表是古代树森林那份的副本（st100 / 107 / 109 同样）。
@@ -60,7 +56,16 @@ RANK_FILES = {
 }
 
 # pop_base 的 kind（与物件、物品逐一对照得出）：1 固定物品、2 / 4 按抽选表（4 为矿脉类）、6 搬运物
-POP_FIXED, POP_LOT, POP_MINE, POP_CARRY = 1, 2, 4, 6
+POP_LOT, POP_MINE, POP_CARRY = 2, 4, 6
+GCD_SLINGER, GCD_GATHER = 1, 2
+
+# 虫与鱼饵：animal.gcd 的 EC_032_01–05（苦虫、光虫、不死虫、雷光虫、美味虫）→ 物品 49–53。
+# 前 4 种与物品同名（构建时核对）；美味虫（Feastbug）对应物品 53「陆续上钩黄金饵」（Baitbug）：
+# 两者说明都是「作为钓饵的虫」，物品编号也正好接在 52 后面。
+BUG_EC = 32
+BUG_ITEM = {1: 49, 2: 50, 3: 51, 4: 52, 5: 53}
+
+CAMP_PREFIX = "gm013_"
 
 
 def _rank_files(stage: int) -> dict[str, str]:
@@ -79,6 +84,12 @@ def _lot_rows(s: Source, rel: str) -> list[list[dict]]:
         ]
         for r in s.table(rel, ITEM_LOT, encrypted=True)
     ]
+
+
+def _keyed(texts: dict, key: str) -> Text | None:
+    """按键名取四语文本（gmk_names、animal_names 的键名带物件名 / 生物编号）。"""
+    index = {k: i for i, k in texts["zh-Hans"].keys.items()}
+    return tr(texts, index[key]) if key in index else None
 
 
 def _depth(masks: dict, patches: list[dict], x: float, y: float) -> tuple[dict[str, float], bool]:
@@ -130,36 +141,98 @@ def _assign(nodes: list[dict], patches: list[dict], depths: list[dict[str, float
     return used
 
 
+class _Texts:
+    def __init__(self, s: Source, items: dict[int, dict]):
+        self.gmk = s.text("common/text/gmk_names")
+        self.animal = s.text("common/text/animal_names")
+        self.quest = s.text("common/text/cm_quest")
+        self.places = s.text("common/text/other_names")
+        self.items = items
+        # 投射器弹的物品：物品名与物件名相同的那一个（石块、光苔……）
+        self.by_name: dict[str, int] = {}
+        for i in sorted(items.values(), key=lambda i: i["id"]):
+            self.by_name.setdefault(i["name"]["zh-Hans"], i["id"])
+
+    def gimmick(self, name: str) -> Text | None:
+        return _keyed(self.gmk, f"{name}_NAME")
+
+    def camps(self, stage: int) -> dict[int, Text]:
+        """营地名里括号中的区域号 → 营地名（ST101_Camp02 → 南西营地(1)）。"""
+        out = {}
+        for i, k in self.places["zh-Hans"].keys.items():
+            t = tr(self.places, i) if k.startswith(f"ST{stage}_Camp") else None
+            if t and (m := re.search(r"[(（](\d+)[)）]\s*$", t["zh-Hans"])):
+                out[int(m.group(1))] = t
+        return out
+
+
+def _set_files(stage: int) -> list[tuple[str, int | None, str | None]]:
+    """(文件名, 环境状态文件号, 最低等级)"""
+    st = f"st{stage}"
+    files: list[tuple[str, int | None, str | None]] = [
+        (f"{st}_pop_map.sobj", None, None),
+        (f"{st}_pop_high_map.sobj", None, "high"),
+        (f"{st}_gm.sobj", None, None),
+        (f"{st}_gm_map.sobj", None, None),
+    ]
+    return files + [(f"{st}_pop_r{n}.sobj", n, None) for n in range(7)]
+
+
 def build_stage(
     s: Source,
     stage: int,
     stage_map: dict,
     gimmicks: dict[str, gcd.Gimmick],
     pops: list[dict],
+    texts: _Texts,
     log=print,
 ) -> dict:
-    gmk = s.text("common/text/gmk_names")
-    quest = s.text("common/text/cm_quest")
     ranks = {rank: _lot_rows(s, rel) for rank, rel in _rank_files(stage).items()}
     masks = patch_masks(s.root, stage, stage_map["patches"])
     to_map = RADAR_PER_WORLD / stage_map["scale"]
 
-    files: list[tuple[str, int | None]] = [
-        (f"st{stage}_pop_map.sobj", None),
-        (f"st{stage}_pop_high_map.sobj", None),
-    ]
-    files += [(f"st{stage}_pop_r{n}.sobj", n) for n in range(7)]
     kinds: dict[str, dict] = {}
     kind_states: dict[str, set[int]] = {}
     nodes, seen, states = [], set(), {}
-    for fname, r in files:
+
+    def add(key: str, pos, floor: int, rel: str, r: int | None, min_rank: str | None, **extra) -> None:
+        state = None if r is None else STATE_TEXT[stage].get(r, COMMON_STATE_TEXT.get(r))
+        if r is not None:
+            kind_states.setdefault(key, set()).add(r)
+        if state is not None:
+            states.setdefault(state, tr(texts.quest, state))
+        x, y = round(pos[0] * to_map, 1), round(pos[2] * to_map, 1)
+        if (key, x, y, floor, state) in seen:  # r2 与 r3 内容相同
+            return
+        seen.add((key, x, y, floor, state))
+        node = {"kind": key, "x": x, "y": y, "h": round(pos[1]), "floor": floor, "layer": None, "area": None}
+        node |= {"state": state, "minRank": min_rank, **extra, "_src": {"file": rel}}
+        nodes.append(node)
+
+    for fname, r, min_rank in _set_files(stage):
         rel = f"stage/st{stage}/common/set/{fname}"
         if not s.path(rel).is_file():
             continue
-        state = None if r is None else STATE_TEXT[stage].get(r, COMMON_STATE_TEXT.get(r))
-        for obj in sobj.parse(s.path(rel).read_bytes()):
+        data = s.path(rel).read_bytes()
+        for obj in sobj.parse(data):
             g = gimmicks.get(obj.name) or gimmicks.get(obj.gimmick)
-            if not g or g.kind != 2:  # 只要采集类物件（1 是投射器弹）
+            if obj.name.startswith(CAMP_PREFIX) and "mCampId" in obj.props:
+                if obj.name not in kinds:
+                    kinds[obj.name] = _plain_kind(obj.name, "camp", texts.gimmick(obj.name), None, rel)
+                add(obj.name, obj.pos, obj.floor, rel, r, min_rank, campId=obj.props["mCampId"])
+                continue
+            if not g:
+                continue
+            if g.kind == GCD_SLINGER and fname.endswith("_gm_map.sobj"):
+                if obj.name not in kinds:
+                    name = texts.gimmick(obj.name)
+                    item = texts.by_name.get(name["zh-Hans"]) if name else None
+                    kinds[obj.name] = _plain_kind(
+                        obj.name, "slinger", name, item, f"common/gimmick/gimmick.gcd {obj.name}"
+                    )
+                add(obj.name, obj.pos, obj.floor, rel, r, min_rank)
+                continue
+            if g.kind != GCD_GATHER:
                 continue
             pop = pops[g.pop]
             pick = obj.props.get("mPickItem")
@@ -170,60 +243,72 @@ def build_stage(
                 )
             lot_index = obj.props.get("mItemLotIndex")
             lots = (lot_index,) if isinstance(lot_index, int) and lot_index >= 0 else g.lots
-            if not item and not lots:  # 宝物提示点等，没有物品
+            if not item and not lots:  # 宝物提示点（gm000_242「分享的祝福」）等，没有物品
                 continue
             if obj.name not in kinds:
-                kinds[obj.name] = _kind(obj.name, g, pop, item, lots, gmk)
-            if r is not None:
-                kind_states.setdefault(obj.name, set()).add(r)
-            if state is not None:
-                states.setdefault(state, tr(quest, state))
-            x, y = round(obj.pos[0] * to_map, 1), round(obj.pos[2] * to_map, 1)
-            key = (obj.name, x, y, obj.floor, state)
-            if key in seen:  # r2 与 r3 内容相同
-                continue
-            seen.add(key)
-            nodes.append(
-                {
-                    "kind": obj.name,
-                    "x": x,
-                    "y": y,
-                    "h": round(obj.pos[1]),
-                    "floor": obj.floor,
-                    "layer": None,
-                    "area": None,
-                    "state": state,
-                    "_src": {"file": rel},
-                }
-            )
+                kinds[obj.name] = _gather_kind(obj.name, g, pop, item, lots, texts.gimmick(obj.name))
+            add(obj.name, obj.pos, obj.floor, rel, r, min_rank)
+
+        if "_pop_" in fname:
+            for area in sobj.animal_areas(data):
+                if area.ec != BUG_EC:
+                    continue  # 其他环境生物（EC_054 等）暂不接入
+                key = area.name
+                if key not in kinds:
+                    kinds[key] = _bug_kind(key, area.variant, texts)
+                add(key, area.pos, area.floor, rel, r, min_rank)
 
     patches = stage_map["patches"]
     located = [_depth(masks, patches, n["x"], n["y"]) for n in nodes]
     rules = _assign(nodes, patches, [d for d, _ in located])
     road = sum(r for _, r in located) / max(1, len(nodes))
+
+    # 按抽选表采集的物件：出现在「骨冢增殖中」文件里的是骨冢，出现在两种特产文件里的是特产
     for key, k in kinds.items():
-        if k["category"] != "specialty":
-            continue
-        # 按抽选表采集的物件：出现在「骨冢增殖中」文件里的是骨冢，出现在两种特产文件里的取特产名
-        rs = kind_states.get(key, set())
-        if BONE_STATE in rs:
-            k["category"], k["name"] = "bonepile", tr(gmk, BONEPILE_NAME)
-        elif special := [SPECIALTY_NAME[stage][r] for r in sorted(rs) if r in SPECIALTY_NAME[stage]]:
-            k["name"] = tr(gmk, special[0])
-        else:
-            k["category"] = "other"
+        if k["category"] == "specialty":
+            rs = kind_states.get(key, set())
+            if BONE_STATE in rs:
+                k["category"] = "bonepile"
+            elif not rs & SPECIALTY_STATES:
+                k["category"] = "other"
+
+    # 营地名：按营地所在区域号对上名字里括号中的区域号。营地叠在几层纸片上时（如陆珊瑚台地北东营地，
+    # floor 字段是雷达上没有的 7），取叠着的纸片里区域号出现在营地名中的那块。
+    camp_names = texts.camps(stage)
+    by_letter = {p["letter"]: p for p in patches}
+    for n, (d, _) in zip(nodes, located, strict=True):
+        if kinds[n["kind"]]["category"] == "camp":
+            named = [k for k in d if by_letter[k]["area"] in camp_names]
+            if named and n["area"] not in camp_names:
+                best = by_letter[max(named, key=d.__getitem__)]
+                n["layer"], n["area"] = best["layer"], best["area"]
+            n["label"] = camp_names.get(n["area"])
+    # 还没对上的营地：营地与营地名一一对应，只剩一个时按排除法（区域号以营地名为准）
+    camps = [n for n in nodes if kinds[n["kind"]]["category"] == "camp"]
+    left = [a for a in camp_names if a not in {n["area"] for n in camps if n["label"]}]
+    loose = [n for n in camps if not n["label"]]
+    if len(loose) == 1 and len(left) == 1:
+        n = loose[0]
+        log(
+            f"  st{stage}：营地 {n['campId']}（落在 {n['area']} 区纸片上）按排除法对应 {camp_names[left[0]]['zh-Hans']}"
+        )
+        n["area"], n["label"] = left[0], camp_names[left[0]]
+        n["layer"] = next((p["layer"] for p in patches if p["area"] == left[0]), n["layer"])
+    for n in loose if len(loose) > 1 else []:
+        log(f"  注意：st{stage} 营地 {n['campId']}（{n['area']} 区）没有对上营地名")
 
     used = sorted({i for k in kinds.values() for i in k["lots"]})
     lots = {rank: {str(i): rows[i] for i in used if i < len(rows)} for rank, rows in ranks.items()}
     counts = Counter(n["kind"] for n in nodes)
+    cats = Counter(kinds[n["kind"]]["category"] for n in nodes)
     log(
-        f"st{stage}：{len(nodes)} 个点、{len(kinds)} 种、{len(states)} 种环境状态、抽选表 {list(ranks)}；"
+        f"st{stage}：{len(nodes)} 个点 {dict(cats)}；抽选表 {list(ranks)}；"
         f"定纸片 {dict(rules)}；{road:.0%} 在路面附近"
     )
     return {
         "id": stage,
         "ranks": list(ranks),
-        "states": [{"id": NO_STATE_TEXT, "name": tr(quest, NO_STATE_TEXT)}]
+        "states": [{"id": NO_STATE_TEXT, "name": tr(texts.quest, NO_STATE_TEXT)}]
         + [{"id": i, "name": n} for i, n in sorted(states.items())],
         "kinds": sorted(
             (k | {"total": counts[key]} for key, k in kinds.items()),
@@ -235,11 +320,11 @@ def build_stage(
     }
 
 
-def _kind(key: str, g: gcd.Gimmick, pop: dict, item: int, lots: tuple[int, ...], gmk) -> dict:
+def _gather_kind(key: str, g: gcd.Gimmick, pop: dict, item: int, lots: tuple[int, ...], name) -> dict:
     if pop["kind"] == POP_MINE:
         category = "mining" if pop["respawn"] > 0 else "other"
     elif pop["kind"] == POP_LOT:
-        category = "specialty"  # 骨冢、特产名按出现在哪个环境状态文件再区分
+        category = "specialty"  # 骨冢、特产按出现在哪个环境状态文件再区分
     elif pop["kind"] == POP_CARRY:
         category = "carry"
     else:
@@ -247,7 +332,7 @@ def _kind(key: str, g: gcd.Gimmick, pop: dict, item: int, lots: tuple[int, ...],
     return {
         "key": key,
         "category": category,
-        "name": tr(gmk, MINING_NAME) if category == "mining" else None,
+        "name": name,
         "item": item or None,
         "lots": list(dict.fromkeys(lots)),
         "gathers": pop["gather_max"],
@@ -256,12 +341,37 @@ def _kind(key: str, g: gcd.Gimmick, pop: dict, item: int, lots: tuple[int, ...],
     }
 
 
+def _plain_kind(key: str, category: str, name, item: int | None, src: str) -> dict:
+    return {
+        "key": key,
+        "category": category,
+        "name": name,
+        "item": item,
+        "lots": [],
+        "gathers": None,
+        "respawn": None,
+        "_src": {"gimmick": src},
+    }
+
+
+def _bug_kind(key: str, variant: int, texts: _Texts) -> dict:
+    name = _keyed(texts.animal, f"{key}_NAME")
+    item = BUG_ITEM[variant]
+    if variant != 5 and (not name or texts.items[item]["name"]["zh-Hans"] != name["zh-Hans"]):
+        raise ValueError(f"{key} 的名字与物品 {item} 不符，虫与物品的对应需要重新核对")
+    out = _plain_kind(key, "bug", name, item, f"common/gimmick/animal.gcd {key}")
+    out["_src"]["name"] = f"common/text/animal_names {key}_NAME"
+    return out
+
+
 def build(raw: Path, data: Path, log=print) -> dict:
     s = Source(raw)
     maps = {st["id"]: st for st in json.loads((data / "maps.json").read_text("utf-8"))["stages"]}
+    items = {i["id"]: i for i in json.loads((data / "items.json").read_text("utf-8"))["items"]}
     gimmicks = gcd.parse(s.path("common/gimmick/gimmick.gcd").read_bytes())
     pops = s.table("common/item/pop_base.ppm", POP_BASE)
-    stages = [build_stage(s, sid, maps[sid], gimmicks, pops, log) for sid in STATE_TEXT]
+    texts = _Texts(s, items)
+    stages = [build_stage(s, sid, maps[sid], gimmicks, pops, texts, log) for sid in STATE_TEXT]
     out = {"stages": stages}
     _write(data / "map-nodes.json", stages)
     return out

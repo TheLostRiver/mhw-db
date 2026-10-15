@@ -108,3 +108,17 @@ test('采集节点：按素材搜索', async ({ page }) => {
   await page.getByRole('searchbox', { name: '搜索采集物' }).fill('燕雀石');
   await expect(page.locator('.mv-empty')).toContainText('下位、上位的抽选表里有');
 });
+
+test('营地与地区徽章', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/world/maps/', { waitUntil: 'networkidle' });
+  await expect(page.locator('.map-card__emblem')).toHaveCount(6);
+  await page.goto('/world/maps/ancient-forest/', { waitUntil: 'networkidle' });
+  // 地面层 3 个营地（南西、北西、北东），古代树营地在最上层
+  const camps = page.locator(".mv-node__icon[data-cat='camp']");
+  await expect(camps).toHaveCount(3);
+  await page.getByRole('radiogroup', { name: '楼层' }).getByRole('radio', { name: '3' }).click();
+  await expect(camps).toHaveCount(1);
+  await page.locator('.mv-node:has(.mv-node__icon[data-cat="camp"])').dispatchEvent('click');
+  await expect(page.getByRole('article', { name: '所选节点' })).toContainText('古代树营地(17)');
+});

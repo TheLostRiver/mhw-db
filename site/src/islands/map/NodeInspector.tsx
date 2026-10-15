@@ -4,6 +4,7 @@
 import { useMemo } from 'react';
 import type { MapNodeStage, Rank } from '../../data/world/schema';
 import {
+  CAMP_ICON,
   RANK_LABEL,
   formatChance,
   itemIconUrl,
@@ -16,6 +17,7 @@ import {
 
 const fileName = (path: string) => path.split('/').at(-1) ?? path;
 const RESPAWN_NOTE = 'pop_base.ppm 里的秒数，含义按数值推断，尚未与游戏内计时核对';
+const MIN_RANK_NOTE = '这些点在 stXXX_high.sobjl 里单独加载，按文件名推断为上位起出现，尚未在游戏内核对';
 
 interface DetailProps {
   stage: MapNodeStage;
@@ -33,7 +35,8 @@ export function NodeDetail({ stage, layers, index, rank, items, siblings, onFocu
   const node = stage.nodes[index]!;
   const kind = stage.kinds.find((k) => k.key === node.kind)!;
   const main = mainItem(kind, stage, rank);
-  const icon = main !== null ? items[main] : undefined;
+  const camp = kind.category === 'camp';
+  const icon = camp ? CAMP_ICON : main !== null && items[main] ? itemIconUrl(items[main]) : null;
   const state = node.state !== null ? stage.states.find((s) => s.id === node.state) : undefined;
   const at = siblings.indexOf(index);
   const step = (d: number) => onFocus(siblings[(at + d + siblings.length) % siblings.length]!);
@@ -50,9 +53,11 @@ export function NodeDetail({ stage, layers, index, rank, items, siblings, onFocu
   return (
     <article className="mv-detail" aria-label="所选节点">
       <header className="mv-detail__head">
-        {icon && <img className="mv-detail__icon" src={itemIconUrl(icon)} alt="" width={64} height={64} />}
+        {icon && <img className="mv-detail__icon" src={icon} alt="" width={64} height={64} />}
         <div>
-          <h3 className="mv-detail__name">{kindName(kind, stage, rank, items)}</h3>
+          <h3 className="mv-detail__name">
+            {(camp && node.label?.['zh-Hans']) || kindName(kind, stage, rank, items)}
+          </h3>
           <p className="mv-detail__where">
             {node.area !== null && `${node.area} 区`}
             {layers > 1 && node.layer !== null && ` · ${node.layer + 1}层`}
@@ -61,21 +66,35 @@ export function NodeDetail({ stage, layers, index, rank, items, siblings, onFocu
         <button type="button" className="mv-detail__close" aria-label="关闭" onClick={onClose} />
       </header>
       {state && <p className="mv-detail__state">仅在「{state.name['zh-Hans']}」时出现</p>}
-      <dl className="mv-detail__facts">
-        <div>
-          <dt>采集次数</dt>
-          <dd>{kind.gathers} 次</dd>
-        </div>
-        <div>
-          <dt>再生时间</dt>
-          <dd>
-            {kind.respawn > 0 ? `${kind.respawn} 秒` : '—'}
-            <span className="mv-unconfirmed" title={RESPAWN_NOTE}>
-              未确认
-            </span>
-          </dd>
-        </div>
-      </dl>
+      {node.minRank && (
+        <p className="mv-detail__state mv-detail__state--rank">
+          {RANK_LABEL[node.minRank]}起出现
+          <span className="mv-unconfirmed" title={MIN_RANK_NOTE}>
+            推断
+          </span>
+        </p>
+      )}
+      {(kind.gathers !== null || kind.respawn !== null) && (
+        <dl className="mv-detail__facts">
+          {kind.gathers !== null && (
+            <div>
+              <dt>采集次数</dt>
+              <dd>{kind.gathers} 次</dd>
+            </div>
+          )}
+          {kind.respawn !== null && (
+            <div>
+              <dt>再生时间</dt>
+              <dd>
+                {kind.respawn > 0 ? `${kind.respawn} 秒` : '—'}
+                <span className="mv-unconfirmed" title={RESPAWN_NOTE}>
+                  未确认
+                </span>
+              </dd>
+            </div>
+          )}
+        </dl>
+      )}
       {kind.item !== null && items[kind.item] && (
         <ul className="mv-loot">
           <li className="mv-loot__row">
@@ -206,7 +225,12 @@ export default function NodeInspector({
         <ul className="mv-cards">
           {groups.map(({ kind, list, counts }) => {
             const main = mainItem(kind, stage, rank);
-            const icon = main !== null ? items[main] : undefined;
+            const icon =
+              kind.category === 'camp'
+                ? CAMP_ICON
+                : main !== null && items[main]
+                  ? itemIconUrl(items[main])
+                  : null;
             const here = list.find((i) => stage.nodes[i]!.layer === layer) ?? list[0]!;
             return (
               <li key={kind.key}>
@@ -220,7 +244,7 @@ export default function NodeInspector({
                   onBlur={() => onHoverKind(null)}
                 >
                   <span className="mv-card__head">
-                    {icon && <img src={itemIconUrl(icon)} alt="" width={64} height={64} />}
+                    {icon && <img src={icon} alt="" width={64} height={64} />}
                     <span className="mv-card__name">{kindName(kind, stage, rank, items)}</span>
                   </span>
                   <span className="mv-card__row">
@@ -236,7 +260,7 @@ export default function NodeInspector({
                   </span>
                   <span className="mv-card__row">
                     <span>再生时间</span>
-                    <span>{kind.respawn > 0 ? `${kind.respawn}秒` : '—'}</span>
+                    <span>{kind.respawn ? `${kind.respawn}秒` : '—'}</span>
                   </span>
                 </button>
               </li>

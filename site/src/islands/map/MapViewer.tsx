@@ -9,10 +9,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { MapNodeStage, MapPatch, MapStage, Rank } from '../../data/world/schema';
 import { labelPoint, patchUrl } from '../../lib/world/maps';
 import {
+  CAMP_ICON,
   RANK_LABEL,
   itemIconUrl,
   kindName,
   mainItem,
+  nodeInRank,
   nodeVisibleIn,
   type MapItems,
 } from '../../lib/world/mapNodes';
@@ -68,7 +70,8 @@ export default function MapViewer({ stage, nodes, items }: Props) {
   const [rank, setRank] = useState<Rank>(nodes?.ranks.at(-1) ?? 'master');
   const [envState, setEnvState] = useState<number>(nodes?.states[0]?.id ?? 0);
   const [selectedKinds, setSelectedKinds] = useState<Set<string>>(
-    () => new Set(nodes?.kinds.map((k) => k.key) ?? []),
+    // 投射器弹数量多、遍地都是，默认不画，需要时在列表里勾选
+    () => new Set(nodes?.kinds.filter((k) => k.category !== 'slinger').map((k) => k.key) ?? []),
   );
   const [picked, setSelected] = useState<number | null>(null);
   const [hoverKind, setHoverKind] = useState<string | null>(null);
@@ -80,10 +83,15 @@ export default function MapViewer({ stage, nodes, items }: Props) {
   const layers = useMemo(() => Array.from({ length: stage.layers }, (_, i) => i), [stage]);
   const kinds = useMemo(() => new Map(nodes?.kinds.map((k) => [k.key, k]) ?? []), [nodes]);
 
-  /** 当前环境状态下出现、且落在地图上的点（下标） */
+  /** 当前等级、环境状态下出现，且落在地图上的点（下标） */
   const visible = useMemo(
-    () => (nodes?.nodes ?? []).flatMap((n, i) => (n.layer !== null && nodeVisibleIn(n, envState) ? [i] : [])),
-    [nodes, envState],
+    () =>
+      (nodes?.nodes ?? []).flatMap((n, i) =>
+        n.layer !== null && nodeVisibleIn(n, envState) && nodeInRank(n, kinds.get(n.kind)!, nodes!, rank)
+          ? [i]
+          : [],
+      ),
+    [nodes, kinds, envState, rank],
   );
   const shown = useMemo(
     () => visible.filter((i) => selectedKinds.has(nodes!.nodes[i]!.kind)),
@@ -203,19 +211,22 @@ export default function MapViewer({ stage, nodes, items }: Props) {
       const kind = kinds.get(n.kind)!;
       const id = mainItem(kind, nodes, rank);
       const item = id !== null ? items[id] : undefined;
-      const name = kindName(kind, nodes, rank, items);
-      const img = item
-        ? `<img src="${itemIconUrl(item)}" alt="" width="64" height="64" draggable="false">`
-        : '';
+      const camp = kind.category === 'camp';
+      const name = (camp && n.label?.['zh-Hans']) || kindName(kind, nodes, rank, items);
+      const src = camp ? CAMP_ICON : item ? itemIconUrl(item) : null;
+      const img = src ? `<img src="${src}" alt="" width="64" height="64" draggable="false">` : '';
+      const size = camp ? 38 : 28;
       const marker = L.marker(toLatLng(n.x, n.y), {
         icon: L.divIcon({
           className: 'mv-node',
           html: `<span class="mv-node__icon" data-cat="${kind.category}"${n.state !== null ? ' data-extra' : ''}>${img}</span>`,
-          iconSize: [28, 28],
-          iconAnchor: [14, 14],
+          iconSize: [size, size],
+          iconAnchor: [size / 2, size / 2],
         }),
         keyboard: false,
         riseOnHover: true,
+        // 营地压在采集点上面
+        zIndexOffset: camp ? 500 : 0,
       });
       marker.bindTooltip(name, { direction: 'top', offset: [0, -12], className: 'mv-tip' });
       marker.on('click', (e) => {
@@ -234,10 +245,10 @@ export default function MapViewer({ stage, nodes, items }: Props) {
       if (!node) continue;
       node.toggleAttribute('data-selected', i === selected);
       node.toggleAttribute('data-dim', hoverKind !== null && nodes!.nodes[i]!.kind !== hoverKind);
-      if (i === selected) m.setZIndexOffset(1000);
-      else m.setZIndexOffset(0);
+      const camp = kinds.get(nodes!.nodes[i]!.kind)?.category === 'camp';
+      m.setZIndexOffset(i === selected ? 1000 : camp ? 500 : 0);
     }
-  }, [selected, hoverKind, shown, layer, rank, nodes]);
+  }, [selected, hoverKind, shown, layer, rank, nodes, kinds]);
 
   const flyTo = useCallback((x: number, y: number) => {
     const map = mapRef.current;

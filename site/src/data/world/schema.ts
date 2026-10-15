@@ -437,19 +437,19 @@ export const MapNodeKind = z
   .object({
     /** 物件名，如 gm000_010_00 */
     key: z.string(),
-    category: z.enum(['gather', 'mining', 'bonepile', 'specialty', 'carry', 'other']),
-    /** 物件名称（矿脉、骨冢、特产）；采集点没有，用物品名 */
+    category: z.enum(['camp', 'gather', 'mining', 'bonepile', 'specialty', 'bug', 'slinger', 'carry', 'other']),
+    /** 物件名称（gmk_names / animal_names）；采集点多数没有，用物品名 */
     name: Text.nullable(),
     /** 固定物品 */
     item: Int.positive().nullable(),
     /** 抽选表行号（关卡 itlot），通常 / 第二组（用途未确认） */
     lots: z.array(Int.min(0)),
-    /** 采集次数 */
-    gathers: Int.min(0),
+    /** 采集次数（营地、虫、投射器弹没有这一项） */
+    gathers: Int.min(0).nullable(),
     /** 再生秒数（pop_base 的字段，含义按数值推断，未与游戏内计时核对） */
-    respawn: z.number().min(0),
+    respawn: z.number().min(0).nullable(),
     total: Int.min(1),
-    _src: z.object({ gimmick: z.string(), pop: z.string() }).strict(),
+    _src: z.record(z.string(), z.string()),
   })
   .strict();
 export const MapNode = z
@@ -466,6 +466,11 @@ export const MapNode = z
     area: Int.min(1).nullable(),
     /** 只在这个环境状态（cm_quest 文本序号）下出现；常驻为 null */
     state: Int.nullable(),
+    /** 从这个等级起才出现（stXXX_high.sobjl 加载的点为上位起，推断） */
+    minRank: Rank.nullable(),
+    /** 营地：mCampId 与营地名 */
+    campId: Int.min(0).optional(),
+    label: Text.nullable().optional(),
     _src: z.object({ file: z.string().startsWith('stage/') }).strict(),
   })
   .strict();

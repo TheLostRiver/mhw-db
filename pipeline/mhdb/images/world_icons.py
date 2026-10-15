@@ -56,6 +56,7 @@ UI_ATLAS = {
     "item": "ui/item_menu/tex/itemMenu00_ID.tex",
     "common": "ui/common/tex/common00_ID.tex",
     "map": "ui/map/tex/map00_ID.tex",
+    "other": "ui/common/tex/cmn_other00_ID.tex",
 }
 UI_SPRITES: dict[str, tuple[str, tuple[int, int, int, int]]] = {
     # 图标底框（黑 / 灰圆角方块）与选中框
@@ -94,7 +95,13 @@ UI_SPRITES: dict[str, tuple[str, tuple[int, int, int, int]]] = {
     "layer-glow": ("map", (56, 128, 112, 168)),
     "layer-chevron": ("map", (152, 112, 184, 128)),
     "layer-disc": ("map", (64, 168, 96, 200)),
+    # 大地图的营地图标（cmn_other00 的黄色帐篷；map.gui 的 camp 动画也引用这张图集）
+    "camp": ("other", (128, 192, 192, 256)),
 }
+
+# 地区徽章：map.gui 的 searchinfo 动画里 tex_aIcon00–05 引用 cmn_stage00 的 6 个格子，
+# 顺序与地区一致（森林的树、荒地的台地、珊瑚、瘴气之谷、龙结晶、冰原，按图形核对）。
+STAGE_EMBLEM = {101: 0, 102: 1, 103: 2, 104: 3, 105: 4, 108: 5}
 
 
 def _hex(rgb: str) -> tuple[int, int, int]:
@@ -201,6 +208,17 @@ def build(raw: Path, data: Path, out: Path, log=print) -> int:
     for side in ("l", "r"):
         part = Image.open(out / f"ui/bracket-b{side}.webp").transpose(Image.Transpose.FLIP_TOP_BOTTOM)
         save(part, f"ui/bracket-t{side}.webp")
+
+    # 地区徽章（白色剪影，前端按需着色）：矩形直接取自 map.gui
+    from mhdb.formats import gui as guifmt
+
+    map_gui = guifmt.parse((raw / "ui/map/map.gui").read_bytes())
+    icons = {o.name: o.init for o in map_gui.animations["searchinfo"].objects}
+    for stage, k in STAGE_EMBLEM.items():
+        init = icons[f"tex_aIcon{k:02d}"]
+        tex = map_gui.textures[init["Texture"]].path.replace("\\", "/")
+        box = tuple(int(v) for v in init["mTextureRect"])
+        save(_atlas(raw, f"{tex}.tex").crop(box), f"ui/stage-{stage}.webp")
 
     # 状态图标原样输出
     for i in range((status.width // 64) * (status.height // 64)):

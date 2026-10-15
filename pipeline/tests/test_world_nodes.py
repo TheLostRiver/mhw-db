@@ -60,3 +60,27 @@ def test_map_nodes_against_game() -> None:
     # 矿脉增殖：r2 与 r3 内容相同，只保留一份
     mining = [n for n in af["nodes"] if n["state"] == 87]
     assert len(mining) == 6
+
+
+@pytest.mark.game
+@pytest.mark.skipif(not NODES.is_file(), reason="需要先运行 mhdb nodes")
+def test_camps_bugs_and_slinger() -> None:
+    st = stages()
+    for sid, s in st.items():
+        camps = [n for n in s["nodes"] if n["kind"].startswith("gm013_")]
+        labels = [n["label"]["zh-Hans"] for n in camps if n.get("label")]
+        assert len(labels) == len(camps) == len(set(labels)), f"st{sid} 的营地没有一一对上营地名"
+        # 营地名括号里的区域号 = 营地所在纸片的区域号
+        for n in camps:
+            assert n["label"]["zh-Hans"].endswith(f"({n['area']})"), f"st{sid} {n['label']} 在 {n['area']} 区"
+    af = st[101]
+    kinds = {k["key"]: k for k in af["kinds"]}
+    assert {k: kinds[k]["item"] for k in ("EC_032_01", "EC_032_02", "EC_032_04")} == {
+        "EC_032_01": 49,  # 苦虫
+        "EC_032_02": 50,  # 光虫
+        "EC_032_04": 52,  # 雷光虫
+    }
+    assert kinds["gm000_000_00"]["category"] == "slinger"
+    assert kinds["gm000_000_00"]["name"]["zh-Hans"] == "石块"
+    # 结晶矿脉（pop_high_map）上位起
+    assert {n["minRank"] for n in af["nodes"] if n["kind"] == "gm000_067_00"} == {"high"}

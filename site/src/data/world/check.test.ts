@@ -88,8 +88,10 @@ describe('引用完整', () => {
       }
       for (const k of st.kinds) {
         if (k.item !== null) expect(itemIds.has(k.item), `st${st.id} ${k.key} 的物品 ${k.item}`).toBe(true);
-        for (const rank of st.ranks) {
-          for (const i of k.lots) expect(st.lots[rank]?.[i], `st${st.id} ${rank} 抽选表 ${i}`).toBeDefined();
+        // 抽选表至少在一个等级里存在（只在上位起才有表的物件，下位不出现）
+        for (const i of k.lots) {
+          const found = st.ranks.some((rank) => st.lots[rank]?.[i] !== undefined);
+          expect(found, `st${st.id} ${k.key} 的抽选表 ${i} 在各等级都不存在`).toBe(true);
         }
       }
       for (const rows of Object.values(st.lots)) {

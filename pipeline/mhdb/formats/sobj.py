@@ -1,7 +1,8 @@
-"""关卡布置文件 .sobj（MHW:I）：只解析 cAssetBasicSetObject（采集点、投射器弹、机关等物件）。
+"""关卡布置文件 .sobj（MHW:I）：解析 cAssetBasicSetObject（采集点、投射器弹、营地、机关等物件）
+与 cSetAnimalArea（环境生物的出现范围，采集用的虫也在这里）。
 
 文件是一串记录，每条以 u32 类哈希 + 类名 \\0 开头；各类的记录长度不同，这里按类名定位记录，
-只解析 cAssetBasicSetObject，其余类跳过。布局由 stage/st101–105、108 的全部文件对照推出（见 docs/DATA.md）：
+其余类跳过。布局由 stage/ 下全部 .sobj 对照推出（见 docs/DATA.md）：
 
   u32 类哈希、类名 \\0、u32（=4）、f32×3 位置、f32×3 旋转（度）、f32×3 缩放、物件名 \\0（如 gm000_010_00）
   u8、s32 a、u8×3、s32 b、f32 c、s32 floor、s32 e、u32、u32、u8          ← 定长部分（33 字节）
@@ -10,13 +11,21 @@
 
 值类型与长度：3 bool（1）、4 整数（4）、6 f32（4）、8 vector3（16，含 1 个填充 float）、
 9 matrix44（64）、0xD 类引用（u8 + u32 编号 + u8，取编号）。
-floor：与物件高度、雷达层一一对应（高处的古树顶层为 3、4），按雷达层使用；a、b、c、e 含义未确认。
+floor：与物件高度、雷达层大体对应（高处的古树顶层为 3、4），按雷达层使用；a、b、c、e 含义未确认。
+
+cSetAnimalArea（没有物件名与属性表）：
+  u32 类哈希、类名 \\0、u32（=4）、f32×3 位置、f32×3 旋转、f32×3 缩放
+  u8、u8、s32 floor、s32（=−1）、9 字节、u32（=4）、4 个字符串 \\0（任务专用的写任务名）
+  4 字节、64 字节（填充 0xCD）、1 字节
+  u32 环境生物编号（animal.gcd 的 EC_NNN）、u32 变种（EC_NNN_0V，0 为无后缀）、u32、u32、f32（=1）
+  之后是出现半径与若干个出现点（未用）。
 """
 
 import struct
 from dataclasses import dataclass, field
 
 CLASS = b"cAssetBasicSetObject\0"
+ANIMAL_CLASS = b"cSetAnimalArea\0"
 _FIXED = struct.Struct("<BiBBBifiiIIB")
 _VALUE_SIZE = {3: 1, 4: 4, 6: 4, 8: 16, 9: 64, 0xD: 6}
 
@@ -84,4 +93,40 @@ def parse(data: bytes) -> list[SetObject]:
             props[prop] = value
         out.append(SetObject(name=name, pos=pos, rot=rot, floor=fixed[7], props=props))
         start = data.find(CLASS, o)
+    return out
+
+
+@dataclass(frozen=True)
+class AnimalArea:
+    pos: tuple[float, float, float]
+    floor: int
+    ec: int  # EC_NNN
+    variant: int  # EC_NNN_0V；0 为无后缀
+
+    @property
+    def name(self) -> str:
+        return f"EC_{self.ec:03d}" + (f"_{self.variant:02d}" if self.variant else "")
+
+
+_ANIMAL_TAIL = struct.Struct("<IIIIf")
+
+
+def animal_areas(data: bytes) -> list[AnimalArea]:
+    out = []
+    start = data.find(ANIMAL_CLASS)
+    while start != -1:
+        o = start + len(ANIMAL_CLASS) + 4
+        pos = struct.unpack_from("<3f", data, o)
+        body = o + 36
+        (floor,) = struct.unpack_from("<i", data, body + 2)
+        if struct.unpack_from("<I", data, body + 19)[0] != 4:
+            raise SobjError(f"cSetAnimalArea @{start:#x}：字符串表头不符")
+        s = body + 23
+        for _ in range(4):
+            _, s = _cstr(data, s)
+        ec, variant, _, _, one = _ANIMAL_TAIL.unpack_from(data, s + 69)
+        if one != 1.0:
+            raise SobjError(f"cSetAnimalArea @{start:#x}：编号处不是（编号、变种、…、1.0），布局不符")
+        out.append(AnimalArea(pos=pos, floor=floor, ec=ec, variant=variant))
+        start = data.find(ANIMAL_CLASS, body)
     return out

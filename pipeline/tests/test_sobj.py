@@ -3,7 +3,7 @@ import struct
 import pytest
 
 from mhdb.config import DATA_RAW
-from mhdb.formats.sobj import CLASS, SobjError, parse
+from mhdb.formats.sobj import ANIMAL_CLASS, CLASS, SobjError, animal_areas, parse
 
 
 def prop(kind: int, value: bytes, name: str, type_name: str = "s32") -> bytes:
@@ -73,3 +73,35 @@ def test_ancient_forest_gathering_points() -> None:
     # 古代树顶的飞龙蛋
     egg = next(o for o in objs if o.name == "gm000_092_00")
     assert [round(v) for v in egg.pos] == [-40, 18391, 10692] and egg.floor == 4
+
+
+def animal_record(
+    pos: tuple[float, float, float], floor: int, ec: int, variant: int, quest: str = ""
+) -> bytes:
+    out = struct.pack("<I", 0x5678) + ANIMAL_CLASS + struct.pack("<I", 4)
+    out += struct.pack("<9f", *pos, 0, 0, 0, 1, 1, 1)
+    out += bytes([0, 1]) + struct.pack("<ii", floor, -1) + bytes(9) + struct.pack("<I", 4)
+    out += quest.encode() + b"\0\0\0\0" + bytes(4) + b"\xcd" * 64 + b"\0"
+    out += struct.pack("<IIIIf", ec, variant, 1, 1, 1.0) + struct.pack("<f", 274.3) + bytes(16)
+    return out
+
+
+def test_parse_animal_areas() -> None:
+    data = animal_record((1.0, 2.0, 3.0), 2, 32, 1) + animal_record(
+        (4.0, 5.0, 6.0), 0, 43, 0, quest="q50601_kill"
+    )
+    areas = animal_areas(data)
+    assert [(a.name, a.floor, a.pos) for a in areas] == [
+        ("EC_032_01", 2, (1.0, 2.0, 3.0)),
+        ("EC_043", 0, (4.0, 5.0, 6.0)),
+    ]
+
+
+@pytest.mark.game
+@pytest.mark.skipif(not (SET / "st101_pop_map.sobj").is_file(), reason="需要先运行 mhdb extract")
+def test_ancient_forest_bug_areas() -> None:
+    areas = animal_areas((SET / "st101_pop_map.sobj").read_bytes())
+    names = {a.name for a in areas}
+    # 古代树森林的虫：苦虫、光虫、不死虫、雷光虫、美味虫
+    assert {"EC_032_01", "EC_032_02", "EC_032_03", "EC_032_04", "EC_032_05"} <= names
+    assert len(areas) == 43
