@@ -55,6 +55,7 @@ UI_ATLAS = {
     "menu": "ui/common_menu/tex/menu00_ID.tex",
     "item": "ui/item_menu/tex/itemMenu00_ID.tex",
     "common": "ui/common/tex/common00_ID.tex",
+    "map": "ui/map/tex/map00_ID.tex",
 }
 UI_SPRITES: dict[str, tuple[str, tuple[int, int, int, int]]] = {
     # 图标底框（黑 / 灰圆角方块）与选中框
@@ -87,6 +88,12 @@ UI_SPRITES: dict[str, tuple[str, tuple[int, int, int, int]]] = {
     # 列表行底板（亮 / 暗）
     "row-light": ("common", (62, 346, 512, 391)),
     "row-dark": ("common", (62, 394, 512, 436)),
+    # 大地图的楼层切换（map.gui 的 a_layer / layerBase，矩形取自布局文件）：
+    # 菱形底、选中时外圈描边、上下翻层的双箭头、编号底的圆点
+    "layer-diamond": ("map", (0, 128, 56, 168)),
+    "layer-glow": ("map", (56, 128, 112, 168)),
+    "layer-chevron": ("map", (152, 112, 184, 128)),
+    "layer-disc": ("map", (64, 168, 96, 200)),
 }
 
 

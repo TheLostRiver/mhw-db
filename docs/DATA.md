@@ -9,9 +9,10 @@
 
 ```bash
 cd pipeline
-uv run mhdb extract   # 按 manifest.toml 从 chunk 解包到 data-raw/world/（约 5900 个文件，9 秒）
+uv run mhdb extract   # 按 manifest.toml 从 chunk 解包到 data-raw/world/（约 8100 个文件）
 uv run mhdb parse     # → data/world/*.json（入库）
 uv run mhdb images    # → site/public/assets/game/world/（不入库）
+uv run mhdb maps      # 大地图纸片配准 → data/world/maps.json（入库）+ 纸片图片（不入库），约 15 分钟
 ```
 
 - **只从 chunk 解包，忽略游戏目录的 `nativePC/`**：本机 `nativePC/` 装有 Mod（含 `common/equip`），会覆盖装备数据。
@@ -29,7 +30,8 @@ uv run mhdb images    # → site/public/assets/game/world/（不入库）
 | chunk | `mhdb/chunk/reader.py` | 子块 0x40000 字节，Oodle 压缩 + 16 字节循环 XOR；改写自用户的 mhw_chunk.py | ✅ |
 | `.gmd` 文本 | `mhdb/formats/gmd.py` | 版本 0x10302；177 个文件字符串数多于键数，以字符串序号为主索引；样式标签 `<STYL MOJI_x_DEFAULT>`、`<ICON ALPHA>` 等 | ✅（3133 个文件全部通过） |
 | 定长记录表 | `mhdb/formats/table.py` | 头 `u32 magic 0x18091001, u16 版本, u32 条数` | ✅ |
-| `.tex` 贴图 | `mhdb/formats/tex.py` | magic `TEX\0`、版本 0x10；0x14 mip 数、0x18 宽、0x1C 高、0x24 格式；0xB8 起各 mip 偏移。只核实了格式 **0x1F = BC7** | ✅ |
+| `.tex` 贴图 | `mhdb/formats/tex.py` | magic `TEX\0`、版本 0x10；0x14 mip 数、0x18 宽、0x1C 高、0x24 格式；0xB8 起各 mip 偏移。核实了格式 **0x1F = BC7**、**0x17 = BC1**（地图底图，按 BC4 解只剩单通道） | ✅ |
+| `.gui` 界面布局 | `mhdb/formats/gui.py` | 版本 0x23316；动画 → 对象 → 初始参数（位置、尺寸、贴图矩形、锚点），贴图表；关键帧未解析。布局见解析器文件头注释 | 🟨（雷达边线、世界地图缩略图的矩形与贴图对得上） |
 | `.uct` 颜色表 | `mhdb/build/world.py` | 头 12 字节；若干张表：u32 条数 + 每条 28 字节（u32 标记、RGBA、5 × f32） | 🟨 |
 
 字段布局参照 [MHW-Editor](https://github.com/Synthlight/MHW-Editor) 的 010 模板（无许可证，只读作格式文档，未复制代码），
@@ -129,12 +131,35 @@ uv run mhdb images    # → site/public/assets/game/world/（不入库）
 | `ui/common/tex/cmn_status00_ID.tex` | 64px 网格 8 列，彩色状态 / 技能效果图标 | 全部原样输出 |
 | `ui/common/tex/common00_ID.tex` | 镶嵌槽框（三角个数 = 等级）、宝石；非网格 | 按坐标裁切，见 `mhdb/images/world_icons.py` |
 | `ui/status/tex/status00_ID.tex`、`ui/common_menu/tex/menu00_ID.tex`、`ui/item_menu/tex/itemMenu00_ID.tex`、`common00` | 菜单界面零件：图标底框、技能等级格（空格 / 白色实心格）、四角折角、窗口角饰、括线、细线与 ◇ 线头、部族花纹、列表行底板 | `UI_SPRITES`（按透明度连通域取得的精确坐标）；这几张图集由 `ui/status/info_skill.gui`（技能信息画面）等布局文件引用。实心格在前端按颜色正片叠底着色 |
+| `ui/map/tex/map00_ID.tex` | 大地图界面零件：楼层切换的菱形（白底黑边）、选中描边、上下双箭头、编号底的圆点 | `UI_SPRITES` 的 `layer-*`，矩形直接取自 `ui/map/map.gui` 的 `a_layer` / `layerBase`；颜色按游戏截图取（布局里的顶点色是灰 120 → 选中 212,144,64，画面上更亮） |
 
 - 格子编号都已按图形与游戏截图核对。饰品的宝石格由物品数据的 `icon_id` 直接给出（1–4 级分别是 66 / 67 / 68 / 72），
   衣装的图标由 `a_skill.ask` 的 `icon_id` / `color` 给出。
 - **着色方式是近似**：游戏的合成公式未知。技能徽章、衣装、2–4 级宝石用乘法着色；防具、武器、护石用遮罩填色
   （遮罩内填稀有度色、遮罩外压暗），1 级宝石用遮罩填色并保留线条。都是对照用户截图选定的，不代表游戏的真实算法。
 - 物品图标的 `icon_id` 与图集格子的对应关系目前只在上述类别核对过，其他物品待核对。
+
+### 4.1 大地图（`data/world/maps.json`，`uv run mhdb maps`）
+
+| 素材 | 来源 | 说明 |
+|---|---|---|
+| 区域纸片 | `ui/map/tex/maptex/stXXX/m_stXXX_patch_ID.tex`（BC7，4096×2048） | 每块纸片画一个区域，多层区域另有上层纸片；按透明度连通域切出 |
+| 雷达俯视图 | `ui/hud/tex/rtex/stXXX/r_stXXX_fNN_MM_ID.tex` | `NN` 为雷达层，`MM` 为 2×2 瓦片（左上、右上、左下、右下）；每块 512 像素在 `hud_radar.gui` 里画成 820 单位，原点在中心 |
+| 区域边线 | `ui/hud/hud_radar.gui` 的 `Area_lineNNN` | `null_areaK` 的位置 + `tex_lineK` 的贴图矩形（`r_stXXX_area_ID`），按 `coladj_line_fNN` 分层 |
+| 纸片表 | exe（构建 15539686），见 `mhdb/games/world/exe.py` 的 `MAP_PATCHES` | 函数 0x1418A65C0 按关卡号返回 17 行（对应 `map.gui` 的 `patch_A…Q`）：层、雷达层、区域号；层为 −1 的纸片不显示 |
+| 世界地图缩略图 | `ui/map/map.gui` 的 `patch_stXXX` → `map_all_patch*_ID.tex` | 贴图与矩形都在布局里，原样裁切 |
+| 地名 | `common/text/other_names_*.gmd` | st101–105 = #0–4，st108 = #58（永霜冻土）；按地图画面逐一对过 |
+| 底纹 | `ui/map/tex/maptex/map_back_BML_NOMIP.tex`（BC1） | 地图窗口的皮革纹理 |
+
+- **纸片的位置不在任何数据文件里**（`map.gui` 的 `patch_A…Q` 位置全是 0、贴图矩形是占位值，exe 里也没找到矩形或坐标表），
+  所以用配准求：纸片里浅色的路面 / 浅水对雷达上的可走区域，FFT 归一化互相关。每张图先扫出统一比例，
+  再把每块纸片限制在对应区域边线附近找平移，最后用匈牙利算法把纸片与纸片表的行一一对上。
+- 比例：st101–105 为 0.5（纸片 1 像素 = 雷达 0.5 单位），st108 为 0.625，都是细扫的峰值（步长 0.0025）。
+- 得分（相关系数）中位数 0.67–0.77；低于 0.3 的只有龙结晶之地 16 区（纸片几乎全是云纹、没有路面，位置只受区域边线约束，⚠ 待核对）。
+- ⚠ **推断**：`null_areaK` 对应区域 K+1。上层区域的雷达层与纸片表完全吻合（如古代树森林 14–17 区），地面层区域无法用层号区分，
+  按顺序对应；区域号最终以游戏地图为准，待用户核对一两张图。
+- 同一区域有上下两块纸片（大蚁冢荒地 5、11 区）时，表里两行的雷达层相同，按各自单层最佳匹配的层号分配上下。
+- 多层地图里，楼层的「1 / 2 / 3」是纸片表的层号 + 1，不代表实际高度（瘴气之谷的 1 层是最上面的白骨区域）。
 
 ## 5. 待解析 / 疑问
 

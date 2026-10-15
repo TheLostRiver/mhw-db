@@ -1,0 +1,170 @@
+---
+import SiteLayout from '../../../layouts/SiteLayout.astro';
+import { loadMaps } from '../../../data/world/load';
+import { MAP_GROUPS, stageSlug, thumbUrl } from '../../../lib/world/maps';
+
+const stages = loadMaps();
+const groups = (Object.keys(MAP_GROUPS) as (keyof typeof MAP_GROUPS)[])
+  .map((g) => ({ key: g, title: MAP_GROUPS[g], items: stages.filter((s) => s.group === g) }))
+  .filter((g) => g.items.length > 0);
+---
+
+<SiteLayout
+  title="地图"
+  current="maps"
+  description="怪物猎人：世界 冰原 各地区的游戏原版大地图，区域编号与楼层切换"
+>
+  <div class="page-head">
+    <h1>
+      地图 <span class="b-label">v0 · 区域与楼层</span>
+    </h1>
+    <p>
+      游戏原版的羊皮纸大地图，由各区域的纸片拼成：纸片的位置由管线把纸片与雷达小地图配准求出。采集点、营地等标记整理中。
+    </p>
+  </div>
+
+  {groups.map((g) => (
+    <section class="maps-group">
+      <h2 class="maps-group__title">
+        {g.title}
+        <span class="b-label">{g.items.length}</span>
+      </h2>
+      <ul class="maps-grid">
+        {g.items.map((s) => (
+          <li>
+            <a class="map-card" href={`/world/maps/${stageSlug(s)}/`}>
+              <div class="map-card__thumb">
+                {s.thumb && <img src={thumbUrl(s.thumb)} alt="" loading="lazy" decoding="async" />}
+              </div>
+              <div class="map-card__body">
+                <strong>{s.name['zh-Hans']}</strong>
+                {s.name.en && <span class="b-label">{s.name.en}</span>}
+                <span class="map-card__meta">
+                  {new Set(s.patches.map((p) => p.area)).size} 个区域
+                  {s.layers > 1 && ` · ${s.layers} 层`}
+                </span>
+              </div>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
+  ))}
+</SiteLayout>
+
+<style>
+  .page-head {
+    margin-bottom: var(--space-5);
+  }
+
+  .page-head h1 {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-3);
+    font-size: var(--text-2xl);
+    font-weight: 800;
+  }
+
+  .page-head p {
+    margin-top: var(--space-1);
+    max-width: 72ch;
+    color: var(--c-text-2);
+  }
+
+  .maps-group + .maps-group {
+    margin-top: var(--space-8);
+  }
+
+  .maps-group__title {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-2);
+    margin-bottom: var(--space-3);
+    font-size: var(--text-lg);
+    font-weight: 700;
+  }
+
+  .maps-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: var(--space-4);
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .map-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--c-surface);
+    box-shadow: inset 0 0 0 1px var(--c-line);
+    color: inherit;
+    text-decoration: none;
+    transition:
+      box-shadow var(--dur-fast),
+      transform var(--dur-base) var(--ease-out);
+  }
+
+  .map-card:hover {
+    box-shadow:
+      inset 0 0 0 1px var(--c-line-strong),
+      var(--shadow-pop);
+    transform: translateY(-2px);
+  }
+
+  .map-card:focus-visible {
+    outline: 2px solid var(--c-focus);
+    outline-offset: 2px;
+  }
+
+  /* 缩略图放在皮革底纹上，和游戏的世界地图一样 */
+  .map-card__thumb {
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    padding: var(--space-3);
+    background: #2a1e12 url('/assets/game/world/maps/parchment.webp') center / 256px;
+    box-shadow: inset 0 0 40px rgb(20 12 4 / 0.7);
+  }
+
+  .map-card__thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 4px 8px rgb(0 0 0 / 0.5));
+    transition: transform var(--dur-slow) var(--ease-out);
+  }
+
+  .map-card:hover .map-card__thumb img {
+    transform: scale(1.04);
+  }
+
+  .map-card__body {
+    display: grid;
+    gap: 2px;
+    padding: var(--space-3) var(--space-4) var(--space-4);
+  }
+
+  .map-card__body strong {
+    font-size: var(--text-md);
+  }
+
+  .map-card__meta {
+    margin-top: var(--space-1);
+    color: var(--c-text-2);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .map-card,
+    .map-card__thumb img {
+      transition: none;
+    }
+
+    .map-card:hover,
+    .map-card:hover .map-card__thumb img {
+      transform: none;
+    }
+  }
+</style>

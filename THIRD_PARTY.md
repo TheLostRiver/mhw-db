@@ -12,6 +12,7 @@
 | zustand | 5.0.x | MIT | 工具页状态 |
 | immer | 11.1.x | MIT | 不可变状态（撤销 / 重做） |
 | zod | 4.6.x | MIT | 数据结构校验 |
+| leaflet | 1.9.x | BSD-2-Clause | 大地图的平移缩放（`CRS.Simple` 平面坐标） |
 | @fontsource-variable/noto-sans-sc | 5.3.x | OFL-1.1（字体）/ MIT（包） | 思源黑体（Noto Sans SC） |
 | @fontsource-variable/noto-serif-sc | 5.3.x | OFL-1.1 / MIT | 思源宋体（Noto Serif SC） |
 | @fontsource/lxgw-wenkai | 5.3.x | OFL-1.1 / MIT | 霞鹜文楷（方向 A 批注） |
@@ -19,7 +20,7 @@
 | @fontsource-variable/martian-mono | 5.3.x | OFL-1.1 / MIT | 等宽数字（方向 B） |
 | @fontsource-variable/bricolage-grotesque | 5.3.x | OFL-1.1 / MIT | 西文无衬线（方向 C） |
 
-开发依赖：typescript（Apache-2.0）、@astrojs/check（MIT）、vitest（MIT）、@playwright/test（Apache-2.0）、
+开发依赖：typescript（Apache-2.0）、@types/leaflet（MIT）、@astrojs/check（MIT）、vitest（MIT）、@playwright/test（Apache-2.0）、
 eslint（MIT）、typescript-eslint（MIT）、eslint-plugin-astro（MIT）、eslint-plugin-react-hooks（MIT）、
 prettier（MIT）、prettier-plugin-astro（MIT）、@types/react、@types/react-dom、@types/node（MIT）。
 
@@ -38,6 +39,8 @@ prettier（MIT）、prettier-plugin-astro（MIT）、@types/react、@types/react
 | cryptography | 50.0.x | Apache-2.0 OR BSD-3-Clause | Blowfish 解密（cus_pa、pl_param 等加密表） |
 | cffi | 2.1.x | MIT | cryptography 依赖 |
 | pycparser | 3.11 | BSD-3-Clause | cffi 依赖 |
+| numpy | 2.5.x | BSD-3-Clause | 地图纸片配准的数组运算 |
+| scipy | 1.18.x | BSD-3-Clause | 地图纸片配准：FFT 相关、连通域、匈牙利算法 |
 
 开发依赖：pytest（MIT）、ruff（MIT）。
 

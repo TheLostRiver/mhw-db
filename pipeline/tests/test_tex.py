@@ -45,6 +45,14 @@ def test_bc7_decodes_to_rgba_size() -> None:
     assert set(px) == {0}
 
 
+def test_bc1_decodes_opaque_color() -> None:
+    # BC1 块：端点色 0 = RGB565 纯红、端点色 1 = 黑（color0 > color1，四色模式），索引全为 0
+    block = struct.pack("<HHI", 0xF800, 0x0000, 0)
+    head, px = decode(make_tex(4, 4, 0x17, block))
+    assert (head.width, head.height) == (4, 4)
+    assert {tuple(px[i : i + 4]) for i in range(0, len(px), 4)} == {(255, 0, 0, 255)}
+
+
 def test_grid_cell_and_tint() -> None:
     atlas = Image.new("RGBA", (128, 64), (0, 0, 0, 0))
     atlas.paste((255, 255, 255, 255), (64, 0, 128, 64))

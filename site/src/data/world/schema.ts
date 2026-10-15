@@ -378,6 +378,52 @@ export const Constants = z
   })
   .strict();
 export type Constants = z.infer<typeof Constants>;
+
+/**
+ * 大地图（maps.json）：每个区域一块羊皮纸纸片，位置由管线配准求出（见 pipeline/mhdb/images/world_maps.py）。
+ * 地图坐标单位 = 纸片像素，原点与雷达原点重合；x 向右、y 向下。
+ */
+const Int = z.number().int();
+export const MapPatch = z
+  .object({
+    letter: z.string().regex(/^[A-Q]$/),
+    area: Int.min(1).max(17),
+    /** 大地图的楼层（0 起），对应游戏地图的层切换 */
+    layer: Int.min(0),
+    /** 纸片画的雷达层 */
+    floors: z.array(Int.min(0)),
+    /** 图集里的矩形 (x, y, w, h) */
+    rect: z.tuple([Int, Int, Int.positive(), Int.positive()]),
+    /** 雷达坐标（左上角） */
+    x: z.number(),
+    y: z.number(),
+    /** 地图坐标（左上角） */
+    mapX: z.number(),
+    mapY: z.number(),
+    /** 区域号标签位置（纸片内像素） */
+    label: z.tuple([Int, Int]),
+    /** 配准得分（归一化互相关），偏低的位置需要人工确认 */
+    score: z.number(),
+  })
+  .strict();
+export const MapStage = z
+  .object({
+    id: Int,
+    name: Text,
+    group: z.enum(['field', 'special', 'base']),
+    /** 雷达单位 / 纸片像素 */
+    scale: z.number().positive(),
+    layers: Int.min(1),
+    bounds: z.tuple([z.number(), z.number(), z.number(), z.number()]),
+    thumb: z.string().nullable(),
+    patches: z.array(MapPatch).min(1),
+    _src: z.record(z.string(), z.string()),
+  })
+  .strict();
+export const Maps = z.object({ stages: z.array(MapStage) }).strict();
+export type MapPatch = z.infer<typeof MapPatch>;
+export type MapStage = z.infer<typeof MapStage>;
+
 export type Meta = z.infer<typeof Meta>;
 export type Colors = z.infer<typeof Colors>;
 export type Item = z.infer<typeof Item>;

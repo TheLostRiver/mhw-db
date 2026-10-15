@@ -12,6 +12,7 @@ import type {
   Item,
   Lang,
   Mantle,
+  MapStage,
   Meta,
   Skill,
   Weapon,
@@ -45,6 +46,7 @@ export const loadMantles = () => read<{ mantles: Mantle[] }>('mantles.json').man
 export const loadWeapons = (type: WeaponType) => read<{ weapons: Weapon[] }>(`weapons/${type}.json`).weapons;
 export const loadWeaponCustom = () => read<WeaponCustom>('weapon-custom.json');
 export const loadConstants = () => read<Constants>('constants.json');
+export const loadMaps = () => read<{ stages: MapStage[] }>('maps.json').stages;
 
 /** 取某语言文本，缺失时退回简中 */
 export const pick = (t: { [K in Lang]?: string | undefined } | undefined, lang: Lang): string =>

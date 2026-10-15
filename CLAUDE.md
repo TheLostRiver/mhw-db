@@ -60,7 +60,7 @@ Python（uv）数据管线、zod 校验、Rust→WASM 配装求解、Konva、Lea
 ```bash
 pnpm dev / pnpm build / pnpm verify / pnpm e2e        # 站点（site/）
 cd pipeline && uv run pytest && uv run ruff check .    # 管线
-uv run mhdb config | fonts | extract | parse | images | diff
+uv run mhdb config | fonts | extract | parse | images | maps | diff
 ```
 
 - 设计令牌与主题见 `docs/DESIGN.md`。**配装器与装备界面要贴近游戏 UI**（用游戏图标、镶嵌槽、技能格），

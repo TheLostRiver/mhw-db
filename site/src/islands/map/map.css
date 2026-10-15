@@ -1,0 +1,380 @@
+/* 大地图查看器。地图本体沿用游戏的羊皮纸配色（不随站点主题变），侧栏跟随站点主题。 */
+
+.mv {
+  --mv-ink: #3b2614;
+  --mv-paper: #efe2bf;
+  --mv-paper-2: #d9c697;
+  --mv-mark: #b5401f;
+  --mv-height: clamp(420px, calc(100dvh - 220px), 860px);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 240px;
+  gap: var(--space-4);
+}
+
+.mv__stage {
+  position: relative;
+  height: var(--mv-height);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: #2a1e12 url('/assets/game/world/maps/parchment.webp') repeat;
+  background-size: 384px;
+  box-shadow:
+    inset 0 0 0 1px rgb(0 0 0 / 0.5),
+    0 1px 0 var(--c-line);
+}
+
+/* 四周压暗，像游戏地图窗口的边缘 */
+.mv__stage::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  box-shadow: inset 0 0 90px 10px rgb(20 12 4 / 0.75);
+  z-index: 500;
+}
+
+.mv__map {
+  position: absolute;
+  inset: 0;
+  background: transparent;
+  font: inherit;
+}
+
+.mv__map.leaflet-container {
+  background: transparent;
+  outline-offset: -3px;
+}
+
+.mv .mv-patch {
+  transition:
+    opacity var(--dur-base) var(--ease-standard),
+    filter var(--dur-base) var(--ease-standard);
+}
+
+.mv .mv-patch[data-state='below'] {
+  filter: brightness(0.42) saturate(0.6);
+}
+
+.mv .mv-patch[data-state='above'] {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.mv .mv-patch[data-state='current'][data-active] {
+  filter: brightness(1.08) drop-shadow(0 0 10px rgb(255 236 180 / 0.55));
+}
+
+/* 区域号：墨线圆章 */
+.mv .mv-area {
+  display: grid;
+  place-items: center;
+  transition:
+    opacity var(--dur-base) var(--ease-standard),
+    transform var(--dur-fast) var(--ease-out);
+}
+
+.mv .mv-area span {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, var(--mv-paper), var(--mv-paper-2));
+  border: 2px solid var(--mv-ink);
+  box-shadow:
+    0 0 0 2px rgb(239 226 191 / 0.55),
+    0 2px 6px rgb(0 0 0 / 0.45);
+  color: var(--mv-ink);
+  font: 800 15px/1 var(--font-display);
+  font-variant-numeric: tabular-nums;
+}
+
+.mv[data-far] .mv-area span {
+  width: 22px;
+  height: 22px;
+  border-width: 1.5px;
+  font-size: 12px;
+}
+
+.mv .mv-area[data-state='hidden'] {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.mv .mv-area[data-active] {
+  transform: scale(1.15);
+}
+
+.mv .mv-area[data-active] span {
+  background: var(--mv-ink);
+  color: var(--mv-paper);
+}
+
+/*
+ * 楼层切换：零件取自 map.gui 的 a_layer / layerBase。布局里的顶点色是灰 120 → 选中 212,144,64、描边 212,140,40，
+ * 游戏画面上显得更亮（界面有额外的提亮），这里按游戏截图取色。
+ */
+.mv__layers {
+  --ui-dia: url('/assets/game/world/ui/layer-diamond.webp');
+  --ui-glow: url('/assets/game/world/ui/layer-glow.webp');
+  --ui-chev: url('/assets/game/world/ui/layer-chevron.webp');
+  --ui-disc: url('/assets/game/world/ui/layer-disc.webp');
+  position: absolute;
+  top: 50%;
+  right: var(--space-3);
+  z-index: 600;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 6px 4px;
+  border-radius: 14px;
+  background: rgb(0 0 0 / 0.62);
+  transform: translateY(-50%);
+}
+
+.mv__layer-list {
+  display: flex;
+  flex-direction: column;
+  padding-block: 6px 10px;
+}
+
+.mv__chev {
+  width: 32px;
+  height: 16px;
+  margin-inline: auto;
+  border: 0;
+  padding: 0;
+  background: rgb(150 150 150);
+  -webkit-mask: var(--ui-chev) center / 100% 100% no-repeat;
+  mask: var(--ui-chev) center / 100% 100% no-repeat;
+  cursor: pointer;
+  transition:
+    background-color var(--dur-fast),
+    opacity var(--dur-fast);
+}
+
+.mv__chev--down {
+  transform: scaleY(-1);
+}
+
+.mv__chev:hover:not(:disabled) {
+  background: rgb(230 230 230);
+}
+
+.mv__chev:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.mv__chev:focus-visible {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 2px;
+}
+
+.mv__layer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 21px;
+  padding: 0 8px 0 2px;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+/* 菱形比按钮高、上下叠在一起，点击只认按钮本身 */
+.mv__dia,
+.mv__lnum {
+  pointer-events: none;
+}
+
+.mv__dia {
+  position: relative;
+  width: 46px;
+  height: 27px;
+  --dia: rgb(178 178 178);
+}
+
+/* 选中时外圈的描边（游戏里是从 70×54 收回 56×40 的动画） */
+.mv__dia::before {
+  content: '';
+  position: absolute;
+  inset: -3px -5px;
+  background: rgb(255 168 32);
+  -webkit-mask: var(--ui-glow) center / 100% 100% no-repeat;
+  mask: var(--ui-glow) center / 100% 100% no-repeat;
+  opacity: 0;
+  transform: scale(1.25);
+  transition:
+    opacity var(--dur-base) var(--ease-out),
+    transform var(--dur-base) var(--ease-out);
+}
+
+/* 菱形本体：白底黑边的贴图乘上颜色，黑边保留 */
+.mv__dia::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    var(--ui-dia) center / 100% 100% no-repeat,
+    var(--dia);
+  background-blend-mode: multiply;
+  -webkit-mask: var(--ui-dia) center / 100% 100% no-repeat;
+  mask: var(--ui-dia) center / 100% 100% no-repeat;
+  transition: background-color var(--dur-base);
+}
+
+.mv__lnum {
+  position: relative;
+  width: 16px;
+  color: rgb(160 160 160);
+  font: 800 19px/1 var(--font-display);
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 6px rgb(0 0 0 / 0.9);
+  transition: color var(--dur-base);
+}
+
+.mv__layer:hover .mv__dia {
+  --dia: rgb(205 205 205);
+}
+
+.mv__layer[aria-checked='true'] {
+  z-index: 1;
+}
+
+.mv__layer[aria-checked='true'] .mv__dia {
+  --dia: rgb(250 176 40);
+}
+
+.mv__layer[aria-checked='true'] .mv__dia::before {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.mv__layer[aria-checked='true'] .mv__lnum {
+  color: #fff;
+}
+
+.mv__layer:focus-visible {
+  outline: none;
+}
+
+.mv__layer:focus-visible .mv__lnum {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* 缩放按钮配成羊皮纸色 */
+.mv .leaflet-control-zoom {
+  border: none;
+  box-shadow: 0 0 0 1px rgb(239 226 191 / 0.25);
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 0 var(--space-3) var(--space-3) 0;
+}
+
+.mv .leaflet-control-zoom a {
+  width: 34px;
+  height: 34px;
+  line-height: 34px;
+  background: rgb(30 20 10 / 0.78);
+  color: var(--mv-paper);
+  border-color: rgb(239 226 191 / 0.18);
+}
+
+.mv .leaflet-control-zoom a:hover {
+  background: rgb(60 40 20 / 0.9);
+}
+
+/* 侧栏：区域列表 */
+.mv__side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  max-height: var(--mv-height);
+  overflow: auto;
+  padding: var(--space-3);
+  border-radius: var(--radius);
+  background: var(--c-surface);
+  box-shadow: inset 0 0 0 1px var(--c-line);
+}
+
+.mv__group-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: var(--space-2);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--c-text-2);
+  transition: color var(--dur-fast);
+}
+
+.mv__group[data-current] .mv__group-head {
+  color: var(--c-text);
+}
+
+.mv__areas {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(36px, 1fr));
+  gap: 6px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* 区域号按钮：与地图上的圆章同一造型 */
+.mv__area {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1.5px solid var(--c-line-strong);
+  background: var(--c-surface-2);
+  color: var(--c-text);
+  font: 700 14px/1 var(--font-num);
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  transition:
+    background-color var(--dur-fast),
+    border-color var(--dur-fast),
+    color var(--dur-fast);
+}
+
+.mv__area:hover {
+  border-color: var(--c-text-2);
+}
+
+.mv__area[data-active] {
+  background: var(--c-text);
+  border-color: var(--c-text);
+  color: var(--c-bg);
+}
+
+.mv__area:focus-visible {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 2px;
+}
+
+@media (max-width: 900px) {
+  .mv {
+    grid-template-columns: 1fr;
+  }
+
+  .mv__side {
+    max-height: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mv .mv-patch,
+  .mv .mv-area,
+  .mv__dia::before,
+  .mv__dia::after,
+  .mv__lnum {
+    transition: none;
+  }
+}

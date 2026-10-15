@@ -22,7 +22,16 @@ patterns = [
 
   # 界面贴图
   '^/ui/(common|common_menu|equip|status|item_menu|note|map)/tex/.*\.tex$',
+  # 小地图（雷达）贴图与关卡的雷达参数
+  '^/ui/hud/tex/rtex/',
+  '^/ui/quest/tex/maptex/',
+  '^/stage/st\d+/common/etc/[^/]+\.radc$',
+  # 关卡布置（采集点、营地等）、UI 区域与采集抽选表
+  '^/stage/st\d+/common/set/[^/]+\.sobjl?$',
+  '^/stage/st\d+/common/zone/[^/]+_ui\.zon$',
+  '^/stage/st\d+/common/data/[^/]+\.itlot$',
+  '^/ui/map/[^/]+\.gsp$',
 
-  # 界面布局（.gui 引用贴图并给出精灵的裁切坐标；只取配装相关的画面）
-  '^/ui/(status|equip|common_menu)/[^/]+\.gui$',
+  # 界面布局（.gui 引用贴图并给出精灵的裁切坐标；只取配装与地图相关的画面）
+  '^/ui/(status|equip|common_menu|map|quest|hud)/[^/]+\.gui$',
 ]

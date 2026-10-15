@@ -1,0 +1,66 @@
+---
+import SiteLayout from '../../../layouts/SiteLayout.astro';
+import MapViewer from '../../../islands/map/MapViewer';
+import { loadMaps } from '../../../data/world/load';
+import type { MapStage } from '../../../data/world/schema';
+import { stageSlug } from '../../../lib/world/maps';
+
+export function getStaticPaths() {
+  return loadMaps().map((stage) => ({ params: { slug: stageSlug(stage) }, props: { stage } }));
+}
+
+interface Props {
+  stage: MapStage;
+}
+
+const { stage } = Astro.props;
+const areaCount = new Set(stage.patches.map((p) => p.area)).size;
+---
+
+<SiteLayout title={`${stage.name['zh-Hans']} · 地图`} current="maps" wide>
+  <nav class="crumbs b-label" aria-label="位置">
+    <a href="/world/maps/">地图</a>
+    <span aria-hidden="true">/</span>
+    <span>{stage.name['zh-Hans']}</span>
+  </nav>
+  <div class="page-head">
+    <h1>
+      {stage.name['zh-Hans']}
+      {stage.name.en && <span class="b-label">{stage.name.en}</span>}
+    </h1>
+    <p>
+      {areaCount} 个区域{stage.layers > 1 && `，分 ${stage.layers} 层`}
+      。滚轮或双指缩放，拖动平移；点区域列表里的编号跳到该区域{stage.layers > 1 && '，地图右侧切换楼层'}。
+    </p>
+  </div>
+  <MapViewer client:only="react" stage={stage} />
+</SiteLayout>
+
+<style>
+  .crumbs {
+    display: flex;
+    gap: var(--space-2);
+    margin-bottom: var(--space-2);
+  }
+
+  .crumbs a {
+    color: var(--c-text-2);
+  }
+
+  .page-head {
+    margin-bottom: var(--space-4);
+  }
+
+  .page-head h1 {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-3);
+    font-size: var(--text-2xl);
+    font-weight: 800;
+  }
+
+  .page-head p {
+    margin-top: var(--space-1);
+    color: var(--c-text-2);
+  }
+</style>

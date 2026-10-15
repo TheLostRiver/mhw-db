@@ -4,6 +4,7 @@ mhdb config     显示当前配置
 mhdb extract    解包 chunk → data-raw/world/
 mhdb parse      解析 → data/world/*.json
 mhdb images     贴图 → site/public/assets/game/
+mhdb maps       大地图纸片配准 → data/world/maps.json + site/public/assets/game/world/maps/
 mhdb diff       新旧数据差异报告
 mhdb fonts      标题字体子集化 → site/public/fonts/
 """
@@ -81,6 +82,18 @@ def cmd_images(_args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_maps(args: argparse.Namespace) -> int:
+    from mhdb.config import DATA, REPO
+    from mhdb.images.world_maps import build
+
+    raw = DATA_RAW / "world"
+    if not (raw / "ui/hud/hud_radar.gui").is_file():
+        print("缺少雷达布局文件，先运行 mhdb extract", file=sys.stderr)
+        return 1
+    build(raw, DATA / "world", REPO / "site/public/assets/game/world/maps", only=args.stage or None)
+    return 0
+
+
 def cmd_fonts(_args: argparse.Namespace) -> int:
     from mhdb.config import REPO
     from mhdb.fonts import collect_chars, default_roots, subset_font
@@ -113,6 +126,9 @@ def build_parser() -> argparse.ArgumentParser:
     sub.add_parser("images", help="由 UI 贴图生成图标 → site/public/assets/game/").set_defaults(
         func=cmd_images
     )
+    p_maps = sub.add_parser("maps", help="大地图纸片配准与导出")
+    p_maps.add_argument("stage", nargs="*", type=int, help="只重做这些关卡（如 104），其余沿用已有结果")
+    p_maps.set_defaults(func=cmd_maps)
     for name, desc in (("diff", "生成数据差异报告"),):
         sub.add_parser(name, help=desc).set_defaults(func=cmd_todo)
     sub.add_parser("fonts", help="标题字体子集化").set_defaults(func=cmd_fonts)

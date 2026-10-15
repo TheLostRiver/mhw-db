@@ -21,8 +21,11 @@ import texture2ddecoder
 MAGIC = b"TEX\0"
 HEADER_SIZE = 0xB8
 
-# 格式编号 → (名称, 每像素字节数)。0x1F：解码 decoration00_ID.tex 等 UI 图集，画面正确。
+# 格式编号 → (名称, 每像素字节数)。
+# 0x1F：解码 decoration00_ID.tex 等 UI 图集，画面正确。
+# 0x17：地图底图（ui/map/tex/maptex/*_BML_NOMIP），按 BC1 解码画面正确、按 BC4 只剩单通道。
 FORMATS: dict[int, tuple[str, float]] = {
+    0x17: ("BC1", 0.5),
     0x1F: ("BC7", 1.0),
 }
 
@@ -68,6 +71,8 @@ def decode(data: bytes) -> tuple[TexHeader, bytes]:
     raw = data[start : start + size]
     if name == "BC7":
         bgra = texture2ddecoder.decode_bc7(raw, head.width, head.height)
+    elif name == "BC1":
+        bgra = texture2ddecoder.decode_bc1(raw, head.width, head.height)
     else:  # pragma: no cover - FORMATS 里只有已实现的格式
         raise TexError(name)
     return head, _bgra_to_rgba(bgra)
