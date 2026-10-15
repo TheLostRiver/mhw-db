@@ -5,7 +5,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { Colors, Constants, FILES, LANGS, Maps, Meta, WeaponCustom } from './schema';
+import { Colors, Constants, FILES, LANGS, MapNodes, Maps, Meta, WeaponCustom } from './schema';
 
 const ROOT = new URL('../../../../data/world/', import.meta.url);
 const read = (rel: string): unknown => JSON.parse(readFileSync(fileURLToPath(new URL(rel, ROOT)), 'utf-8'));
@@ -23,6 +23,7 @@ describe('结构', () => {
     WeaponCustom.parse(read('weapon-custom.json'));
     Constants.parse(read('constants.json'));
     Maps.parse(read('maps.json'));
+    MapNodes.parse(read('map-nodes.json'));
   });
 
   for (const [file, { schema }] of Object.entries(FILES)) {
@@ -70,6 +71,29 @@ describe('引用完整', () => {
     for (const s of rows['skills.json'] ?? []) {
       for (const lv of s.levels as { unlockedBy?: { skill: number }[] }[]) {
         expect(missing((lv.unlockedBy ?? []).map((u) => u.skill))).toEqual([]);
+      }
+    }
+  });
+
+  it('地图标记的种类、物品、抽选表、区域都存在', () => {
+    const maps = new Map(Maps.parse(read('maps.json')).stages.map((s) => [s.id, s]));
+    for (const st of MapNodes.parse(read('map-nodes.json')).stages) {
+      const map = maps.get(st.id);
+      expect(map, `st${st.id} 不在 maps.json 里`).toBeDefined();
+      const kinds = new Map(st.kinds.map((k) => [k.key, k]));
+      const areas = new Set(map!.patches.map((p) => `${p.layer}/${p.area}`));
+      for (const n of st.nodes) {
+        expect(kinds.has(n.kind), `st${st.id} 的点引用了不存在的种类 ${n.kind}`).toBe(true);
+        if (n.layer !== null) expect(areas.has(`${n.layer}/${n.area}`), `st${st.id} ${n.kind}`).toBe(true);
+      }
+      for (const k of st.kinds) {
+        if (k.item !== null) expect(itemIds.has(k.item), `st${st.id} ${k.key} 的物品 ${k.item}`).toBe(true);
+        for (const rank of st.ranks) {
+          for (const i of k.lots) expect(st.lots[rank]?.[i], `st${st.id} ${rank} 抽选表 ${i}`).toBeDefined();
+        }
+      }
+      for (const rows of Object.values(st.lots)) {
+        for (const e of Object.values(rows).flat()) expect(itemIds.has(e.item), `抽选表物品 ${e.item}`).toBe(true);
       }
     }
   });

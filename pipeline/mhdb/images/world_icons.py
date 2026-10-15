@@ -2,7 +2,7 @@
 
 图集与格子编号见 docs/DATA.md「界面图标」，都已与游戏画面核对：
   cmn_item00   64px 网格：技能徽章 96；饰品宝石 66/67/68/72（1–4 级）；防具 144–148；护石 149；
-               衣装 112、烟筒 113；武器 160–173
+               衣装 112、烟筒 113；武器 160–173；物品按 itemData 的图标编号与颜色全部输出（item/）
   cmn_status00 64px 网格：攻击、会心、属性等状态图标（彩色，原样输出）
   common00     非网格：镶嵌槽框与宝石，按坐标裁切
   equip_egc    非网格：自定义强化的格数六边形
@@ -168,6 +168,12 @@ def build(raw: Path, data: Path, out: Path, log=print) -> int:
         save(_square(egc.crop(box)), f"augment/hex-{name}.webp")
     for name, cell in AUGMENT_ICON.items():
         save(grid_cell(status, cell), f"augment/{name}.webp")
+
+    # 物品：按图标 × 颜色（乘法着色，与游戏道具栏的颜色一致），地图标记与采集物列表用
+    for icon_id, color in sorted(
+        {(i["icon"]["id"], i["icon"]["color"]) for i in load("items.json")["items"]}
+    ):
+        save(tint(grid_cell(item, icon_id), icon_colors[color]), f"item/{icon_id}-{color}.webp")
 
     # 衣装 / 烟筒
     for m in load("mantles.json")["mantles"]:

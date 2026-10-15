@@ -145,3 +145,23 @@ WEAPON_TYPES = [
     ("hbg", "heavy-bowgun", "hbg", True),
     ("lbg", "light-bowgun", "lbg", True),
 ]
+
+# 采集点基础参数（common/item/pop_base.ppm，87 行）：物件公共参数 gimmick.gcd 的「采集类型」指向这里的行号。
+# kind：0 物品由布置文件指定（mPickItem）、1 固定物品、2 / 4 抽选表（骨冢、特产 / 矿脉，采集 3 次）、6 搬运物（蛋等）；
+# 其余取值含义未确认。respawn：复活秒数（药草 180、矿脉骨冢 300），未与游戏内核对。
+POP_BASE = spec(
+    "pop_base.ppm",
+    "gather_min:B gather_max:B kind:B respawn:f item_id:I count_min:B count_max:B",
+)
+
+# 物品抽选表（*.itlot，Blowfish 加密）：每行 10 个物品、各自数量、权重（百分比）、采集 / 剥取动作。
+# 布局参照 MHW-Editor 的 itlot.bt（无许可证，只读作格式文档）。
+ITEM_LOT = spec(
+    "itlot",
+    " ".join(
+        [f"item_{i}:H" for i in range(10)]
+        + [f"count_{i}:B" for i in range(10)]
+        + [f"weight_{i}:B" for i in range(10)]
+        + [f"anim_{i}:B" for i in range(10)]
+    ),
+)

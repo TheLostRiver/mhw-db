@@ -1,20 +1,39 @@
 ---
 import SiteLayout from '../../../layouts/SiteLayout.astro';
 import MapViewer from '../../../islands/map/MapViewer';
-import { loadMaps } from '../../../data/world/load';
-import type { MapStage } from '../../../data/world/schema';
+import { loadItems, loadMapNodes, loadMaps } from '../../../data/world/load';
+import type { MapNodeStage, MapStage } from '../../../data/world/schema';
 import { stageSlug } from '../../../lib/world/maps';
+import type { MapItems } from '../../../lib/world/mapNodes';
 
 export function getStaticPaths() {
-  return loadMaps().map((stage) => ({ params: { slug: stageSlug(stage) }, props: { stage } }));
+  const nodes = new Map(loadMapNodes().map((s) => [s.id, s]));
+  const items = loadItems();
+  return loadMaps().map((stage) => {
+    const st = nodes.get(stage.id) ?? null;
+    // 只把这张图用到的物品（固定物品、抽选表里的物品）交给地图岛
+    const used = new Set<number>();
+    for (const k of st?.kinds ?? []) if (k.item !== null) used.add(k.item);
+    for (const rows of Object.values(st?.lots ?? {}))
+      for (const e of Object.values(rows).flat()) used.add(e.item);
+    const subset: MapItems = Object.fromEntries(
+      items
+        .filter((i) => used.has(i.id))
+        .map((i) => [i.id, { name: i.name['zh-Hans'], icon: i.icon.id, color: i.icon.color }]),
+    );
+    return { params: { slug: stageSlug(stage) }, props: { stage, nodes: st, items: subset } };
+  });
 }
 
 interface Props {
   stage: MapStage;
+  nodes: MapNodeStage | null;
+  items: MapItems;
 }
 
-const { stage } = Astro.props;
+const { stage, nodes, items } = Astro.props;
 const areaCount = new Set(stage.patches.map((p) => p.area)).size;
+const nodeCount = nodes?.nodes.filter((n) => n.layer !== null).length ?? 0;
 ---
 
 <SiteLayout title={`${stage.name['zh-Hans']} · 地图`} current="maps" wide>
@@ -30,10 +49,11 @@ const areaCount = new Set(stage.patches.map((p) => p.area)).size;
     </h1>
     <p>
       {areaCount} 个区域{stage.layers > 1 && `，分 ${stage.layers} 层`}
-      。滚轮或双指缩放，拖动平移；点区域列表里的编号跳到该区域{stage.layers > 1 && '，地图右侧切换楼层'}。
+      {nodeCount > 0 && `，${nodeCount} 个采集节点`}
+      。滚轮或双指缩放，拖动平移；点标记查看采集物与概率{stage.layers > 1 && '，地图左上角切换楼层'}。
     </p>
   </div>
-  <MapViewer client:only="react" stage={stage} />
+  <MapViewer client:only="react" stage={stage} nodes={nodes} items={items} />
 </SiteLayout>
 
 <style>

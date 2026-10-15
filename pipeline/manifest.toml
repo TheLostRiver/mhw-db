@@ -8,7 +8,9 @@ patterns = [
 
   # 装备、物品、玩家、随从、设施、怪物公共参数
   '^/common/equip/',
-  '^/common/item/(itemData\.itm|itemMake\.imk|itemMakeType\.imt|skillGemParam\.sgpa|itemList\.itlist)$',
+  '^/common/item/(itemData\.itm|itemMake\.imk|itemMakeType\.imt|skillGemParam\.sgpa|itemList\.itlist|pop_base\.ppm)$',
+  # 物件（采集点等）的公共参数
+  '^/common/gimmick/gimmick\.gcd$',
   '^/common/pl/',
   '^/common/otomo/',
   '^/common/facility/',

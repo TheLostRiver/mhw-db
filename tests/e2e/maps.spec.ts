@@ -1,8 +1,9 @@
 import { expect, test, type Page } from '@playwright/test';
 
 /**
- * 地图 v0：列表页、大地图页能加载；纸片与区域号都画出来；楼层切换与区域跳转可用。
- * 纸片图片由管线本机生成（不入库），缺图时测试会报 404 控制台错误。
+ * 地图：列表页、大地图页能加载；纸片、区域号、采集节点都画出来；楼层切换、区域跳转、
+ * 节点筛选、环境状态、节点检视可用。
+ * 纸片与物品图标由管线本机生成（不入库），缺图时测试会报 404 控制台错误。
  */
 
 const watchErrors = (page: Page) => {
@@ -51,7 +52,59 @@ test('楼层切换与区域跳转', async ({ page }) => {
   await expect(page.locator(".mv-area[data-state='current']")).toHaveCount(2);
   await expect(page.locator("img.mv-patch[data-state='below']")).toHaveCount(15);
   // 点区域列表里的 13 区：切到它所在的层
+  await page.getByRole('tab', { name: '区域' }).click();
   await page.getByRole('button', { name: '13 区' }).click();
   await expect(layers.getByRole('radio', { name: '2' })).toHaveAttribute('aria-checked', 'true');
   await expect(page.locator(".mv-area[data-state='current']")).toHaveCount(3);
+});
+
+test('采集节点：筛选、环境状态、节点检视', async ({ page }) => {
+  const errors = watchErrors(page);
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/world/maps/ancient-forest/', { waitUntil: 'networkidle' });
+  const markers = page.locator('.mv-node');
+  const all = await markers.count();
+  expect(all, '地面层应画出采集节点').toBeGreaterThan(100);
+
+  // 只看矿脉：清空后勾选「矿脉」种类
+  await page.getByRole('button', { name: '清空' }).click();
+  await expect(markers).toHaveCount(0);
+  await page.getByRole('radio', { name: '矿脉' }).click();
+  await page
+    .getByRole('button', { name: /^矿脉.*铁矿石|^矿脉.*绯鸢石/ })
+    .first()
+    .click();
+  const mining = await markers.count();
+  expect(mining).toBeGreaterThan(5);
+  expect(mining).toBeLessThan(all);
+
+  // 矿脉增殖中：地图上多出带绿圈的节点
+  await page.getByRole('tab', { name: '环境状态' }).click();
+  await page.getByRole('radio', { name: /矿脉增殖中/ }).click();
+  await expect(page.locator('.mv-node__icon[data-extra]').first()).toBeAttached();
+  expect(await markers.count()).toBeGreaterThan(mining);
+  await expect(page.locator('.mv__env')).toHaveText(/矿脉增殖中/);
+
+  // 点一个节点：右栏显示抽选表；切到下位，表里换成下位矿石
+  // 标记互相叠着、也可能在可视范围外：直接给 Leaflet 的标记元素派发点击
+  await page.locator('.mv-node').first().dispatchEvent('click');
+  const detail = page.getByRole('article', { name: '所选节点' });
+  await expect(detail.getByRole('heading', { name: '矿脉' })).toBeVisible();
+  await page.getByRole('radio', { name: '下位' }).click();
+  await expect(detail.getByRole('table')).toContainText('铁矿石');
+  await detail.getByRole('button', { name: '同类的下一处' }).click();
+  await expect(detail).toContainText(/同类 2 \/ \d+/);
+  expect(errors, '不应有控制台错误').toEqual([]);
+});
+
+test('采集节点：按素材搜索', async ({ page }) => {
+  await page.goto('/world/maps/ancient-forest/', { waitUntil: 'networkidle' });
+  // 默认大师级：大师的矿脉出绯鸢石
+  await page.getByRole('searchbox', { name: '搜索采集物' }).fill('绯鸢石');
+  const rows = page.locator('.mv-kind');
+  await expect(rows.first()).toContainText('矿脉');
+  for (const text of await rows.allTextContents()) expect(text).toContain('绯鸢石');
+  // 下位、上位才有的素材：提示切换等级
+  await page.getByRole('searchbox', { name: '搜索采集物' }).fill('燕雀石');
+  await expect(page.locator('.mv-empty')).toContainText('下位、上位的抽选表里有');
 });

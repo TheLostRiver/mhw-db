@@ -424,6 +424,68 @@ export const Maps = z.object({ stages: z.array(MapStage) }).strict();
 export type MapPatch = z.infer<typeof MapPatch>;
 export type MapStage = z.infer<typeof MapStage>;
 
+/**
+ * 大地图标记（map-nodes.json）：采集点等，由 pipeline/mhdb/build/world_nodes.py 从关卡布置文件导出。
+ * 坐标与 maps.json 相同（纸片像素）。
+ */
+export const RANKS = ['low', 'high', 'master'] as const;
+export const Rank = z.enum(RANKS);
+const LotEntry = z
+  .object({ item: Int.positive(), count: Int.min(1), weight: Int.min(0) })
+  .strict();
+export const MapNodeKind = z
+  .object({
+    /** 物件名，如 gm000_010_00 */
+    key: z.string(),
+    category: z.enum(['gather', 'mining', 'bonepile', 'specialty', 'carry', 'other']),
+    /** 物件名称（矿脉、骨冢、特产）；采集点没有，用物品名 */
+    name: Text.nullable(),
+    /** 固定物品 */
+    item: Int.positive().nullable(),
+    /** 抽选表行号（关卡 itlot），通常 / 第二组（用途未确认） */
+    lots: z.array(Int.min(0)),
+    /** 采集次数 */
+    gathers: Int.min(0),
+    /** 再生秒数（pop_base 的字段，含义按数值推断，未与游戏内计时核对） */
+    respawn: z.number().min(0),
+    total: Int.min(1),
+    _src: z.object({ gimmick: z.string(), pop: z.string() }).strict(),
+  })
+  .strict();
+export const MapNode = z
+  .object({
+    kind: z.string(),
+    x: z.number(),
+    y: z.number(),
+    /** 世界坐标高度 */
+    h: Int,
+    /** 物件的 floor 字段（多与雷达层一致） */
+    floor: Int,
+    /** 所在纸片的楼层与区域号；落在地图之外时为 null */
+    layer: Int.min(0).nullable(),
+    area: Int.min(1).nullable(),
+    /** 只在这个环境状态（cm_quest 文本序号）下出现；常驻为 null */
+    state: Int.nullable(),
+    _src: z.object({ file: z.string().startsWith('stage/') }).strict(),
+  })
+  .strict();
+export const MapNodeStage = z
+  .object({
+    id: Int,
+    ranks: z.array(Rank).min(1),
+    states: z.array(z.object({ id: Int, name: Text }).strict()).min(1),
+    lots: z.partialRecord(Rank, z.record(z.string(), z.array(LotEntry))),
+    _src: z.object({ lots: z.partialRecord(Rank, z.string()) }).strict(),
+    kinds: z.array(MapNodeKind).min(1),
+    nodes: z.array(MapNode).min(1),
+  })
+  .strict();
+export const MapNodes = z.object({ stages: z.array(MapNodeStage) }).strict();
+export type Rank = z.infer<typeof Rank>;
+export type MapNodeKind = z.infer<typeof MapNodeKind>;
+export type MapNode = z.infer<typeof MapNode>;
+export type MapNodeStage = z.infer<typeof MapNodeStage>;
+
 export type Meta = z.infer<typeof Meta>;
 export type Colors = z.infer<typeof Colors>;
 export type Item = z.infer<typeof Item>;

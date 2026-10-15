@@ -1,22 +1,37 @@
 /**
  * 大地图查看器：把各区域的羊皮纸纸片按管线配准的位置摆在 Leaflet 平面坐标里（CRS.Simple），
  * 楼层切换时高层纸片淡入、低层压暗，和游戏地图的层切换一致。
+ * 采集点等标记用游戏的物品图标画在地图上，左栏筛选种类 / 环境状态，右栏查看所选节点的采集物与概率。
  */
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { MapPatch, MapStage } from '../../data/world/schema';
-import { labelPoint, layerName, patchUrl } from '../../lib/world/maps';
+import type { MapNodeStage, MapPatch, MapStage, Rank } from '../../data/world/schema';
+import { labelPoint, patchUrl } from '../../lib/world/maps';
+import {
+  RANK_LABEL,
+  itemIconUrl,
+  kindName,
+  mainItem,
+  nodeVisibleIn,
+  type MapItems,
+} from '../../lib/world/mapNodes';
+import NodeFilters, { type Tab } from './NodeFilters';
+import NodeInspector, { NodeDetail } from './NodeInspector';
 import './map.css';
 
 interface Props {
   stage: MapStage;
+  nodes: MapNodeStage | null;
+  items: MapItems;
 }
 
 /** 低于这个缩放级别用半尺寸纸片（屏幕上每个纸片像素小于约 0.7 个 CSS 像素） */
 const HALF_BELOW = -0.5;
-/** 低于这个缩放级别区域号圆章缩小，免得在小屏上挤在一起 */
+/** 低于这个缩放级别区域号圆章与标记缩小，免得在小屏上挤在一起 */
 const FAR_BELOW = -1.25;
+/** 窄屏：节点详情浮在地图上，而不是放在右栏 */
+const NARROW = '(max-width: 900px)';
 
 const toLatLng = (x: number, y: number): L.LatLngTuple => [-y, x];
 const patchBounds = (p: MapPatch): L.LatLngBoundsExpression => [
@@ -25,21 +40,57 @@ const patchBounds = (p: MapPatch): L.LatLngBoundsExpression => [
 ];
 const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-export default function MapViewer({ stage }: Props) {
+function useMedia(query: string): boolean {
+  const [on, setOn] = useState(() => window.matchMedia(query).matches);
+  useEffect(() => {
+    const mq = window.matchMedia(query);
+    const update = () => setOn(mq.matches);
+    mq.addEventListener('change', update);
+    return () => mq.removeEventListener('change', update);
+  }, [query]);
+  return on;
+}
+
+export default function MapViewer({ stage, nodes, items }: Props) {
   const el = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const overlays = useRef(new Map<string, L.ImageOverlay>());
   const labels = useRef(new Map<string, L.Marker>());
+  const nodeLayer = useRef<L.LayerGroup | null>(null);
+  const markers = useRef(new Map<number, L.Marker>());
+  const narrow = useMedia(NARROW);
+
   const [layer, setLayer] = useState(0);
   const [half, setHalf] = useState(true);
   const [far, setFar] = useState(false);
   const [active, setActive] = useState<string | null>(null);
+  const [tab, setTab] = useState<Tab>('nodes');
+  const [rank, setRank] = useState<Rank>(nodes?.ranks.at(-1) ?? 'master');
+  const [envState, setEnvState] = useState<number>(nodes?.states[0]?.id ?? 0);
+  const [selectedKinds, setSelectedKinds] = useState<Set<string>>(
+    () => new Set(nodes?.kinds.map((k) => k.key) ?? []),
+  );
+  const [picked, setSelected] = useState<number | null>(null);
+  const [hoverKind, setHoverKind] = useState<string | null>(null);
 
   const patches = useMemo(
     () => [...stage.patches].sort((a, b) => a.layer - b.layer || a.letter.localeCompare(b.letter)),
     [stage],
   );
   const layers = useMemo(() => Array.from({ length: stage.layers }, (_, i) => i), [stage]);
+  const kinds = useMemo(() => new Map(nodes?.kinds.map((k) => [k.key, k]) ?? []), [nodes]);
+
+  /** 当前环境状态下出现、且落在地图上的点（下标） */
+  const visible = useMemo(
+    () => (nodes?.nodes ?? []).flatMap((n, i) => (n.layer !== null && nodeVisibleIn(n, envState) ? [i] : [])),
+    [nodes, envState],
+  );
+  const shown = useMemo(
+    () => visible.filter((i) => selectedKinds.has(nodes!.nodes[i]!.kind)),
+    [visible, selectedKinds, nodes],
+  );
+  // 选中的点被筛掉（换环境状态、取消种类）后视为没有选中
+  const selected = picked !== null && shown.includes(picked) ? picked : null;
 
   // 建图：只在换地图时重建
   useEffect(() => {
@@ -83,28 +134,34 @@ export default function MapViewer({ stage }: Props) {
         }),
         title: `${p.area} 区`,
         keyboard: false,
+        zIndexOffset: -1000,
       }).addTo(map);
       marker.on('mouseover', () => setActive(p.letter));
       marker.on('mouseout', () => setActive((a) => (a === p.letter ? null : a)));
       labels.current.set(p.letter, marker);
     }
+    nodeLayer.current = L.layerGroup().addTo(map);
 
     const onZoom = () => {
       setHalf(map.getZoom() < HALF_BELOW);
       setFar(map.getZoom() < FAR_BELOW);
     };
     map.on('zoomend', onZoom);
+    map.on('click', () => setSelected(null));
     onZoom();
     const ro = new ResizeObserver(() => map.invalidateSize());
     ro.observe(node);
     const overlayMap = overlays.current;
     const labelMap = labels.current;
+    const markerMap = markers.current;
     return () => {
       ro.disconnect();
       map.remove();
       mapRef.current = null;
+      nodeLayer.current = null;
       overlayMap.clear();
       labelMap.clear();
+      markerMap.clear();
     };
   }, [stage, patches]);
 
@@ -134,97 +191,208 @@ export default function MapViewer({ stage }: Props) {
     }
   }, [active, patches]);
 
-  const focusPatch = useCallback((p: MapPatch) => {
-    setLayer(p.layer);
-    setActive(p.letter);
+  // 标记：只画当前楼层的点；图标随等级变（矿脉等取该等级抽选表里权重最高的物品）
+  useEffect(() => {
+    const group = nodeLayer.current;
+    if (!group || !nodes) return;
+    group.clearLayers();
+    markers.current.clear();
+    for (const i of shown) {
+      const n = nodes.nodes[i]!;
+      if (n.layer !== layer) continue;
+      const kind = kinds.get(n.kind)!;
+      const id = mainItem(kind, nodes, rank);
+      const item = id !== null ? items[id] : undefined;
+      const name = kindName(kind, nodes, rank, items);
+      const img = item
+        ? `<img src="${itemIconUrl(item)}" alt="" width="64" height="64" draggable="false">`
+        : '';
+      const marker = L.marker(toLatLng(n.x, n.y), {
+        icon: L.divIcon({
+          className: 'mv-node',
+          html: `<span class="mv-node__icon" data-cat="${kind.category}"${n.state !== null ? ' data-extra' : ''}>${img}</span>`,
+          iconSize: [28, 28],
+          iconAnchor: [14, 14],
+        }),
+        keyboard: false,
+        riseOnHover: true,
+      });
+      marker.bindTooltip(name, { direction: 'top', offset: [0, -12], className: 'mv-tip' });
+      marker.on('click', (e) => {
+        L.DomEvent.stopPropagation(e);
+        setSelected(i);
+      });
+      marker.addTo(group);
+      markers.current.set(i, marker);
+    }
+  }, [shown, layer, rank, nodes, kinds, items]);
+
+  // 选中的点、悬停的种类：改标记的属性，不重建
+  useEffect(() => {
+    for (const [i, m] of markers.current) {
+      const node = m.getElement();
+      if (!node) continue;
+      node.toggleAttribute('data-selected', i === selected);
+      node.toggleAttribute('data-dim', hoverKind !== null && nodes!.nodes[i]!.kind !== hoverKind);
+      if (i === selected) m.setZIndexOffset(1000);
+      else m.setZIndexOffset(0);
+    }
+  }, [selected, hoverKind, shown, layer, rank, nodes]);
+
+  const flyTo = useCallback((x: number, y: number) => {
     const map = mapRef.current;
     if (!map) return;
-    const target = toLatLng(...labelPoint(p));
+    const target = toLatLng(x, y);
     const zoom = Math.max(map.getZoom(), -0.5);
     if (reducedMotion()) map.setView(target, zoom);
     else map.flyTo(target, zoom, { duration: 0.6 });
   }, []);
 
-  const areas = useMemo(
-    () =>
-      layers.map((l) => ({
-        layer: l,
-        items: patches.filter((p) => p.layer === l).sort((a, b) => a.area - b.area),
-      })),
-    [layers, patches],
+  const focusPatch = useCallback(
+    (p: MapPatch) => {
+      setLayer(p.layer);
+      setActive(p.letter);
+      flyTo(...labelPoint(p));
+    },
+    [flyTo],
   );
+
+  const focusNode = useCallback(
+    (i: number) => {
+      const n = nodes?.nodes[i];
+      if (!n || n.layer === null) return;
+      setLayer(n.layer);
+      setSelectedKinds((s) => (s.has(n.kind) ? s : new Set(s).add(n.kind)));
+      setSelected(i);
+      flyTo(n.x, n.y);
+    },
+    [nodes, flyTo],
+  );
+
+  const stateName = nodes?.states.find((s) => s.id === envState)?.name['zh-Hans'];
+  const detail =
+    nodes && selected !== null ? (
+      <NodeDetail
+        stage={nodes}
+        layers={stage.layers}
+        index={selected}
+        rank={rank}
+        items={items}
+        siblings={visible.filter((i) => nodes.nodes[i]!.kind === nodes.nodes[selected]!.kind)}
+        onFocus={focusNode}
+        onClose={() => setSelected(null)}
+      />
+    ) : null;
 
   return (
     <div className="mv" data-far={far || undefined}>
-      <div className="mv__stage">
-        <div ref={el} className="mv__map" aria-label={`${stage.name['zh-Hans']}地图`} />
-        {stage.layers > 1 && (
-          <div className="mv__layers">
-            <button
-              type="button"
-              className="mv__chev"
-              aria-label="上一层"
-              disabled={layer === stage.layers - 1}
-              onClick={() => setLayer((l) => Math.min(stage.layers - 1, l + 1))}
-            />
-            {/* 和游戏一样高层在上：菱形叠放，当前层橙色、外圈描边 */}
-            <div className="mv__layer-list" role="radiogroup" aria-label="楼层">
-              {[...layers].reverse().map((l) => (
+      <div className="mv__center">
+        {nodes && (
+          <div className="mv__toolbar">
+            <div className="mv__ranks" role="radiogroup" aria-label="等级">
+              {nodes.ranks.map((r) => (
                 <button
-                  key={l}
+                  key={r}
                   type="button"
                   role="radio"
-                  aria-checked={l === layer}
-                  className="mv__layer"
-                  onClick={() => setLayer(l)}
+                  aria-checked={r === rank}
+                  className="mv-tab"
+                  onClick={() => setRank(r)}
                 >
-                  <span className="mv__dia" aria-hidden="true" />
-                  <span className="mv__lnum">{l + 1}</span>
+                  {RANK_LABEL[r]}
                 </button>
               ))}
             </div>
-            <button
-              type="button"
-              className="mv__chev mv__chev--down"
-              aria-label="下一层"
-              disabled={layer === 0}
-              onClick={() => setLayer((l) => Math.max(0, l - 1))}
-            />
+            <p className="mv__hint">
+              {shown.length} / {visible.length} 处 · 抽选表按{RANK_LABEL[rank]}显示
+            </p>
           </div>
         )}
+        <div className="mv__stage">
+          <div ref={el} className="mv__map" aria-label={`${stage.name['zh-Hans']}地图`} />
+          {stage.layers > 1 && (
+            <div className="mv__layers">
+              <button
+                type="button"
+                className="mv__chev"
+                aria-label="上一层"
+                disabled={layer === stage.layers - 1}
+                onClick={() => setLayer((l) => Math.min(stage.layers - 1, l + 1))}
+              />
+              {/* 和游戏一样高层在上：菱形叠放，当前层橙色、外圈描边 */}
+              <div className="mv__layer-list" role="radiogroup" aria-label="楼层">
+                {[...layers].reverse().map((l) => (
+                  <button
+                    key={l}
+                    type="button"
+                    role="radio"
+                    aria-checked={l === layer}
+                    className="mv__layer"
+                    onClick={() => setLayer(l)}
+                  >
+                    <span className="mv__dia" aria-hidden="true" />
+                    <span className="mv__lnum">{l + 1}</span>
+                  </button>
+                ))}
+              </div>
+              <button
+                type="button"
+                className="mv__chev mv__chev--down"
+                aria-label="下一层"
+                disabled={layer === 0}
+                onClick={() => setLayer((l) => Math.max(0, l - 1))}
+              />
+            </div>
+          )}
+          {nodes && stateName && (
+            <button
+              type="button"
+              className="mv__env"
+              data-on={envState !== nodes.states[0]?.id || undefined}
+              onClick={() => setTab('states')}
+              title="切换环境状态"
+            >
+              <span className="mv__env-dot" aria-hidden="true" />
+              {stateName}
+            </button>
+          )}
+          {narrow && detail && <div className="mv__float">{detail}</div>}
+        </div>
       </div>
 
-      <aside className="mv__side" aria-label="区域">
-        {areas.map(({ layer: l, items }) => (
-          <section key={l} className="mv__group" data-current={l === layer || undefined}>
-            {stage.layers > 1 && (
-              <h3 className="mv__group-head">
-                <span>{layerName(l)}</span>
-                <span className="b-label">{items.length} 区</span>
-              </h3>
-            )}
-            <ul className="mv__areas">
-              {items.map((p) => (
-                <li key={p.letter}>
-                  <button
-                    type="button"
-                    className="mv__area"
-                    aria-label={`${p.area} 区`}
-                    data-active={p.letter === active || undefined}
-                    onClick={() => focusPatch(p)}
-                    onMouseEnter={() => setActive(p.letter)}
-                    onMouseLeave={() => setActive((a) => (a === p.letter ? null : a))}
-                    onFocus={() => setActive(p.letter)}
-                    onBlur={() => setActive((a) => (a === p.letter ? null : a))}
-                  >
-                    {p.area}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </section>
-        ))}
-      </aside>
+      <NodeFilters
+        stage={stage}
+        nodes={nodes}
+        items={items}
+        rank={rank}
+        tab={tab}
+        onTab={setTab}
+        layer={layer}
+        visible={visible}
+        selectedKinds={selectedKinds}
+        onSelectKinds={setSelectedKinds}
+        onHoverKind={setHoverKind}
+        envState={envState}
+        onEnvState={setEnvState}
+        patches={patches}
+        activePatch={active}
+        onActivePatch={setActive}
+        onFocusPatch={focusPatch}
+      />
+
+      {nodes && (
+        <NodeInspector
+          stage={nodes}
+          layers={stage.layers}
+          layer={layer}
+          rank={rank}
+          items={items}
+          shown={shown}
+          detail={narrow ? null : detail}
+          onFocus={focusNode}
+          onHoverKind={setHoverKind}
+        />
+      )}
     </div>
   );
 }

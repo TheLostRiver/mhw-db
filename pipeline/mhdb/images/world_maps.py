@@ -274,6 +274,18 @@ def register(raw: Path, radar_gui: guifmt.Gui, stage: int, log=print) -> dict:
     return dict(scale=round(scale, 4), patches=patches)
 
 
+def patch_masks(raw: Path, stage: int, patches: list[dict]) -> dict[str, tuple[np.ndarray, np.ndarray]]:
+    """各纸片的 (每个像素离纸片边缘的距离（纸外为 0）, 可走区域)，用于判断地图上的点落在哪块纸片上、
+    以及核对点位是否落在路面上。"""
+    atlas = _rgba(raw, f"ui/map/tex/maptex/st{stage}/m_st{stage}_patch_ID.tex")
+    out = {}
+    for p in patches:
+        x, y, w, h = p["rect"]
+        a = atlas[y : y + h, x : x + w]
+        out[p["letter"]] = (ndimage.distance_transform_edt(a[..., 3] > 128), _walkable(a))
+    return out
+
+
 def _save_webp(img: Image.Image, path: Path, quality: int = 86) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     img.save(path, "WEBP", quality=quality, method=6)
