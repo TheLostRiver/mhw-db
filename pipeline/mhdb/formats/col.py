@@ -3,13 +3,14 @@
 结构（字段顺序参照 MHW-Editor 的 010 模板 col.bt——无许可证，只当格式文档读；代码为自写）：
 
   头：u32 0x18091001、"COL\\0"、u32 版本、u32、u32、u32 名字数
-  名字表：每条 名字 \\0（日文开发名，可为空）、i32 判定形状编号、i32 招式编号、i32、u16、u8、u32
+  名字表：每条 名字 \\0（日文开发名，可为空）、i32 判定形状编号、i32 攻击参数编号（-1 无）、i32、u16、u8、u32
   CLND / CLGM 段：判定形状（未解析，按标签跳过）
   ATK 段：u32 0x18091001、"ATK\\0"、u32 版本、u32 条数、u32 类型（1 近战、3 弹体）、随后定长记录
   OAP 段：结尾
 
-名字表的第 i 条与攻击参数的第 i 条对应（记录里的序号字段也等于 i）：双剑「斬り払いL(一段目)」→ 第 1 条，
-动作值 3、属性补正 0.6、异常补正 0.4、卡肉 0.04 秒，与游戏内常见数据一致（见 docs/DATA.md 3.4）。
+名字表的每一条是一个判定，用「攻击参数编号」指向 ATK 段的记录（记录里的序号字段等于它在段内的位置）。
+多个判定可以共用一条参数（如太刀「気刃踏み込み斬り」与它的「仲間当たり」），也有判定不带参数（编号 -1）、
+参数没有判定引用的情况，所以不能按位置对应：大剑「ジャンプ斬り」是第 17 条判定、第 16 条参数，动作值 48。
 
 近战记录（218 字节）用到的字段：序号、伤害类型（1 斩 2 打 3 弹，0 无）、动作值、固定伤害、部位耐久补正、
 属性补正、异常补正、眩晕值、减气值、骑乘值、软化值、怯缩值、心眼标志、两组卡肉（速度倍率、秒数）、
@@ -100,10 +101,32 @@ class Attack:
 
 
 @dataclass(frozen=True)
+class Entry:
+    name: str
+    node: int  # 判定形状编号，-1 无
+    attack: int  # 攻击参数编号，-1 无
+
+
+@dataclass(frozen=True)
 class Col:
-    names: list[str]
+    entries: list[Entry]
     kind: int  # 1 近战、3 弹体、0 没有攻击参数
     attacks: list[Attack]
+
+    @property
+    def names(self) -> list[str]:
+        return [e.name for e in self.entries]
+
+    def names_of(self, attack: int) -> list[str]:
+        """引用第 attack 条攻击参数的判定名（按名字表顺序，去掉空名与重复）。"""
+        return list(dict.fromkeys(e.name for e in self.entries if e.attack == attack and e.name))
+
+    def attack_of(self, name: str) -> Attack:
+        """按判定名找攻击参数（取第一条同名判定）。"""
+        e = next(e for e in self.entries if e.name == name)
+        if not 0 <= e.attack < len(self.attacks):
+            raise KeyError(f"判定「{name}」没有攻击参数")
+        return self.attacks[e.attack]
 
 
 def _type(v: int) -> int:
@@ -179,10 +202,11 @@ def parse(data: bytes) -> Col:
     if magic != MAGIC or tag != b"COL\0":
         raise ColError("不是 COL 文件")
     o = _HEAD.size
-    names = []
+    entries = []
     for _ in range(count):
         e = data.index(b"\0", o)
-        names.append(data[o:e].decode("utf-8"))
+        node, attack, *_ = _NAME_TAIL.unpack_from(data, e + 1)
+        entries.append(Entry(data[o:e].decode("utf-8"), node, attack))
         o = e + 1 + _NAME_TAIL.size
     a = data.find(b"ATK\0", o) - 4
     if a < 0:
@@ -192,7 +216,7 @@ def parse(data: bytes) -> Col:
         raise ColError("ATK 段的魔数不符")
     body = a + _ATK_HEAD.size
     if n == 0:
-        return Col(names, 0, [])
+        return Col(entries, 0, [])
     rec, build = {1: (_MELEE, _melee), 3: (_SHELL, _shell)}.get(kind, (None, None))
     if rec is None:
         raise ColError(f"未知的攻击参数类型 {kind}")
@@ -202,4 +226,6 @@ def parse(data: bytes) -> Col:
     attacks = [build(rec.unpack_from(data, body + i * rec.size)) for i in range(n)]
     if any(atk.index != i for i, atk in enumerate(attacks)):
         raise ColError("攻击参数的序号不连续")
-    return Col(names, kind, attacks)
+    if any(e.attack >= n for e in entries):
+        raise ColError("判定引用的攻击参数编号超出范围")
+    return Col(entries, kind, attacks)

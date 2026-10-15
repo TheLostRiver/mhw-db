@@ -18,7 +18,9 @@ export const Text = z
   .strict();
 const OptText = Text.partial();
 
-const Src = z.object({ file: z.string().startsWith('common/'), row: z.number().int().nonnegative() }).strict();
+const Src = z
+  .object({ file: z.string().startsWith('common/'), row: z.number().int().nonnegative() })
+  .strict();
 const Rarity = z.number().int().min(1).max(12);
 const SkillRef = z.object({ id: z.number().int().nonnegative(), level: z.number().int().min(1) }).strict();
 const Slots = z.array(z.number().int().min(1).max(4)).max(3);
@@ -173,7 +175,17 @@ export const Mantle = z
   })
   .strict();
 
-export const ELEMENTS = ['fire', 'water', 'ice', 'thunder', 'dragon', 'poison', 'paralysis', 'sleep', 'blast'] as const;
+export const ELEMENTS = [
+  'fire',
+  'water',
+  'ice',
+  'thunder',
+  'dragon',
+  'poison',
+  'paralysis',
+  'sleep',
+  'blast',
+] as const;
 const Element = z.object({ type: z.enum(ELEMENTS), value: z.number().int().positive() }).strict();
 
 export const Weapon = z
@@ -242,7 +254,15 @@ export const RANGED: ReadonlySet<WeaponType> = new Set(['bow', 'heavy-bowgun', '
 
 const Levels4 = z.array(z.number()).length(4);
 
-export const AUGMENT_CATEGORIES = ['extend', 'attack', 'affinity', 'defense', 'slot', 'health', 'element'] as const;
+export const AUGMENT_CATEGORIES = [
+  'extend',
+  'attack',
+  'affinity',
+  'defense',
+  'slot',
+  'health',
+  'element',
+] as const;
 export const AWAKENING_CATEGORIES = [
   'attack',
   'defense',
@@ -351,7 +371,16 @@ export const WeaponCustom = z
           /** 各武器种上的效果值（em104lbr）；旋律、炮击等种类没有加值，为 null */
           value: z
             .object({
-              kind: z.enum(['attack', 'defense', 'affinity', 'element', 'slotLevel', 'sharpness', 'status', 'ammo']),
+              kind: z.enum([
+                'attack',
+                'defense',
+                'affinity',
+                'element',
+                'slotLevel',
+                'sharpness',
+                'status',
+                'ammo',
+              ]),
               byWeapon: z.partialRecord(z.enum(WEAPON_TYPES), z.number().int().positive()),
             })
             .strict()
@@ -372,7 +401,10 @@ export const Constants = z
     critMultiplier: z.number().positive(),
     badCritMultiplier: z.number().positive(),
     sharpness: z
-      .object({ raw: z.array(z.number().positive()).length(7), element: z.array(z.number().positive()).length(7) })
+      .object({
+        raw: z.array(z.number().positive()).length(7),
+        element: z.array(z.number().positive()).length(7),
+      })
       .strict(),
     _src: z.object({ file: z.literal('exe'), note: z.string() }).strict(),
   })
@@ -432,9 +464,7 @@ export type MapStage = z.infer<typeof MapStage>;
  */
 export const RANKS = ['low', 'high', 'master'] as const;
 export const Rank = z.enum(RANKS);
-const LotEntry = z
-  .object({ item: Int.positive(), count: Int.min(1), weight: Int.min(0) })
-  .strict();
+const LotEntry = z.object({ item: Int.positive(), count: Int.min(1), weight: Int.min(0) }).strict();
 export const MapNodeKind = z
   .object({
     /** 物件名，如 gm000_010_00 */
@@ -496,7 +526,10 @@ export const MapNode = z
     campId: Int.min(0).optional(),
     label: Text.nullable().optional(),
     /** 环境生物、虫：出现范围的四个角（地图坐标），节点位置是它的中心 */
-    quad: z.array(z.tuple([z.number(), z.number()])).length(4).optional(),
+    quad: z
+      .array(z.tuple([z.number(), z.number()]))
+      .length(4)
+      .optional(),
     /** 钓点：能钓到的鱼（物品编号） */
     fish: z.array(Int.positive()).optional(),
     /** 寻宝：这一张的第几处（0 起） */
@@ -529,7 +562,7 @@ export type Decoration = z.infer<typeof Decoration>;
 export type Armor = z.infer<typeof Armor>;
 /**
  * 武器招式（moves.json）：hm/…/collision/*.col 的攻击参数，见 pipeline/mhdb/formats/col.py。
- * 名字为数据里的日文开发名（ja）与本站译名（zh，可能缺）。
+ * 名字为数据里的日文开发名（ja）与本站译名（zh，可能缺）；几个判定共用这条参数时，其余判定名在 aka。
  */
 export const MOVE_GROUPS = ['melee', 'shell', 'claw', 'hunter', 'item'] as const;
 export const Move = z
@@ -540,6 +573,7 @@ export const Move = z
     i: z.number().int().min(0),
     ja: z.string(),
     zh: z.string().nullable(),
+    aka: z.array(z.object({ ja: z.string(), zh: z.string().nullable() }).strict()).optional(),
     type: z.enum(['none', 'sever', 'blunt', 'shot']),
     mv: z.number(),
     fixed: z.number(),

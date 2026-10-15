@@ -45,6 +45,7 @@ export function moveNotes(m: Move): string[] {
   if (blast) out.push(`爆破 ${n(blast)}`);
   if (m.tranq) out.push(`捕获麻醉 ${n(m.tranq)}`);
   if (m.group === 'shell' && !m.mv && !m.fixed) out.push('伤害由另外的数值表决定（如铳枪炮击等级）');
+  if (m.aka?.length) out.push(`同一参数也用于：${m.aka.map((x) => x.zh ?? x.ja).join('、')}`);
   return out;
 }
 

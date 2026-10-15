@@ -109,7 +109,12 @@ const mod = (v: number) => (v === 1 ? 's-dim' : v > 1 ? 's-hot' : '');
           </thead>
           <tbody>
             {g.moves.map((m) => (
-              <tr data-move-row data-name={`${moveName(m)} ${m.ja}`.toLowerCase()}>
+              <tr
+                data-move-row
+                data-name={[moveName(m), m.ja, ...(m.aka ?? []).flatMap((x) => [x.zh ?? '', x.ja])]
+                  .join(' ')
+                  .toLowerCase()}
+              >
                 <td class="s-left mv-name">
                   <strong>{moveName(m)}</strong>
                   {m.zh && <small lang="ja">{m.ja}</small>}
@@ -139,7 +144,8 @@ const mod = (v: number) => (v === 1 ? 's-dim' : v > 1 ? 's-hot' : '');
   <p class="s-note">
     数据来源：<code>hm/wp/wpNN/collision/*.col</code>（攻击参数段，字段顺序参照 MHW-Editor
     的格式说明，代码自写），
-    双剑等招式的动作值、补正、卡肉已与常见数据表核对；「心眼」「槽增加」的含义按数值推断。
+    名字表里的判定按「攻击参数编号」指向参数，几个判定共用一条参数时合并为一行（备注列出其余名字）。
+    双剑、大剑、太刀等招式的动作值、补正、卡肉已与常见数据表核对；「心眼」「槽增加」的含义按数值推断。
     同一招在不同条件下的变化（如派生时跳过某一击）不在这份数据里，未列出。
   </p>
 </SiteLayout>

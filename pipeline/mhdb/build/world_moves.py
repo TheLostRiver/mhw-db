@@ -5,6 +5,8 @@
   hm/claw/…、hm/common/collision/hm_attack.col     通用：钩爪、骑乘小刀、踢等
   hm/common/shell/collision/object.col           通用弹体：投射器弹、投掷小刀、道具
 
+每条记录是一条攻击参数，名字取自引用它的判定（名字表里按「攻击参数编号」引用，不按位置对应，见 formats/col.py）；
+几个判定共用一条参数时，第一个作主名，其余记在 aka。没有判定引用的参数不输出。
 招式名是数据里的日文开发名，中文为本站译名（mhdb/games/world/move_names.tsv），页面同时给出原文。
 """
 
@@ -53,7 +55,10 @@ def _r(v: float) -> float:
     return round(v, 3)
 
 
-def _move(weapon: str, group: str, rel: str, i: int, name: str, a: col.Attack, zh: dict[str, str]) -> dict:
+def _move(
+    weapon: str, group: str, rel: str, i: int, names: list[str], a: col.Attack, zh: dict[str, str]
+) -> dict:
+    name = names[0] if names else ""
     m = {
         "weapon": weapon,
         "group": group,
@@ -76,6 +81,8 @@ def _move(weapon: str, group: str, rel: str, i: int, name: str, a: col.Attack, z
         "noSharp": a.no_sharpness,
         "energy": _r(a.energy),
     }
+    if len(names) > 1:
+        m["aka"] = [{"ja": n, "zh": zh.get(n)} for n in names[1:]]
     if a.hitstop_b != a.hitstop:
         m["hitstopB"] = _r(a.hitstop_b)
     if a.cond_mv:
@@ -109,13 +116,16 @@ def build_moves(s: Source, log=print) -> list[dict]:
             group = "shell"  # 操虫棍 wp10_01.col：猎虫的攻击记录是弹体格式
         kept = 0
         for i, a in enumerate(c.attacks):
-            name = c.names[i] if i < len(c.names) else ""
-            if _skip(name) or _inert(a):
+            refs = [e for e in c.entries if e.attack == i]
+            names = [n for n in c.names_of(i) if not _skip(n)]
+            # 没有判定引用的参数用不到；引用它的判定都是「未使用」「削除」的也不要
+            if not refs or (not names and any(e.name for e in refs)) or _inert(a):
                 continue
-            out.append(_move(weapon, group, rel, i, name, a, zh))
+            out.append(_move(weapon, group, rel, i, names, a, zh))
             kept += 1
         log(f"  {rel}：{len(c.attacks)} 条攻击参数，保留 {kept} 条")
-    missing = sorted({m["ja"] for m in out if m["ja"] and m["zh"] is None})
+    every = [m["ja"] for m in out] + [x["ja"] for m in out for x in m.get("aka", [])]
+    missing = sorted({n for n in every if n and n not in zh})
     if missing:
         log(f"  注意：{len(missing)} 个招式名没有译名：{missing[:10]}")
     return out
