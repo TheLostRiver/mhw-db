@@ -3,6 +3,7 @@
  * 手机上为底部抽屉。两种排版：list（单列，装备）与 grid（卡片网格，饰品 / 护石）。
  */
 import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from 'react';
+import Dropdown from './Dropdown';
 
 export interface PickerItem {
   id: number;
@@ -118,7 +119,8 @@ export default function Picker({
   const onKey = (e: React.KeyboardEvent) => {
     const inGrid = layout === 'grid';
     if (e.key === 'Escape') return onClose();
-    if (e.target instanceof HTMLSelectElement) return;
+    // 下拉框自己处理按键
+    if (e.target instanceof HTMLElement && e.target.closest('[role="combobox"]')) return;
     if (e.key === 'ArrowDown') move(columns());
     else if (e.key === 'ArrowUp') move(-columns());
     else if (inGrid && e.key === 'ArrowRight' && e.target !== input.current) move(1);
@@ -231,23 +233,16 @@ export default function Picker({
             )}
             {sorts && sorts.length > 1 && (
               <div className="gb-picker__sort">
-                <label>
-                  <span>排序</span>
-                  <select
-                    aria-label="排序方式"
-                    value={sort}
-                    onChange={(e) => {
-                      setSort(Number(e.target.value));
-                      setActive(0);
-                    }}
-                  >
-                    {sorts.map((s, i) => (
-                      <option key={s.key} value={i}>
-                        {s.label}
-                      </option>
-                    ))}
-                  </select>
-                </label>
+                <span aria-hidden="true">排序</span>
+                <Dropdown
+                  label="排序方式"
+                  value={sort}
+                  options={sorts.map((s, i) => ({ value: i, label: s.label }))}
+                  onChange={(v) => {
+                    setSort(v);
+                    setActive(0);
+                  }}
+                />
                 <button
                   type="button"
                   className="gb-chip"

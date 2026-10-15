@@ -221,3 +221,28 @@ test('自动配装：按技能搜索，应用方案后写回手动配装', async
   await expect(page.locator('.gb-equip')).not.toContainText(armorName);
   expect(errors).toEqual([]);
 });
+
+test('下拉框：键盘与鼠标都能选择，Esc 关闭不改值', async ({ page }) => {
+  await open(page);
+  await page.getByRole('tab', { name: /自动配装/ }).click();
+  const rarity = page.getByRole('combobox', { name: '防具 / 护石稀有度' });
+  await rarity.focus();
+  await page.keyboard.press('ArrowDown'); // 打开，停在当前值「不限」
+  await expect(rarity).toHaveAttribute('aria-expanded', 'true');
+  await page.keyboard.press('ArrowDown');
+  await page.keyboard.press('ArrowDown');
+  await page.keyboard.press('Enter');
+  await expect(rarity).toHaveAttribute('aria-expanded', 'false');
+  await expect(rarity).toContainText('R9 以上');
+
+  const limit = page.getByRole('combobox', { name: '最多列出' });
+  await limit.click();
+  await page.getByRole('listbox', { name: '最多列出' }).getByRole('option', { name: '5000 个方案' }).click();
+  await expect(limit).toContainText('5000 个方案');
+
+  await limit.click();
+  await page.keyboard.press('ArrowUp');
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('listbox')).toHaveCount(0);
+  await expect(limit).toContainText('5000 个方案');
+});

@@ -29,6 +29,7 @@ import {
   type WeaponCustom,
   type WeaponData,
 } from '../../lib/world/builder';
+import Dropdown from './Dropdown';
 import { GameIcon, iconUrl } from './icons';
 
 export const AUGMENT_NAMES: Record<AugmentCategory, string> = {
@@ -263,20 +264,24 @@ function HrAugmentPanel({
       <ol className="gb-parts">
         {Array.from({ length: slots }, (_, i) => (
           <li key={i}>
-            <label>
-              <span className="gb-parts__stage">第 {i + 1} 格</span>
-              <select
-                value={build.custom.hr[i] ?? ''}
-                onChange={(e) => set(i, (e.target.value || null) as HrAugment | null)}
-              >
-                <option value="">—</option>
-                {HR_AUGMENTS.map((a) => (
-                  <option key={a} value={a}>
-                    {HR_NAMES[a]}
-                  </option>
-                ))}
-              </select>
-            </label>
+            <span className="gb-parts__row">
+              <span className="gb-parts__stage" id={`gb-hr-${i}`}>
+                第 {i + 1} 格
+              </span>
+              <Dropdown<HrAugment | null>
+                labelledBy={`gb-hr-${i}`}
+                value={build.custom.hr[i] ?? null}
+                options={[
+                  { value: null, label: '—', text: '无' },
+                  ...HR_AUGMENTS.map((a) => ({
+                    value: a,
+                    label: HR_NAMES[a],
+                    icon: <GameIcon src={iconUrl.augment(a)} size={18} />,
+                  })),
+                ]}
+                onChange={(v) => set(i, v)}
+              />
+            </span>
           </li>
         ))}
       </ol>
@@ -449,20 +454,20 @@ function PartsPanel({
           const cur = build.custom.parts[i] ?? null;
           return (
             <li key={i}>
-              <label>
-                <span className="gb-parts__stage">阶段 {i + 1}</span>
-                <select
-                  value={cur ?? ''}
-                  onChange={(e) => setStage(i, e.target.value ? Number(e.target.value) : null)}
-                >
-                  <option value="">—</option>
-                  {opts.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.name}（{partEffectText(p.effect)}）
-                    </option>
-                  ))}
-                </select>
-              </label>
+              <span className="gb-parts__row">
+                <span className="gb-parts__stage" id={`gb-part-${i}`}>
+                  阶段 {i + 1}
+                </span>
+                <Dropdown<number | null>
+                  labelledBy={`gb-part-${i}`}
+                  value={cur}
+                  options={[
+                    { value: null, label: '—', text: '无' },
+                    ...opts.map((p) => ({ value: p.id, label: p.name, hint: partEffectText(p.effect) })),
+                  ]}
+                  onChange={(v) => setStage(i, v)}
+                />
+              </span>
             </li>
           );
         })}

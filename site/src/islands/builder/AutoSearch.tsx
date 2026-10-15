@@ -17,6 +17,7 @@ import {
   type WeaponData,
 } from '../../lib/world/builder';
 import { toSearchIndex, type SearchQuery, type SearchResult, type SearchStats } from '../../lib/world/search';
+import Dropdown, { type DropdownOption } from './Dropdown';
 import Picker, { type PickerItem } from './Picker';
 import { GameIcon, iconUrl } from './icons';
 import type { WorkerRequest, WorkerResponse } from './search.worker';
@@ -70,6 +71,29 @@ function loadConditions(): SearchConditions {
 
 type Picking = 'skill' | 'set' | 'armor' | 'charm' | 'deco' | null;
 type SortKey = 'default' | 'defense' | 'free';
+
+const SLOT_OPTIONS: DropdownOption<number>[] = [0, 1, 2, 3, 4].map((n) =>
+  n
+    ? { value: n, label: `${n} 级`, icon: <GameIcon src={iconUrl.socket(n)} size={18} alt="" /> }
+    : { value: 0, label: '—', text: '无' },
+);
+const RARITY_OPTIONS: DropdownOption<number>[] = [
+  { value: 0, label: '不限' },
+  ...[5, 9, 10, 11, 12].map((r) => ({
+    value: r,
+    label: `R${r} 以上`,
+    icon: <i className="gb-dd__rar" style={{ ['--rar' as string]: `var(--gb-rarity-${r})` }} />,
+  })),
+];
+const LIMIT_OPTIONS: DropdownOption<number>[] = [200, 1000, 5000].map((n) => ({
+  value: n,
+  label: `${n} 个方案`,
+}));
+const SORT_OPTIONS: DropdownOption<SortKey>[] = [
+  { value: 'default', label: '推荐（搜索顺序）' },
+  { value: 'defense', label: '防御力' },
+  { value: 'free', label: '空余镶嵌槽' },
+];
 
 /** 只指定镶嵌槽时，用一把虚拟武器（id −1）承载这些槽，好复用 computeSkills */
 const VIRTUAL_WEAPON = -1;
@@ -365,7 +389,7 @@ export default function AutoSearch({ data, idx, build, weaponTypeName, onApply }
                 {weapon ? weapon.name : `未选${weaponTypeName}`}
                 <small>当前武器{weapon ? '（槽含自定义强化，武器技能也计入）' : '：先在手动配装里选'}</small>
               </span>
-              {weapon && <SlotIcons slots={weaponSlots(build, idx)} />}
+              {weapon && <SlotIcons slots={weaponSlots(build, idx)} extraFrom={weapon.slots.length} />}
             </label>
             <label className="gb-as__radio">
               <input
@@ -377,25 +401,20 @@ export default function AutoSearch({ data, idx, build, weaponTypeName, onApply }
               <span>指定镶嵌槽</span>
               <span className="gb-as__slotpick">
                 {cond.weaponSlots.map((s, i) => (
-                  <select
+                  <Dropdown
                     key={i}
-                    aria-label={`第 ${i + 1} 个槽`}
+                    label={`第 ${i + 1} 个槽`}
+                    className="gb-as__slotdd"
                     value={s}
                     disabled={useWeapon}
-                    onChange={(e) =>
+                    options={SLOT_OPTIONS}
+                    onChange={(v) =>
                       update((c) => {
-                        c.weaponSlots[i] = Number(e.target.value);
+                        c.weaponSlots[i] = v;
                         return c;
                       })
                     }
-                  >
-                    <option value={0}>—</option>
-                    {[1, 2, 3, 4].map((n) => (
-                      <option key={n} value={n}>
-                        {n} 级
-                      </option>
-                    ))}
-                  </select>
+                  />
                 ))}
               </span>
             </label>
@@ -510,33 +529,24 @@ export default function AutoSearch({ data, idx, build, weaponTypeName, onApply }
 
         {/* 条件 */}
         <div className="gb-as__group gb-as__opts">
-          <label>
-            <span>防具 / 护石稀有度</span>
-            <select
+          <div>
+            <span id="gb-as-rarity">防具 / 护石稀有度</span>
+            <Dropdown
+              labelledBy="gb-as-rarity"
               value={cond.minRarity}
-              onChange={(e) => update((c) => ({ ...c, minRarity: Number(e.target.value) }))}
-            >
-              <option value={0}>不限</option>
-              {[5, 9, 10, 11, 12].map((r) => (
-                <option key={r} value={r}>
-                  R{r} 以上
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            <span>最多列出</span>
-            <select
+              options={RARITY_OPTIONS}
+              onChange={(v) => update((c) => ({ ...c, minRarity: v }))}
+            />
+          </div>
+          <div>
+            <span id="gb-as-limit">最多列出</span>
+            <Dropdown
+              labelledBy="gb-as-limit"
               value={cond.limit}
-              onChange={(e) => update((c) => ({ ...c, limit: Number(e.target.value) }))}
-            >
-              {[200, 1000, 5000].map((n) => (
-                <option key={n} value={n}>
-                  {n} 个方案
-                </option>
-              ))}
-            </select>
-          </label>
+              options={LIMIT_OPTIONS}
+              onChange={(v) => update((c) => ({ ...c, limit: v }))}
+            />
+          </div>
         </div>
 
         {/* 排除 */}
@@ -598,14 +608,10 @@ export default function AutoSearch({ data, idx, build, weaponTypeName, onApply }
             {status.state === 'running' && <small>（搜索中… 已找到 {results.length} 个）</small>}
           </h2>
           {results.length > 1 && (
-            <label className="gb-as__sort">
-              <span>排序</span>
-              <select value={sort} onChange={(e) => setSort(e.target.value as SortKey)}>
-                <option value="default">推荐（搜索顺序）</option>
-                <option value="defense">防御力</option>
-                <option value="free">空余镶嵌槽</option>
-              </select>
-            </label>
+            <div className="gb-as__sort">
+              <span id="gb-as-sort">排序</span>
+              <Dropdown labelledBy="gb-as-sort" value={sort} options={SORT_OPTIONS} onChange={setSort} />
+            </div>
           )}
         </header>
         {status.state === 'idle' && (
@@ -687,12 +693,19 @@ function LevelPicker({
   );
 }
 
-function SlotIcons({ slots }: { slots: number[] }) {
+/** 一排镶嵌槽图标；extraFrom 之后的是自定义强化 / 觉醒追加的槽，右上角带金色「＋」 */
+function SlotIcons({ slots, extraFrom }: { slots: number[]; extraFrom?: number }) {
   return (
     <span className="gb-as__sloticons">
-      {slots.map((s, i) => (
-        <GameIcon key={i} src={iconUrl.socket(s)} size={18} alt={`${s} 级槽`} />
-      ))}
+      {slots.map((s, i) =>
+        extraFrom != null && i >= extraFrom ? (
+          <span key={i} className="gb-slot-plus" title="自定义强化 / 觉醒追加的镶嵌槽">
+            <GameIcon src={iconUrl.socket(s)} size={18} alt={`${s} 级槽（追加）`} />
+          </span>
+        ) : (
+          <GameIcon key={i} src={iconUrl.socket(s)} size={18} alt={`${s} 级槽`} />
+        ),
+      )}
     </span>
   );
 }

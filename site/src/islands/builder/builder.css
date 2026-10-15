@@ -27,6 +27,7 @@
   --ui-bracket-bl: url('/assets/game/world/ui/bracket-bl.webp');
   --ui-bracket-br: url('/assets/game/world/ui/bracket-br.webp');
   --ui-pattern: url('/assets/game/world/ui/pattern.webp');
+  --ui-diamond: url('/assets/game/world/ui/diamond.webp');
 
   display: grid;
   gap: var(--space-3);
@@ -466,7 +467,7 @@
   gap: 4px;
 }
 
-.gb-parts label {
+.gb-parts__row {
   display: grid;
   grid-template-columns: 4.5em minmax(0, 1fr);
   gap: var(--space-2);
@@ -480,15 +481,8 @@
   color: var(--c-text-3);
 }
 
-.gb-parts select {
-  min-width: 0;
-  height: 30px;
-  padding-inline: var(--space-2);
-  border-radius: var(--gb-radius);
-  background: var(--gb-slot);
-  box-shadow: inset 0 0 0 1px var(--c-line);
-  color: var(--c-text);
-  font-size: var(--text-sm);
+.gb-parts .gb-dd {
+  width: 100%;
 }
 
 .gb-awk {
@@ -1126,20 +1120,9 @@
   color: var(--c-text-3);
 }
 
-.gb-picker__sort label {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.gb-picker__sort select {
-  height: 26px;
-  padding-inline: 8px;
-  border-radius: var(--gb-radius);
-  background: var(--gb-slot);
-  box-shadow: inset 0 0 0 1px var(--c-line);
-  color: var(--c-text);
-  font-size: var(--text-xs);
+.gb-picker__sort .gb-dd {
+  height: 28px;
+  min-width: 10rem;
 }
 
 .gb-chip[aria-pressed='true'] {
@@ -1456,4 +1439,211 @@
 
 .gb-modes button[aria-selected='true']::after {
   transform: scaleX(1);
+}
+
+/* ---------- 下拉框（Dropdown.tsx，代替原生 select） ---------- */
+
+.gb-dd {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  height: 30px;
+  padding: 0 10px 0 8px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, var(--c-surface-3), var(--c-surface-2));
+  box-shadow:
+    inset 0 0 0 1px var(--c-line-strong),
+    inset 0 1px 0 color-mix(in srgb, var(--c-text) 6%, transparent);
+  color: var(--c-text);
+  font-size: var(--text-xs);
+  text-align: left;
+  transition: box-shadow var(--dur-fast) var(--ease-standard);
+}
+
+.gb-dd:hover:not(:disabled),
+.gb-dd[aria-expanded='true'] {
+  box-shadow:
+    inset 0 0 0 1px var(--c-accent),
+    inset 0 1px 0 color-mix(in srgb, var(--c-text) 6%, transparent);
+}
+
+.gb-dd:focus-visible {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 2px;
+}
+
+.gb-dd:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.gb-dd__value {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gb-dd__icon {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+}
+
+.gb-dd__chevron {
+  flex: none;
+  color: var(--c-text-3);
+  transition: transform var(--dur-base) var(--ease-standard);
+}
+
+.gb-dd[aria-expanded='true'] .gb-dd__chevron {
+  transform: rotate(180deg);
+  color: var(--c-accent);
+}
+
+/* 列表：游戏菜单式的深色面板，当前项为左侧金条 + 高亮 */
+.gb-dd__list {
+  position: fixed;
+  z-index: calc(var(--z-modal) + 10);
+  max-width: min(90vw, 28rem);
+  max-height: min(18rem, 60vh);
+  overflow: auto;
+  padding: 6px 4px 4px;
+  border-radius: 4px;
+  background: var(--c-surface);
+  box-shadow:
+    inset 0 0 0 1px var(--c-line-strong),
+    0 12px 32px -8px rgb(0 0 0 / 0.55);
+  overscroll-behavior: contain;
+  animation: gb-dd-in var(--dur-fast) var(--ease-standard);
+}
+
+/* 顶部一道游戏的细线 + ◇ 线头 */
+.gb-dd__list::before {
+  content: '';
+  display: block;
+  height: 8px;
+  margin: 0 4px 4px;
+  background: var(--c-line-strong);
+  mask:
+    var(--ui-line) left center / calc(100% - 9px) 2px no-repeat,
+    var(--ui-line-end) right center / 8px 8px no-repeat;
+}
+
+.gb-dd__list[data-up] {
+  animation-name: gb-dd-in-up;
+}
+
+@keyframes gb-dd-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes gb-dd-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+
+.gb-dd__list li {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 30px;
+  padding: 4px 12px 4px 14px;
+  border-radius: 2px;
+  font-size: var(--text-xs);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.gb-dd__list li[data-active] {
+  background: color-mix(in srgb, var(--c-accent) 12%, transparent);
+}
+
+.gb-dd__list li[aria-selected='true'] {
+  color: var(--gb-gold);
+  font-weight: 700;
+}
+
+.gb-dd__list li[aria-selected='true']::before {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 50%;
+  width: 6px;
+  height: 7px;
+  margin-top: -3.5px;
+  background: var(--ui-diamond) center / 100% 100% no-repeat;
+}
+
+.gb-dd__list li[aria-disabled='true'] {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.gb-dd__label {
+  flex: 1;
+}
+
+/* 稀有度选项前的色块（颜色取自游戏的稀有度色表） */
+.gb-dd__rar {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  background: var(--rar);
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.35);
+}
+
+.gb-dd__hint {
+  margin-left: var(--space-3);
+  color: var(--c-text-3);
+  font-weight: 400;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gb-dd__list {
+    animation: none;
+  }
+}
+
+/* ---------- 自定义强化 / 觉醒追加的镶嵌槽 ---------- */
+
+.gb-slot[data-extra] {
+  box-shadow: inset 2px 0 0 var(--gb-gold);
+}
+
+.gb-slot__tag {
+  flex: none;
+  margin-left: auto;
+  padding: 0 4px;
+  border-radius: 2px;
+  font-size: 10px;
+  line-height: 15px;
+  color: var(--gb-gold);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--gb-gold) 55%, transparent);
+}
+
+/* 槽图标右上角的金色「＋」 */
+.gb-slot-plus {
+  position: relative;
+  display: inline-grid;
+}
+
+.gb-slot-plus::after {
+  content: '+';
+  position: absolute;
+  top: -5px;
+  right: -3px;
+  font: 700 11px / 1 var(--font-num);
+  color: var(--gb-gold);
+  text-shadow:
+    0 0 2px rgb(0 0 0 / 0.8),
+    0 0 1px rgb(0 0 0 / 0.8);
 }

@@ -85,9 +85,8 @@
   margin-left: auto;
 }
 
-.gb-as__slotpick select {
-  width: 4.5rem;
-  font-size: var(--text-xs);
+.gb-as__slotdd {
+  width: 5.4rem;
 }
 
 .gb-as__sloticons {
@@ -189,13 +188,13 @@
   gap: var(--space-2);
 }
 
-.gb-as__opts label {
+.gb-as__opts > div {
   display: grid;
   gap: 4px;
 }
 
-.gb-as__opts select {
-  font-size: var(--text-xs);
+.gb-as__opts .gb-dd {
+  width: 100%;
 }
 
 .gb-as__exclude {
@@ -277,9 +276,8 @@
   font-size: var(--text-xs);
 }
 
-.gb-as__sort select {
+.gb-as__sort .gb-dd {
   min-width: 10rem;
-  font-size: var(--text-xs);
 }
 
 .gb-as__empty {

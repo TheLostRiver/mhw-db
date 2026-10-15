@@ -7,6 +7,7 @@ import {
   ARMOR_SLOTS,
   awakeningConflict,
   customBonus,
+  customKind,
   availableConditions,
   sharpnessBar,
   SHARPNESS_COLORS,
@@ -168,6 +169,13 @@ export default function Builder() {
         : t.kind === 'mantle'
           ? build.mantles[t.index]
           : null;
+
+  // 武器本身的槽数；之后的槽是自定义强化（冥赤龙武器为觉醒能力）追加的
+  const baseWeaponSlots = build.weapon.id == null ? 0 : (idx.weapons.get(build.weapon.id)?.slots.length ?? 0);
+  const extraTag =
+    customKind(build.weapon.id == null ? undefined : idx.weapons.get(build.weapon.id)) === 'awakening'
+      ? '觉醒'
+      : '强化';
 
   const slotsOf = (t: Target): number[] => {
     const p = pieceOf(t);
@@ -537,6 +545,8 @@ export default function Builder() {
                 idx={idx}
                 selected={same(selected, target)}
                 slots={slotsOf(target)}
+                extraFrom={target.kind === 'weapon' ? baseWeaponSlots : undefined}
+                extraTag={extraTag}
                 onSelect={() => setSelected(target)}
                 onPickPiece={() => {
                   setSelected(target);
@@ -647,12 +657,19 @@ function weaponSorts(idx: Index, weaponType: string): PickerSort[] {
 
 // ---------- 子组件 ----------
 
-function SlotDots({ slots }: { slots: number[] }) {
+/** 一排镶嵌槽图标；extraFrom 之后的是自定义强化 / 觉醒追加的槽，右上角带金色「＋」 */
+export function SlotDots({ slots, extraFrom }: { slots: number[]; extraFrom?: number }) {
   return (
     <span className="gb-slotdots">
-      {slots.map((s, i) => (
-        <GameIcon key={i} src={iconUrl.socket(s)} size={20} alt={`${s} 级槽`} />
-      ))}
+      {slots.map((s, i) =>
+        extraFrom != null && i >= extraFrom ? (
+          <span key={i} className="gb-slot-plus" title="追加的镶嵌槽">
+            <GameIcon src={iconUrl.socket(s)} size={20} alt={`${s} 级槽（追加）`} />
+          </span>
+        ) : (
+          <GameIcon key={i} src={iconUrl.socket(s)} size={20} alt={`${s} 级槽`} />
+        ),
+      )}
     </span>
   );
 }
@@ -686,6 +703,9 @@ interface RowProps {
   idx: Index;
   selected: boolean;
   slots: number[];
+  /** 从第几个槽开始是追加的（自定义强化 / 觉醒） */
+  extraFrom?: number | undefined;
+  extraTag?: string;
   onSelect: () => void;
   onPickPiece: () => void;
   onPickDeco: (i: number) => void;
@@ -698,6 +718,8 @@ function EquipRow({
   idx,
   selected,
   slots,
+  extraFrom,
+  extraTag = '强化',
   onSelect,
   onPickPiece,
   onPickDeco,
@@ -762,17 +784,20 @@ function EquipRow({
         {slots.map((size, i) => {
           const d = decos[i];
           const deco = d == null ? undefined : idx.decorations.get(d);
+          const extra = extraFrom != null && i >= extraFrom;
           return (
             <button
               key={i}
               type="button"
               className="gb-slot"
               data-mantle={target.kind === 'mantle' ? '' : undefined}
+              data-extra={extra ? '' : undefined}
+              title={extra ? `${extraTag}追加的镶嵌槽` : undefined}
               onClick={(e) => {
                 e.stopPropagation();
                 onPickDeco(i);
               }}
-              aria-label={`${size} 级镶嵌槽：${deco?.name ?? '空'}`}
+              aria-label={`${size} 级镶嵌槽${extra ? `（${extraTag}追加）` : ''}：${deco?.name ?? '空'}`}
             >
               {deco ? (
                 <GameIcon src={iconUrl.deco(deco.size, deco.iconColor)} size={22} />
@@ -780,6 +805,7 @@ function EquipRow({
                 <GameIcon src={iconUrl.socket(size)} size={22} />
               )}
               <span className="gb-slot__name">{deco?.name ?? '—'}</span>
+              {extra && <small className="gb-slot__tag">{extraTag}</small>}
             </button>
           );
         })}
@@ -886,7 +912,7 @@ function Detail({
           {w.hiddenElement &&
             kv('隐藏属性', `${ELEMENT_NAMES[w.hiddenElement.type] ?? ''} ${w.hiddenElement.value * 10}`)}
           {kv('龙封力', ELDERSEAL[w.elderseal] ?? '—')}
-          {kv('镶嵌槽', <SlotDots slots={weaponSlots(build, idx)} />, 55)}
+          {kv('镶嵌槽', <SlotDots slots={weaponSlots(build, idx)} extraFrom={w.slots.length} />, 55)}
           {kv(
             '防御力加成',
             w.defense + plus('defense') ? withPlus(w.defense, plus('defense'), (n) => `+${n}`) : '—',
