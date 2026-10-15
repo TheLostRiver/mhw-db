@@ -37,23 +37,8 @@ import Picker, { type PickerSort } from './Picker';
 import WeaponCustomPanel, { AWAKENING_GROUPS, ROMAN, awakeningMeta } from './WeaponCustom';
 import { GameIcon, iconUrl, LevelBoxes } from './icons';
 import './builder.css';
+import { WEAPON_TYPE_NAMES } from '../../lib/world/weapons';
 
-export const WEAPON_TYPE_NAMES: Record<string, string> = {
-  'great-sword': '大剑',
-  'long-sword': '太刀',
-  'sword-and-shield': '片手剑',
-  'dual-blades': '双剑',
-  hammer: '大锤',
-  'hunting-horn': '狩猎笛',
-  lance: '长枪',
-  gunlance: '铳枪',
-  'switch-axe': '斩击斧',
-  'charge-blade': '盾斧',
-  'insect-glaive': '操虫棍',
-  'light-bowgun': '轻弩',
-  'heavy-bowgun': '重弩',
-  bow: '弓',
-};
 const SLOT_NAMES: Record<ArmorSlot, string> = {
   head: '头部',
   chest: '身体',

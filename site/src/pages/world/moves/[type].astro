@@ -1,0 +1,198 @@
+---
+import SiteLayout from '../../../layouts/SiteLayout.astro';
+import { loadMoves } from '../../../data/world/load';
+import type { Move, WeaponType } from '../../../data/world/schema';
+import {
+  DAMAGE_TYPE_LABEL,
+  GROUP_LABEL,
+  fmt,
+  groupMoves,
+  moveName,
+  moveNotes,
+} from '../../../lib/world/moves';
+import { WEAPON_ORDER, WEAPON_TYPE_NAMES, weaponIconUrl } from '../../../lib/world/weapons';
+
+export function getStaticPaths() {
+  return [...WEAPON_ORDER, 'common' as const].map((type) => ({ params: { type } }));
+}
+
+const type = Astro.params.type as WeaponType | 'common';
+const title = type === 'common' ? '通用' : WEAPON_TYPE_NAMES[type];
+const groups = groupMoves(loadMoves(), type);
+const total = groups.reduce((s, g) => s + g.moves.length, 0);
+
+// 「槽增加」字段对不同武器是不同的槽（按数值与招式推断）
+const ENERGY_LABEL: Partial<Record<WeaponType, string>> = {
+  'dual-blades': '鬼人槽',
+  'long-sword': '练气槽',
+  'switch-axe': '觉醒槽',
+  'charge-blade': '瓶充能',
+};
+const energyLabel = type === 'common' ? undefined : ENERGY_LABEL[type];
+const showEnergy = (moves: Move[]) => energyLabel !== undefined && moves.some((m) => m.energy);
+const file = (path: string) => path.split('/').slice(-3).join('/');
+const mod = (v: number) => (v === 1 ? 's-dim' : v > 1 ? 's-hot' : '');
+---
+
+<SiteLayout
+  title={`${title} · 武器招式`}
+  current="moves"
+  description={`怪物猎人：世界 冰原 ${title}的招式数据：动作值、属性补正、异常补正、卡肉时间等`}
+  wide
+>
+  <nav class="s-crumbs" aria-label="位置">
+    <a href="/world/moves/">武器招式</a>
+    <span>{title}</span>
+  </nav>
+  <div class="s-head">
+    <h1>
+      {title} <span class="b-label">{total} 条攻击参数</span>
+    </h1>
+    <p>
+      每行是一条攻击参数（一次命中的判定），同一招有几段时各段分开列出。「动作值」是伤害公式里的倍率（×0.01），
+      属性 /
+      异常补正乘在属性值与异常值上；卡肉为命中后的停顿秒数。将鼠标停在表头上可看各列说明，招式名下方为数据里的日文原名。
+    </p>
+  </div>
+
+  <nav class="s-tabs" aria-label="武器种类">
+    {WEAPON_ORDER.map((w) => (
+      <a href={`/world/moves/${w}/`} aria-current={w === type ? 'page' : undefined}>
+        <img src={weaponIconUrl(w, 0)} alt="" width="22" height="22" loading="lazy" />
+        {WEAPON_TYPE_NAMES[w]}
+      </a>
+    ))}
+    <a href="/world/moves/common/" aria-current={type === 'common' ? 'page' : undefined}>
+      通用
+    </a>
+  </nav>
+
+  <div class="s-toolbar">
+    <input
+      class="s-search"
+      type="search"
+      placeholder="按招式名筛选（中文或日文）"
+      aria-label="按招式名筛选"
+      data-move-search
+    />
+    <span data-move-count aria-live="polite"></span>
+  </div>
+
+  {groups.map((g) => (
+    <section class="s-section" data-move-section>
+      <h2>
+        {GROUP_LABEL[g.group]}
+        <span class="b-label">
+          {file(g.file)} · {g.moves.length}
+        </span>
+      </h2>
+      <div class="s-table-wrap">
+        <table class="s-table mv-table">
+          <thead>
+            <tr>
+              <th class="s-left">招式</th>
+              <th title="伤害类型：斩、打、弹，决定使用怪物哪一种肉质">类型</th>
+              <th title="动作值：物理伤害的倍率（×0.01）">动作值</th>
+              <th title="属性补正：乘在属性伤害上的系数">属性补正</th>
+              <th title="异常补正：乘在毒 / 麻痹 / 睡眠 / 爆破积累值上的系数">异常补正</th>
+              <th title="部位耐久补正：对部位耐久的伤害系数">部位</th>
+              <th title="眩晕值（打击类攻击头部时积累）">眩晕</th>
+              <th title="减气值">减气</th>
+              <th title="骑乘值（空中攻击积累骑乘）">骑乘</th>
+              <th title="卡肉：命中后的停顿时间（秒）">卡肉</th>
+              <th title="心眼：数据里的不弹刀标志">心眼</th>
+              {showEnergy(g.moves) && (
+                <th title={`${energyLabel}的增加量（按数值与招式推断）`}>{energyLabel}</th>
+              )}
+              <th class="s-left">备注</th>
+            </tr>
+          </thead>
+          <tbody>
+            {g.moves.map((m) => (
+              <tr data-move-row data-name={`${moveName(m)} ${m.ja}`.toLowerCase()}>
+                <td class="s-left mv-name">
+                  <strong>{moveName(m)}</strong>
+                  {m.zh && <small lang="ja">{m.ja}</small>}
+                </td>
+                <td>{DAMAGE_TYPE_LABEL[m.type]}</td>
+                <td class="s-num mv-mv">{m.mv ? fmt(m.mv) : <span class="s-dim">0</span>}</td>
+                <td class={`s-num ${mod(m.ele)}`}>{fmt(m.ele)}</td>
+                <td class={`s-num ${mod(m.status)}`}>{fmt(m.status)}</td>
+                <td class={`s-num ${mod(m.part)}`}>{fmt(m.part)}</td>
+                <td class="s-num">{m.stun ? fmt(m.stun) : <span class="s-dim">—</span>}</td>
+                <td class="s-num">{m.exhaust ? fmt(m.exhaust) : <span class="s-dim">—</span>}</td>
+                <td class="s-num">{m.mount ? fmt(m.mount) : <span class="s-dim">—</span>}</td>
+                <td class="s-num">{m.hitstop ? fmt(m.hitstop) : <span class="s-dim">—</span>}</td>
+                <td>{m.eye ? '有' : <span class="s-dim">—</span>}</td>
+                {showEnergy(g.moves) && (
+                  <td class="s-num">{m.energy ? fmt(m.energy) : <span class="s-dim">—</span>}</td>
+                )}
+                <td class="s-left mv-notes">{moveNotes(m).join('；') || <span class="s-dim">—</span>}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  ))}
+
+  <p class="s-note">
+    数据来源：<code>hm/wp/wpNN/collision/*.col</code>（攻击参数段，字段顺序参照 MHW-Editor
+    的格式说明，代码自写），
+    双剑等招式的动作值、补正、卡肉已与常见数据表核对；「心眼」「槽增加」的含义按数值推断。
+    同一招在不同条件下的变化（如派生时跳过某一击）不在这份数据里，未列出。
+  </p>
+</SiteLayout>
+
+<script>
+  // 按招式名筛选：同时匹配中文译名与日文原名
+  const input = document.querySelector<HTMLInputElement>('[data-move-search]');
+  const counter = document.querySelector<HTMLElement>('[data-move-count]');
+  const rows = [...document.querySelectorAll<HTMLTableRowElement>('[data-move-row]')];
+  const sections = [...document.querySelectorAll<HTMLElement>('[data-move-section]')];
+  const update = () => {
+    const q = (input?.value ?? '').trim().toLowerCase();
+    let shown = 0;
+    for (const r of rows) {
+      const hit = !q || (r.dataset.name ?? '').includes(q);
+      r.hidden = !hit;
+      if (hit) shown++;
+    }
+    for (const s of sections) s.hidden = !s.querySelector('[data-move-row]:not([hidden])');
+    if (counter) counter.textContent = q ? `${shown} 条匹配` : '';
+  };
+  input?.addEventListener('input', update);
+</script>
+
+<style>
+  .mv-name {
+    min-width: 220px;
+  }
+
+  .mv-name strong {
+    display: block;
+    font-weight: 600;
+  }
+
+  .mv-name small {
+    display: block;
+    color: var(--c-text-3);
+    font-size: var(--text-2xs);
+  }
+
+  .mv-mv {
+    color: var(--c-text);
+    font-weight: 700;
+  }
+
+  .mv-notes {
+    min-width: 180px;
+    max-width: 360px;
+    color: var(--c-text-2);
+    white-space: normal;
+  }
+
+  .s-section[hidden] {
+    display: none;
+  }
+</style>

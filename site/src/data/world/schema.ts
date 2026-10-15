@@ -527,6 +527,45 @@ export type Item = z.infer<typeof Item>;
 export type Skill = z.infer<typeof Skill>;
 export type Decoration = z.infer<typeof Decoration>;
 export type Armor = z.infer<typeof Armor>;
+/**
+ * 武器招式（moves.json）：hm/…/collision/*.col 的攻击参数，见 pipeline/mhdb/formats/col.py。
+ * 名字为数据里的日文开发名（ja）与本站译名（zh，可能缺）。
+ */
+export const MOVE_GROUPS = ['melee', 'shell', 'claw', 'hunter', 'item'] as const;
+export const Move = z
+  .object({
+    weapon: z.union([z.enum(WEAPON_TYPES), z.literal('common')]),
+    group: z.enum(MOVE_GROUPS),
+    file: z.string().startsWith('hm/'),
+    i: z.number().int().min(0),
+    ja: z.string(),
+    zh: z.string().nullable(),
+    type: z.enum(['none', 'sever', 'blunt', 'shot']),
+    mv: z.number(),
+    fixed: z.number(),
+    part: z.number(),
+    ele: z.number(),
+    status: z.number(),
+    stun: z.number(),
+    exhaust: z.number(),
+    mount: z.number(),
+    soften: z.number(),
+    eye: z.boolean(),
+    hitstop: z.number().min(0),
+    hitstopB: z.number().min(0).optional(),
+    noSharp: z.boolean(),
+    energy: z.number(),
+    condMv: z.number().optional(),
+    condEle: z.number().optional(),
+    elementType: z.number().int().min(0).optional(),
+    fixedElement: z.number().optional(),
+    fixedStatus: z.tuple([z.number(), z.number(), z.number(), z.number()]).optional(),
+    tranq: z.number().optional(),
+  })
+  .strict();
+export const Moves = z.object({ moves: z.array(Move).min(1) }).strict();
+export type Move = z.infer<typeof Move>;
+
 export type Charm = z.infer<typeof Charm>;
 export type Mantle = z.infer<typeof Mantle>;
 export type Weapon = z.infer<typeof Weapon>;

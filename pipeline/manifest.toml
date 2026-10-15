@@ -12,6 +12,9 @@ patterns = [
   # 物件（采集点等）的公共参数
   '^/common/gimmick/(gimmick|animal)\.gcd$',
   '^/common/note/em_animal_note\.emai$',
+
+  # 武器与猎人的攻击参数（动作值、补正、卡肉）
+  '^/hm/(wp/wp\d\d|common|claw)/(shell/)?collision/.*\.col$',
   '^/common/pl/',
   '^/common/otomo/',
   '^/common/facility/',

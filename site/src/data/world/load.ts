@@ -15,6 +15,7 @@ import type {
   MapNodeStage,
   MapStage,
   Meta,
+  Move,
   Skill,
   Weapon,
   WeaponCustom,
@@ -49,6 +50,7 @@ export const loadWeaponCustom = () => read<WeaponCustom>('weapon-custom.json');
 export const loadConstants = () => read<Constants>('constants.json');
 export const loadMaps = () => read<{ stages: MapStage[] }>('maps.json').stages;
 export const loadMapNodes = () => read<{ stages: MapNodeStage[] }>('map-nodes.json').stages;
+export const loadMoves = () => read<{ moves: Move[] }>('moves.json').moves;
 
 /** 取某语言文本，缺失时退回简中 */
 export const pick = (t: { [K in Lang]?: string | undefined } | undefined, lang: Lang): string =>

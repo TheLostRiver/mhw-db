@@ -1,0 +1,43 @@
+---
+import SiteLayout from '../../../layouts/SiteLayout.astro';
+import { loadMoves } from '../../../data/world/load';
+import { WEAPON_ORDER, WEAPON_TYPE_NAMES, weaponIconUrl } from '../../../lib/world/weapons';
+
+const moves = loadMoves();
+const count = (w: string) => moves.filter((m) => m.weapon === w).length;
+---
+
+<SiteLayout
+  title="武器招式"
+  current="moves"
+  description="怪物猎人：世界 冰原 14 种武器的招式数据：动作值、属性 / 异常补正、卡肉时间、眩晕、减气、骑乘"
+>
+  <div class="s-head">
+    <h1>
+      武器招式 <span class="b-label">动作值 · 补正 · 卡肉</span>
+    </h1>
+    <p>
+      每种武器每一击的攻击参数，取自游戏数据里的攻击判定文件（<code>hm/wp/wpNN/collision/*.col</code>）：
+      动作值、属性补正、异常补正、部位耐久补正、眩晕、减气、骑乘、卡肉时间等。招式名是数据里的日文开发名，
+      中文为本站译名。
+    </p>
+  </div>
+  <ul class="s-grid">
+    {WEAPON_ORDER.map((w) => (
+      <li>
+        <a class="s-card" href={`/world/moves/${w}/`}>
+          <img src={weaponIconUrl(w, 0)} alt="" width="44" height="44" loading="lazy" />
+          <strong>{WEAPON_TYPE_NAMES[w]}</strong>
+          <small>{count(w)} 条</small>
+        </a>
+      </li>
+    ))}
+    <li>
+      <a class="s-card" href="/world/moves/common/">
+        <img src="/assets/game/world/action/0.webp" alt="" width="44" height="44" loading="lazy" />
+        <strong>通用</strong>
+        <small>钩爪 · 骑乘 · 投射器 · {count('common')} 条</small>
+      </a>
+    </li>
+  </ul>
+</SiteLayout>
