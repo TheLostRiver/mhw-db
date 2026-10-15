@@ -7,7 +7,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { MapNodeStage, MapPatch, MapStage, Rank } from '../../data/world/schema';
-import { labelPoint, patchUrl } from '../../lib/world/maps';
+import { backdropUrl, labelPoint, patchUrl } from '../../lib/world/maps';
 import {
   RANK_LABEL,
   kindIconUrl,
@@ -56,6 +56,7 @@ export default function MapViewer({ stage, nodes, items }: Props) {
   const el = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const overlays = useRef(new Map<string, L.ImageOverlay>());
+  const backdrop = useRef<L.ImageOverlay | null>(null);
   const labels = useRef(new Map<string, L.Marker>());
   const nodeLayer = useRef<L.LayerGroup | null>(null);
   const markers = useRef(new Map<number, L.Marker>());
@@ -122,6 +123,15 @@ export default function MapViewer({ stage, nodes, items }: Props) {
     map.setMinZoom(map.getZoom() - 0.75);
     mapRef.current = map;
 
+    // 纸片底下的整幅插画（游戏地图的背景层），不响应鼠标
+    if (stage.backdrop) {
+      const [bx0, by0, bx1, by1] = stage.backdrop;
+      backdrop.current = L.imageOverlay(
+        backdropUrl(stage.id, true),
+        [toLatLng(bx0, by1), toLatLng(bx1, by0)],
+        { className: 'mv-backdrop', interactive: false, alt: '' },
+      ).addTo(map);
+    }
     for (const p of patches) {
       const overlay = L.imageOverlay(patchUrl(stage.id, p.letter, true), patchBounds(p), {
         className: 'mv-patch',
@@ -166,6 +176,7 @@ export default function MapViewer({ stage, nodes, items }: Props) {
       map.remove();
       mapRef.current = null;
       nodeLayer.current = null;
+      backdrop.current = null;
       overlayMap.clear();
       labelMap.clear();
       markerMap.clear();
@@ -185,6 +196,7 @@ export default function MapViewer({ stage, nodes, items }: Props) {
   // 缩放：切换纸片分辨率
   useEffect(() => {
     for (const p of patches) overlays.current.get(p.letter)?.setUrl(patchUrl(stage.id, p.letter, half));
+    backdrop.current?.setUrl(backdropUrl(stage.id, half));
   }, [half, patches, stage.id]);
 
   // 悬停 / 选中的区域高亮

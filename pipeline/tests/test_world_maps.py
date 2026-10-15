@@ -47,3 +47,20 @@ def test_radar_area_regions_against_game() -> None:
     assert (round(x0, 1), round(y0, 1), round(x1 - x0), round(y1 - y0)) == (-538.7, 420.6, 566, 278)
     # 古代树森林的上层区域（13–17）都不在地面层
     assert all(f > 0 for a in range(13, 18) for f, _ in regions[a])
+
+
+@pytest.mark.skipif(not (DATA_RAW / "world/ui/map/map.gui").is_file(), reason="需要先运行 mhdb extract")
+def test_backdrop_covers_radar_extent() -> None:
+    """背景插画整张 = 雷达 ±820 单位：比例 0.5 的图在地图坐标里不超过 ±1640，永霜冻土（0.625）不超过 ±1312；
+    外圈的黑色变透明，纸片大体落在插画里。"""
+    from mhdb.formats.gui import parse
+    from mhdb.images.world_maps import HALF, backdrop
+
+    gui = parse((DATA_RAW / "world/ui/map/map.gui").read_bytes())
+    for stage, scale in ((101, 0.5), (108, 0.625)):
+        img, (x0, y0, x1, y1) = backdrop(DATA_RAW / "world", gui, stage, scale)
+        lim = HALF / scale + 1
+        assert -lim <= x0 < x1 <= lim and -lim <= y0 < y1 <= lim
+        assert abs(img.width - (x1 - x0)) <= 1 and abs(img.height - (y1 - y0)) <= 1
+        a = np.asarray(img.getchannel("A"))
+        assert a[0, 0] == 0 and a[-1, -1] == 0 and a[a.shape[0] // 2, a.shape[1] // 2] == 255

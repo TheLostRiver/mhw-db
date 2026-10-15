@@ -10,6 +10,7 @@
 3. exe 里的纸片表（mhdb.games.world.exe.MAP_PATCHES）给出每块纸片的层、雷达层与区域号；
    用匈牙利算法把图集里的纸片与表里的行一一对上，再按落位与区域边线包围盒的重叠、营地名里的区域号复核区域号。
 配准得分写进 maps.json，偏低的纸片在构建日志里提示，需要人工看一眼。
+纸片底下另有一张整幅背景插画（backdrop），按雷达范围摆放，见 docs/DATA.md 4.1。
 """
 
 import json
@@ -438,6 +439,71 @@ def patch_masks(raw: Path, stage: int, patches: list[dict]) -> dict[str, tuple[n
     return out
 
 
+BACK_FADE = (6, 48)  # 背景插画四周渐暗到黑色；外圈亮度在这两值之间的像素按亮度渐变成透明，更暗的全透明
+
+
+def backdrop(
+    raw: Path, map_gui: guifmt.Gui, stage: int, scale: float
+) -> tuple[Image.Image, list[float]] | None:
+    """纸片底下那张整幅插画：map.gui 的 a_map01 里 16 个 tex_map_NN 排成 4×4（每格 2048 布局单位、贴图 1024 像素），
+    运行时换成 m_stXXX_back_NN，缺的格子是空的。整张 4096 像素对应雷达的整个范围（±HALF 雷达单位，
+    即世界坐标 ±50000），原点居中——与游戏截图配准得出（见 docs/DATA.md 4.1）。
+    返回（按地图像素缩放、裁掉空白、外圈黑色转透明的图, 在地图坐标里的 [x0, y0, x1, y1]）。"""
+    folder = raw / f"ui/map/tex/maptex/st{stage}"
+    anim = map_gui.animations["a_map01"]
+    origin = next(o for o in anim.objects if o.name == "null_map").init
+    tiles = [o for o in anim.objects if re.fullmatch(r"tex_map_\d\d", o.name)]
+    span = max(o.init["PosX"] + o.init["Size"][0] for o in tiles)  # 布局单位
+    if (origin["PosX"], origin["PosY"]) != (-span / 2, -span / 2):
+        raise ValueError(
+            f"map.gui a_map01：null_map {origin['PosX']}, {origin['PosY']} 不在瓦片中心，布局变了"
+        )
+    texel = 0.0
+    found = []
+    for o in tiles:
+        f = folder / f"m_st{stage}_back_{o.name[-2:]}_BML_NOMIP.tex"
+        if f.is_file():
+            img = _rgba(raw, f.relative_to(raw).as_posix())
+            texel = img.shape[1] / o.init["Size"][0]  # 贴图像素 / 布局单位
+            found.append((o.init["PosX"], o.init["PosY"], img))
+    if not found:
+        return None
+    size = round(span * texel)
+    canvas = np.zeros((size, size, 4), np.uint8)
+    for x, y, img in found:
+        x, y = round(x * texel), round(y * texel)
+        canvas[y : y + img.shape[0], x : x + img.shape[1]] = img
+    # 外圈：从边缘连通的暗像素；按亮度给透明度，颜色反乘回去，渐暗的边缘就成了半透明的纸边
+    light = canvas[..., :3].max(axis=2).astype(np.float32) * (canvas[..., 3] > 0)
+    dark, _ = ndimage.label(light < BACK_FADE[1])
+    rim = np.isin(dark, np.unique(np.concatenate([dark[0], dark[-1], dark[:, 0], dark[:, -1]])))
+    rim &= dark > 0
+    lo, hi = BACK_FADE
+    alpha = np.where(rim, np.clip((light - lo) / (hi - lo), 0, 1), 1.0)
+    rgb = canvas[..., :3].astype(np.float32) / np.maximum(alpha, 1 / 255)[..., None]
+    out = np.dstack([np.clip(rgb, 0, 255), alpha * 255]).astype(np.uint8)
+    # 只留最大的一块（瓦片角上有几个零星的亮点）
+    parts, n = ndimage.label(out[..., 3] > 8)
+    if n > 1:
+        keep = 1 + int(np.argmax(ndimage.sum_labels(np.ones_like(parts), parts, range(1, n + 1))))
+        out[(parts > 0) & (parts != keep)] = 0
+    ys, xs = np.nonzero(out[..., 3] > 8)
+    x0, y0, x1, y1 = xs.min(), ys.min(), xs.max() + 1, ys.max() + 1
+    # 背景像素 → 地图像素：整张 = 2·HALF 雷达单位，雷达单位 ÷ 比例 = 地图像素
+    k = 2 * HALF / size / scale
+    img = Image.fromarray(out[y0:y1, x0:x1])
+    w, h = round((x1 - x0) * k), round((y1 - y0) * k)
+    img = img.resize((w, h), Image.LANCZOS)
+    c = size / 2
+    bounds = [
+        round((x0 - c) * k, 1),
+        round((y0 - c) * k, 1),
+        round((x0 - c) * k + w, 1),
+        round((y0 - c) * k + h, 1),
+    ]
+    return img, bounds
+
+
 def _save_webp(img: Image.Image, path: Path, quality: int = 86) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     img.save(path, "WEBP", quality=quality, method=6)
@@ -506,6 +572,21 @@ def build(raw: Path, data_out: Path, img_out: Path, only: list[int] | None = Non
                 ),
             )
         )
+    # 纸片底下的整幅插画（沿用的关卡也重做，不必重新配准）
+    for st in stages:
+        back = backdrop(raw, map_gui, st["id"], st["scale"])
+        st["backdrop"] = None
+        if back:
+            img, st["backdrop"] = back
+            _save_webp(img, img_out / f"st{st['id']}/back.webp", 80)
+            _save_webp(
+                img.resize((img.width // 2, img.height // 2), Image.LANCZOS),
+                img_out / f"st{st['id']}/back-half.webp",
+                80,
+            )
+            st["_src"]["backdrop"] = (
+                f"ui/map/tex/maptex/st{st['id']}/m_st{st['id']}_back_NN_BML_NOMIP.tex + ui/map/map.gui a_map01"
+            )
     # 地图底下的皮革纹理（map.gui 的 mapBack）
     back = Image.fromarray(_rgba(raw, "ui/map/tex/maptex/map_back_BML_NOMIP.tex")).convert("RGB")
     _save_webp(back, img_out / "parchment.webp", 82)

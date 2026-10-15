@@ -25,6 +25,9 @@ const ASSETS = '/assets/game/world/maps';
 export const patchUrl = (stageId: number, letter: string, half: boolean): string =>
   `${ASSETS}/st${stageId}/${letter.toLowerCase()}${half ? '-half' : ''}.webp`;
 
+export const backdropUrl = (stageId: number, half: boolean): string =>
+  `${ASSETS}/st${stageId}/back${half ? '-half' : ''}.webp`;
+
 export const thumbUrl = (thumb: string): string => `${ASSETS}/${thumb}.webp`;
 
 export const PARCHMENT_URL = `${ASSETS}/parchment.webp`;

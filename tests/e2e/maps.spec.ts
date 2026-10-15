@@ -33,6 +33,11 @@ for (const theme of ['light', 'dark'] as const) {
     // 17 块纸片、17 个区域号
     await expect(page.locator('img.mv-patch')).toHaveCount(17);
     await expect(page.locator('.mv-area')).toHaveCount(17);
+    // 纸片底下的整幅背景插画
+    await expect(page.locator('img.mv-backdrop')).toHaveCount(1);
+    expect(
+      await page.locator('img.mv-backdrop').evaluate((i: HTMLImageElement) => i.naturalWidth),
+    ).toBeGreaterThan(0);
     // 地面层显示 12 个区域号，上层的隐藏
     await expect(page.locator(".mv-area[data-state='current']")).toHaveCount(12);
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
