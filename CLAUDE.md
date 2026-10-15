@@ -67,6 +67,7 @@ uv run mhdb config | fonts | extract | parse | images | maps | nodes | diff
   站点视觉方向只负责外层框架。
 - 本机临时截图：`node scripts/shot.mjs <路径> <名字> [light|dark] [宽] [高] [1|0|tall]`（需先 `pnpm dev`），输出到 `.cache/shots/`。
 - Windows 下 Git Bash 的 heredoc 会吞反斜杠：含反斜杠转义（如换行符转义、Windows 路径）的内容用编辑工具写，不要用 heredoc。
+- Git Bash 会把参数里像路径的部分改写（MSYS 路径转换）：给 `mhdb extract` 传 `'^/common/...'` 这类正则时加 `MSYS_NO_PATHCONV=1`，否则匹配不到文件。
 
 ## 4. 本地资源
 
