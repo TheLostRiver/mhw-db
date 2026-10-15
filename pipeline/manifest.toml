@@ -10,7 +10,8 @@ patterns = [
   '^/common/equip/',
   '^/common/item/(itemData\.itm|itemMake\.imk|itemMakeType\.imt|skillGemParam\.sgpa|itemList\.itlist|pop_base\.ppm)$',
   # 物件（采集点等）的公共参数
-  '^/common/gimmick/gimmick\.gcd$',
+  '^/common/gimmick/(gimmick|animal)\.gcd$',
+  '^/common/note/em_animal_note\.emai$',
   '^/common/pl/',
   '^/common/otomo/',
   '^/common/facility/',

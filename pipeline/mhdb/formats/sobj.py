@@ -18,7 +18,10 @@ cSetAnimalArea（没有物件名与属性表）：
   u8、u8、s32 floor、s32（=−1）、9 字节、u32（=4）、4 个字符串 \\0（任务专用的写任务名）
   4 字节、64 字节（填充 0xCD）、1 字节
   u32 环境生物编号（animal.gcd 的 EC_NNN）、u32 变种（EC_NNN_0V，0 为无后缀）、u32、u32、f32（=1）
-  之后是出现半径与若干个出现点（未用）。
+  u8、f32 半径（未用）、f32 高度、4 × vector4 出现范围的四个角（高度都等于前面的高度，w = 0）、
+  1 × vector4 一个点（多在范围附近，含义未确认）。
+  记录开头的位置**不是**出现位置：常常几条记录共用一个，大蚁冢荒地等图的 ec.sobj 全写同一个占位坐标；
+  出现范围的四个角才落在地图上（各图逐条核对：全部在纸片上）。
 """
 
 import re
@@ -99,10 +102,18 @@ def parse(data: bytes) -> list[SetObject]:
 
 @dataclass(frozen=True)
 class AnimalArea:
-    pos: tuple[float, float, float]
+    pos: tuple[float, float, float]  # 记录开头的位置（不是出现位置，见模块说明）
     floor: int
     ec: int  # EC_NNN
     variant: int  # EC_NNN_0V；0 为无后缀
+    height: float  # 出现范围的高度
+    corners: tuple[tuple[float, float], ...]  # 出现范围四个角的 (x, z)
+
+    @property
+    def center(self) -> tuple[float, float, float]:
+        """出现范围的中心（世界坐标，y 为范围的高度）。"""
+        xs, zs = zip(*self.corners, strict=True)
+        return (sum(xs) / len(xs), self.height, sum(zs) / len(zs))
 
     @property
     def name(self) -> str:
@@ -110,6 +121,7 @@ class AnimalArea:
 
 
 _ANIMAL_TAIL = struct.Struct("<IIIIf")
+_ANIMAL_RANGE = struct.Struct("<xff16f")  # u8、半径、高度、4 个角（vector4）
 
 
 @dataclass(frozen=True)
@@ -149,7 +161,12 @@ def animal_areas(data: bytes) -> list[AnimalArea]:
         ec, variant, _, _, one = _ANIMAL_TAIL.unpack_from(data, p.end + 69)
         if one != 1.0:
             raise SobjError(f"cSetAnimalArea @{p.end:#x}：编号处不是（编号、变种、…、1.0），布局不符")
-        out.append(AnimalArea(pos=p.pos, floor=p.floor, ec=ec, variant=variant))
+        _, height, *v = _ANIMAL_RANGE.unpack_from(data, p.end + 69 + _ANIMAL_TAIL.size)
+        quad = [v[i : i + 4] for i in range(0, 16, 4)]
+        if any(y != height or w != 0.0 for _, y, _, w in quad):
+            raise SobjError(f"cSetAnimalArea @{p.end:#x}：出现范围的四个角不在同一高度，布局不符")
+        corners = tuple((x, z) for x, _, z, _ in quad)
+        out.append(AnimalArea(p.pos, p.floor, ec, variant, height, corners))
     return out
 
 

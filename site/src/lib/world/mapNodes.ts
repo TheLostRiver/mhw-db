@@ -22,6 +22,7 @@ export const CATEGORIES: { key: Category; label: string }[] = [
   { key: 'bonepile', label: '骨冢' },
   { key: 'specialty', label: '特产' },
   { key: 'creature', label: '交互环境生物' },
+  { key: 'endemic', label: '环境生物' },
   { key: 'env', label: '环境利用' },
   { key: 'treasure', label: '寻宝' },
   { key: 'npc', label: 'NPC' },

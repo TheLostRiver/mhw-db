@@ -167,6 +167,22 @@ test('寻宝（默认不画，勾选后显示线索）', async ({ page }) => {
   await expect(detail.getByRole('region', { name: '寻宝线索' })).toBeVisible();
 });
 
+test('环境生物（默认不画，选中后画出出现范围）', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/world/maps/ancient-forest/', { waitUntil: 'networkidle' });
+  const marks = page.locator(".mv-node__icon[data-cat='endemic']");
+  await expect(marks).toHaveCount(0);
+  await page.getByRole('radio', { name: '环境生物', exact: true }).click();
+  await page
+    .getByRole('button', { name: /绕行兔/ })
+    .first()
+    .click();
+  await expect(marks.first()).toBeAttached();
+  await page.locator('.mv-node:has(.mv-node__icon[data-cat="endemic"])').first().dispatchEvent('click');
+  await expect(page.getByRole('article', { name: '所选节点' })).toContainText('绕行兔');
+  await expect(page.locator('path.mv-range')).toHaveCount(1);
+});
+
 test('NPC（默认不画，勾选后出现）', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/world/maps/ancient-forest/', { waitUntil: 'networkidle' });

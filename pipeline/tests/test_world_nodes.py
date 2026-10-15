@@ -152,3 +152,30 @@ def test_treasure_hints_match_steps() -> None:
             assert k["name"]["zh-Hans"]
     # 每张图一个系列：古代树森林「分享的祝福 01–10」、陆珊瑚台地「传说的骑士 手札01–10」……
     assert stages()[101]["kinds"][0]["name"] is not None
+
+
+@pytest.mark.game
+@pytest.mark.skipif(not NODES.is_file(), reason="需要先运行 mhdb nodes")
+def test_endemic_life_names_from_notes() -> None:
+    """其余环境生物按调查笔记取名：笔记第 i 条 ↔ ec_info 第 i 条的编号 ↔ 捕获后的物品。
+    animal_names 里仍有名字的几种（粪金龟、仙人掌、雪球虫……）与笔记给出的物品同名，说明对应没有错位。"""
+    from mhdb.build.world_nodes import _Texts
+
+    items = {i["id"]: i for i in json.loads((DATA / "world" / "items.json").read_text("utf-8"))["items"]}
+    texts = _Texts(Source(RAW), items)
+    assert len(texts.ec_note) == 86
+    same = 0
+    for key, (item, _) in texts.ec_note.items():
+        if name := texts.animal_name(key):
+            # 铜馒头蟹 → animal_names 里是可互动的「铜馒头蟹的行李」
+            assert name["zh-Hans"].startswith(items[item]["name"]["zh-Hans"]), key
+            same += 1
+    assert same >= 15
+    st = stages()
+    endemic = {k["key"]: k["name"]["zh-Hans"] for k in st[101]["kinds"] if k["category"] == "endemic"}
+    assert endemic["EC_001"] == "绕行兔" and endemic["EC_003"] == "钴闪蝶"
+    assert next(k for k in st[108]["kinds"] if k["key"] == "EC_053")["name"]["zh-Hans"] == "胖衣企鹅"
+    # 位置取出现范围的中心：大蚁冢荒地等图的 ec.sobj 记录开头全是同一个占位坐标，以前全落在地图外
+    for sid, s in st.items():
+        off = [n for n in s["nodes"] if n["layer"] is None and n["_src"]["file"].endswith("_ec.sobj")]
+        assert not off, sid

@@ -447,6 +447,7 @@ export const MapNodeKind = z
       'specialty',
       'bug',
       'creature',
+      'endemic',
       'env',
       'treasure',
       'npc',
@@ -493,6 +494,8 @@ export const MapNode = z
     /** 营地：mCampId 与营地名 */
     campId: Int.min(0).optional(),
     label: Text.nullable().optional(),
+    /** 环境生物、虫：出现范围的四个角（地图坐标），节点位置是它的中心 */
+    quad: z.array(z.tuple([z.number(), z.number()])).length(4).optional(),
     /** 寻宝：这一张的第几处（0 起） */
     step: Int.min(0).optional(),
     _src: z.object({ file: z.string().startsWith('stage/') }).strict(),

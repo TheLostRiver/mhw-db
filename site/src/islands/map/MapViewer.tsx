@@ -32,7 +32,7 @@ const HALF_BELOW = -0.5;
 const FAR_BELOW = -1.25;
 /** 窄屏：节点详情浮在地图上，而不是放在右栏 */
 const NARROW = '(max-width: 900px)';
-const HIDDEN_BY_DEFAULT = new Set(['slinger', 'npc', 'treasure']);
+const HIDDEN_BY_DEFAULT = new Set(['slinger', 'npc', 'treasure', 'endemic']);
 
 const toLatLng = (x: number, y: number): L.LatLngTuple => [-y, x];
 const patchBounds = (p: MapPatch): L.LatLngBoundsExpression => [
@@ -57,6 +57,7 @@ export default function MapViewer({ stage, nodes, items }: Props) {
   const mapRef = useRef<L.Map | null>(null);
   const overlays = useRef(new Map<string, L.ImageOverlay>());
   const backdrop = useRef<L.ImageOverlay | null>(null);
+  const range = useRef<L.Polygon | null>(null);
   const labels = useRef(new Map<string, L.Marker>());
   const nodeLayer = useRef<L.LayerGroup | null>(null);
   const markers = useRef(new Map<number, L.Marker>());
@@ -258,6 +259,19 @@ export default function MapViewer({ stage, nodes, items }: Props) {
       m.setZIndexOffset(i === selected ? 1000 : camp ? 500 : 0);
     }
   }, [selected, hoverKind, shown, layer, rank, nodes, kinds]);
+
+  // 选中环境生物、虫时画出出现范围
+  useEffect(() => {
+    const map = mapRef.current;
+    range.current?.remove();
+    range.current = null;
+    const quad = selected !== null ? nodes?.nodes[selected]?.quad : undefined;
+    if (!map || !quad) return;
+    range.current = L.polygon(
+      quad.map(([x, y]) => toLatLng(x, y)),
+      { className: 'mv-range', interactive: false },
+    ).addTo(map);
+  }, [selected, nodes]);
 
   const flyTo = useCallback((x: number, y: number) => {
     const map = mapRef.current;

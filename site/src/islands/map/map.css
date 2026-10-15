@@ -140,6 +140,22 @@
   color: var(--mv-paper);
 }
 
+/* 选中环境生物、虫时的出现范围 */
+.mv .mv-range {
+  fill: var(--mv-gold);
+  fill-opacity: 0.18;
+  stroke: var(--mv-gold);
+  stroke-width: 2;
+  stroke-dasharray: 6 4;
+  animation: mv-range-in var(--dur-base) var(--ease-out);
+}
+
+@keyframes mv-range-in {
+  from {
+    opacity: 0;
+  }
+}
+
 /* 节点标记：游戏物品图标 + 深色描边，地图上看得清 */
 .mv .mv-node {
   display: grid;
@@ -1347,6 +1363,7 @@ li.mv-loot__row {
   .mv__dia::after,
   .mv__lnum,
   .mv-node__icon,
+  .mv .mv-range,
   .mv-detail,
   .mv__float {
     transition: none;

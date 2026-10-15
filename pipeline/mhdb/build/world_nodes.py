@@ -1,4 +1,4 @@
-"""大地图标记：采集点、矿脉、骨冢、特产、虫与鱼饵、投射器弹、营地、交互环境生物、环境利用、寻宝、NPC，
+"""大地图标记：采集点、矿脉、骨冢、特产、虫与鱼饵、投射器弹、营地、交互环境生物、环境生物、环境利用、寻宝、NPC，
 输出 data/world/map-nodes.json。
 
 来源（布局见各解析器，推断过程见 docs/DATA.md 4.2）：
@@ -8,13 +8,14 @@
   stage/stXXX/common/set/stXXX_gm.sobj            营地（gm013，带 mCampId）、少数矿脉、环境利用（落石、堰堤……）
   stage/stXXX/common/set/stXXX_gm_map.sobj        投射器弹（gimmick.gcd 种类 1）、怪物的粪、交互环境生物、
                                                    环境利用（回复露草、藤蔓陷阱……：gmk_names 有名字与说明的物件）
-  stage/stXXX/common/set/stXXX_ec.sobj            环境生物（只取交互环境生物，如铁鲎）
+  stage/stXXX/common/set/stXXX_ec.sobj            环境生物（cSetAnimalArea：出现范围的中心）
   stage/stXXX/common/set/stXXX_nNNN.sobj          野外 NPC（cVillageNpcSetter），名字在 chr_names 的 NNNN_NPC_NAME
   common/gimmick/gimmick.gcd                       物件种类 → 采集类型、两组抽选表
   common/item/pop_base.ppm                         采集类型 → 固定物品、采集次数、再生秒数
   stage/stXXX/common/data/stXXX[_1|_2].itlot       抽选表（下位 / 上位 / 大师）
   common/text/gmk_names                            物件名，键名就是物件名（gm000_012_00_NAME → 矿脉）
   common/text/animal_names                         虫与交互环境生物的名字（EC_032_01_NAME → 苦虫）
+  common/note/em_animal_note.emai + text/ec_info   其余环境生物：第 i 条笔记 ↔ 编号（NOTE_EC001_00）↔ 捕获后的物品
   common/gimmick/animal.gcd                        环境生物的地图图标（有图标的是交互环境生物，见 mhdb/formats/gcd.py）
   common/gimmick/gimmick.gcd +20                   环境利用的地图图标（同一图集）
   common/text/other_names                          营地名（ST101_Camp02 → 南西营地(1)），按括号里的区域号对应
@@ -35,7 +36,7 @@ import numpy as np
 
 from mhdb.build.common import Source, Text, tr
 from mhdb.formats import gcd, sobj
-from mhdb.games.world.specs import ITEM_LOT, POP_BASE
+from mhdb.games.world.specs import ANIMAL_NOTE, ITEM_LOT, POP_BASE
 from mhdb.images.world_icons import action_cells
 from mhdb.images.world_maps import RADAR_PER_WORLD, patch_masks
 
@@ -160,6 +161,20 @@ class _Texts:
         self.animal_icon = gcd.map_icons(s.path("common/gimmick/animal.gcd").read_bytes())
         self.gimmick_icon = gcd.map_icons(s.path("common/gimmick/gimmick.gcd").read_bytes())
         self.action = set(action_cells(s.root))  # cmn_action00 里有图的格子
+        # 环境生物调查笔记：em_animal_note 的第 i 条与 ec_info 的第 i 条（NOTE_EC001_00_DESC）一一对应，
+        # 前者给捕获后的物品，后者给编号与笔记 → 「EC_001」/「EC_001_01」→ (物品, 笔记)
+        notes = s.table("common/note/em_animal_note.emai", ANIMAL_NOTE)
+        info = s.text("common/text/ec_info")
+        order = sorted(info["zh-Hans"].keys)
+        if len(order) != len(notes):
+            raise ValueError(f"em_animal_note {len(notes)} 条与 ec_info {len(order)} 条对不上")
+        self.ec_note: dict[str, tuple[int, Text]] = {}
+        for i, row in zip(order, notes, strict=True):
+            m = re.fullmatch(r"NOTE_EC(\d{3})_(\d{2})_DESC", info["zh-Hans"].keys[i])
+            if not m:
+                raise ValueError(f"ec_info 第 {i} 条的键名 {info['zh-Hans'].keys[i]} 不是 NOTE_ECnnn_vv_DESC")
+            key = f"EC_{m.group(1)}" + (f"_{m.group(2)}" if m.group(2) != "00" else "")
+            self.ec_note[key] = (row["item"], tr(info, i))
         # 投射器弹的物品：物品名与物件名相同的那一个（石块、光苔……）
         self.by_name: dict[str, int] = {}
         for i in sorted(items.values(), key=lambda i: i["id"]):
@@ -212,6 +227,7 @@ def build_stage(
     kinds: dict[str, dict] = {}
     kind_states: dict[str, set[int]] = {}
     env_keys: dict[str, str] = {}  # 环境利用：名字 → 种类键
+    unnamed: set[str] = set()
     treasure: list[tuple[int, sobj.SetObject, str]] = []
     nodes, seen, states = [], set(), {}
 
@@ -287,28 +303,43 @@ def build_stage(
 
         for area in sobj.animal_areas(data):
             key = area.name
+            if key in unnamed:
+                continue
             icon = texts.animal_icon.get(key, 0)
             if area.ec == BUG_EC:
                 if key not in kinds:
                     kinds[key] = _bug_kind(key, area.variant, texts)
-            elif icon:
-                # 交互环境生物：animal.gcd 给了大地图图标的（回复蜜虫、瓦斯蛙、闪光翅虫……）
-                if key not in kinds:
-                    name = texts.animal_name(key)
-                    if name is None:
-                        log(f"  注意：st{stage} 环境生物 {key} 有地图图标但没有名字，跳过")
-                        texts.animal_icon[key] = 0
-                        continue
+            elif key not in kinds:
+                # 名字：animal_names 里有的直接用；其余按调查笔记（em_animal_note）取捕获后的物品名
+                note = texts.ec_note.get(key)
+                name = texts.animal_name(key) or (texts.items[note[0]]["name"] if note else None)
+                if name is None:
+                    if key not in unnamed:
+                        unnamed.add(key)
+                        log(f"  注意：st{stage} 环境生物 {key} 没有名字（不在调查笔记里），跳过")
+                    continue
+                desc = texts.animal_name(key, "DESC") or (note[1] if note else None)
+                if icon:
+                    # 交互环境生物：animal.gcd 给了大地图图标的（回复蜜虫、瓦斯蛙、闪光翅虫……）
                     kinds[key] = _plain_kind(key, "creature", name, None, f"common/gimmick/animal.gcd {key}")
                     kinds[key]["actionIcon"] = icon
-                    if desc := texts.animal_name(key, "DESC"):
-                        kinds[key]["desc"] = desc
-            else:
-                continue  # 其他环境生物：名字与物品的对应还没找到，暂不接入
-            add(key, area.pos, area.floor, rel, r, min_rank)
+                elif note:
+                    # 可以捕获的环境生物：图标、名字用捕获后的物品
+                    kinds[key] = _plain_kind(
+                        key, "endemic", name, note[0], f"common/note/em_animal_note.emai {key}"
+                    )
+                else:
+                    # 楔虫等：有名字、不能捕获、没有地图图标
+                    kinds[key] = _plain_kind(key, "env", name, None, f"common/text/animal_names {key}_NAME")
+                if desc:
+                    kinds[key]["desc"] = desc
+            # 位置取出现范围（四个角）的中心；记录开头的位置不是出现位置（见 mhdb/formats/sobj.py）
+            quad = [[round(x * to_map, 1), round(z * to_map, 1)] for x, z in area.corners]
+            add(key, area.center, area.floor, rel, r, min_rank, quad=quad)
 
     # 寻宝（古代树森林「分享的祝福」、陆珊瑚台地「传说的骑士 手札」……每张图一个系列）：
-    # 物件属性 mTeasureHintNo = 第几张 × 100 + 第几处（0 起）。多数是 gm000_242 提示点，也有挂在骨冢、矿脉等采集点上的。每张的标题与各处线索在 treasure_stXXX 的 {张-1}_STXXX_TITLE / _H{处}，
+    # 物件属性 mTeasureHintNo = 第几张 × 100 + 第几处（0 起）。多数是 gm000_242 提示点，
+    # 也有挂在骨冢、矿脉等采集点上的。每张的标题与各处线索在 treasure_stXXX 的 {张-1}_STXXX_TITLE / _H{处}，
     # 线索条数与处数逐张一致（见单测）；第 K 处对应线索 H{K} 按编号推断。
     tt = s.text(f"common/text/treasure_st{stage}")
     for hint, obj, rel in sorted(treasure, key=lambda e: e[0]):

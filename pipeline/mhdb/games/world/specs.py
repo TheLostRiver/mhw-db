@@ -146,6 +146,16 @@ WEAPON_TYPES = [
     ("lbg", "light-bowgun", "lbg", True),
 ]
 
+# 环境生物调查笔记（common/note/em_animal_note.emai，86 条）：第 i 条与 common/text/ec_info 的第 i 条
+# （NOTE_ECnnn_vv_DESC）对应，item 是捕获后的物品（绕行兔 659 ……）。stage_0–5 是出现的地图（101–105、108、
+# 109 导虫遗迹，0 为空）。group（0–4）、rare（稀有个体为 1，按名字推断）、large（鱼的大型个体物品）、
+# cond_0 / cond_1（时间、天气？）含义未确认，不使用。
+ANIMAL_NOTE = spec(
+    "em_animal_note.emai",
+    "item:I group:B pad_0:B pad_1:B pad_2:B rare:B pad_3:B large:I "
+    "stage_0:I stage_1:I stage_2:I stage_3:I stage_4:I stage_5:I cond_0:i cond_1:i",
+)
+
 # 采集点基础参数（common/item/pop_base.ppm，87 行）：物件公共参数 gimmick.gcd 的「采集类型」指向这里的行号。
 # kind：0 物品由布置文件指定（mPickItem）、1 固定物品、2 / 4 抽选表（骨冢、特产 / 矿脉，采集 3 次）、6 搬运物（蛋等）；
 # 其余取值含义未确认。respawn：复活秒数（药草 180、矿脉骨冢 300），未与游戏内核对。

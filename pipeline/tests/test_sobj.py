@@ -82,8 +82,13 @@ def animal_record(
     out += struct.pack("<9f", *pos, 0, 0, 0, 1, 1, 1)
     out += bytes([0, 1]) + struct.pack("<ii", floor, -1) + bytes(9) + struct.pack("<I", 4)
     out += quest.encode() + b"\0\0\0\0" + bytes(4) + b"\xcd" * 64 + b"\0"
-    out += struct.pack("<IIIIf", ec, variant, 1, 1, 1.0) + struct.pack("<f", 274.3) + bytes(16)
-    return out
+    out += struct.pack("<IIIIf", ec, variant, 1, 1, 1.0)
+    # 半径、高度、4 个角（以 pos 的 x、z 为中心的 20×10 长方形）、1 个点
+    x, y, z = pos
+    out += b"\0" + struct.pack("<ff", 274.3, y)
+    for dx, dz in ((-10, -5), (10, -5), (10, 5), (-10, 5)):
+        out += struct.pack("<4f", x + dx, y, z + dz, 0)
+    return out + struct.pack("<4f", x, y - 1, z, 0)
 
 
 def test_parse_animal_areas() -> None:
@@ -91,10 +96,11 @@ def test_parse_animal_areas() -> None:
         (4.0, 5.0, 6.0), 0, 43, 0, quest="q50601_kill"
     )
     areas = animal_areas(data)
-    assert [(a.name, a.floor, a.pos) for a in areas] == [
+    assert [(a.name, a.floor, a.center) for a in areas] == [
         ("EC_032_01", 2, (1.0, 2.0, 3.0)),
         ("EC_043", 0, (4.0, 5.0, 6.0)),
     ]
+    assert areas[0].corners[0] == (-9.0, -2.0)
 
 
 @pytest.mark.game
