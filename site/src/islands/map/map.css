@@ -1075,6 +1075,20 @@
   background: var(--c-surface-3);
 }
 
+/* 寻宝线索：像手写的纸条 */
+.mv-detail__hint {
+  display: grid;
+  gap: 6px;
+}
+
+.mv-detail__hint blockquote {
+  padding: 8px 10px;
+  border-left: 3px solid var(--mv-gold);
+  border-radius: 0 3px 3px 0;
+  background: color-mix(in srgb, var(--mv-gold) 8%, transparent);
+  font-size: var(--text-sm);
+}
+
 .mv-detail__state {
   margin: 0;
   justify-self: start;

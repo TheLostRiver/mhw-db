@@ -137,3 +137,18 @@ def test_environment_gimmicks() -> None:
     assert len(vines) == 4
     kinds = {k["key"]: k for k in st[101]["kinds"]}
     assert "gm025_000" in kinds["gm011_000"]["_src"]["gimmick"] and kinds["gm011_000"]["desc"]["zh-Hans"]
+
+
+@pytest.mark.game
+@pytest.mark.skipif(not NODES.is_file(), reason="需要先运行 mhdb nodes")
+def test_treasure_hints_match_steps() -> None:
+    """寻宝：每张的线索条数与地图上的处数一致，处的编号从 0 连续。"""
+    for sid, s in stages().items():
+        kinds = [k for k in s["kinds"] if k["category"] == "treasure"]
+        assert len(kinds) == 10, sid
+        for k in kinds:
+            steps = sorted(n["step"] for n in s["nodes"] if n["kind"] == k["key"])
+            assert steps == list(range(len(k["hints"]))), (sid, k["key"], steps, len(k["hints"]))
+            assert k["name"]["zh-Hans"]
+    # 每张图一个系列：古代树森林「分享的祝福 01–10」、陆珊瑚台地「传说的骑士 手札01–10」……
+    assert stages()[101]["kinds"][0]["name"] is not None

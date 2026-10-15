@@ -1,4 +1,4 @@
-"""大地图标记：采集点、矿脉、骨冢、特产、虫与鱼饵、投射器弹、营地、交互环境生物、环境利用、NPC，
+"""大地图标记：采集点、矿脉、骨冢、特产、虫与鱼饵、投射器弹、营地、交互环境生物、环境利用、寻宝、NPC，
 输出 data/world/map-nodes.json。
 
 来源（布局见各解析器，推断过程见 docs/DATA.md 4.2）：
@@ -18,6 +18,7 @@
   common/gimmick/animal.gcd                        环境生物的地图图标（有图标的是交互环境生物，见 mhdb/formats/gcd.py）
   common/gimmick/gimmick.gcd +20                   环境利用的地图图标（同一图集）
   common/text/other_names                          营地名（ST101_Camp02 → 南西营地(1)），按括号里的区域号对应
+  common/text/treasure_stXXX                       寻宝的标题与线索（地点是带 mTeasureHintNo 的物件）
 
 地图坐标：雷达 2×2 块瓦片（1640 雷达单位）覆盖世界坐标 ±50000，纸片像素 × 比例 = 雷达单位（maps.json 的
 scale），所以 纸片像素 = 世界坐标 × 1640 / 100000 / scale，原点重合。比例 0.5 的图是 1 像素 = 30.49 世界单位，
@@ -211,6 +212,7 @@ def build_stage(
     kinds: dict[str, dict] = {}
     kind_states: dict[str, set[int]] = {}
     env_keys: dict[str, str] = {}  # 环境利用：名字 → 种类键
+    treasure: list[tuple[int, sobj.SetObject, str]] = []
     nodes, seen, states = [], set(), {}
 
     def add(key: str, pos, floor: int, rel: str, r: int | None, min_rank: str | None, **extra) -> None:
@@ -233,6 +235,8 @@ def build_stage(
             continue
         data = s.path(rel).read_bytes()
         for obj in sobj.parse(data):
+            if isinstance(hint := obj.props.get("mTeasureHintNo"), int) and hint > 0:
+                treasure.append((hint, obj, rel))  # 寻宝的一处；也可能是骨冢等采集点，照常往下处理
             g = gimmicks.get(obj.name) or gimmicks.get(obj.gimmick)
             if obj.name.startswith(CAMP_PREFIX) and "mCampId" in obj.props:
                 if obj.name not in kinds:
@@ -302,6 +306,28 @@ def build_stage(
             else:
                 continue  # 其他环境生物：名字与物品的对应还没找到，暂不接入
             add(key, area.pos, area.floor, rel, r, min_rank)
+
+    # 寻宝（古代树森林「分享的祝福」、陆珊瑚台地「传说的骑士 手札」……每张图一个系列）：
+    # 物件属性 mTeasureHintNo = 第几张 × 100 + 第几处（0 起）。多数是 gm000_242 提示点，也有挂在骨冢、矿脉等采集点上的。每张的标题与各处线索在 treasure_stXXX 的 {张-1}_STXXX_TITLE / _H{处}，
+    # 线索条数与处数逐张一致（见单测）；第 K 处对应线索 H{K} 按编号推断。
+    tt = s.text(f"common/text/treasure_st{stage}")
+    for hint, obj, rel in sorted(treasure, key=lambda e: e[0]):
+        n, step = divmod(hint, 100)
+        key = f"treasure{n:02d}"
+        if key not in kinds:
+            text_key = f"{n - 1}_ST{stage}"
+            kinds[key] = _plain_kind(
+                key,
+                "treasure",
+                _keyed(tt, f"{text_key}_TITLE"),
+                None,
+                f"common/text/treasure_st{stage} {text_key}",
+            )
+            hints = []
+            while h := _keyed(tt, f"{text_key}_H{len(hints)}"):
+                hints.append(h)
+            kinds[key]["hints"] = hints
+        add(key, obj.pos, obj.floor, rel, None, None, step=step)
 
     # 野外 NPC（stXXX_nNNN.sobj）：同一人可能有几处位置（npc036_00–03），出现时机由任务 / 剧情决定。
     # 同名、同位置的只留一个（古代龙人 n036 / n040 的四处位置相同）。

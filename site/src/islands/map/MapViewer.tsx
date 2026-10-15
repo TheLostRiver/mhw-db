@@ -32,7 +32,7 @@ const HALF_BELOW = -0.5;
 const FAR_BELOW = -1.25;
 /** 窄屏：节点详情浮在地图上，而不是放在右栏 */
 const NARROW = '(max-width: 900px)';
-const HIDDEN_BY_DEFAULT = new Set(['slinger', 'npc']);
+const HIDDEN_BY_DEFAULT = new Set(['slinger', 'npc', 'treasure']);
 
 const toLatLng = (x: number, y: number): L.LatLngTuple => [-y, x];
 const patchBounds = (p: MapPatch): L.LatLngBoundsExpression => [

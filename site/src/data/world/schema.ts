@@ -448,6 +448,7 @@ export const MapNodeKind = z
       'bug',
       'creature',
       'env',
+      'treasure',
       'npc',
       'slinger',
       'carry',
@@ -461,6 +462,8 @@ export const MapNodeKind = z
     actionIcon: Int.min(1).optional(),
     /** 交互环境生物、环境利用的说明（animal_names / gmk_names） */
     desc: Text.optional(),
+    /** 寻宝：各处的线索（treasure_stXXX 的 _H0、_H1……），第 K 处对应第 K 条（按编号推断） */
+    hints: z.array(Text).optional(),
     /** 抽选表行号（关卡 itlot），通常 / 第二组（用途未确认） */
     lots: z.array(Int.min(0)),
     /** 采集次数（营地、虫、投射器弹没有这一项） */
@@ -490,6 +493,8 @@ export const MapNode = z
     /** 营地：mCampId 与营地名 */
     campId: Int.min(0).optional(),
     label: Text.nullable().optional(),
+    /** 寻宝：这一张的第几处（0 起） */
+    step: Int.min(0).optional(),
     _src: z.object({ file: z.string().startsWith('stage/') }).strict(),
   })
   .strict();

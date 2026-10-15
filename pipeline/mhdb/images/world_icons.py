@@ -233,6 +233,10 @@ def build(raw: Path, data: Path, out: Path, log=print) -> int:
         tex = map_gui.textures[init["Texture"]].path.replace("\\", "/")
         box = tuple(int(v) for v in init["mTextureRect"])
         save(_atlas(raw, f"{tex}.tex").crop(box), f"ui/stage-{stage}.webp")
+    # 寻宝（分享的祝福）的图标：map.gui treasureInfo 的 tex_icon（map_treasure 里红底的爪印）
+    init = next(o.init for o in map_gui.animations["treasureInfo"].objects if o.name == "tex_icon")
+    tex = map_gui.textures[init["Texture"]].path.replace("\\", "/")
+    save(_atlas(raw, f"{tex}.tex").crop(tuple(int(v) for v in init["mTextureRect"])), "ui/treasure.webp")
 
     # 大地图上的环境生物、环境利用图标（cmn_action00，格子编号由 animal.gcd / gimmick.gcd 给出，见 mhdb/formats/gcd.py）
     action = _atlas(raw, ACTION_ATLAS)

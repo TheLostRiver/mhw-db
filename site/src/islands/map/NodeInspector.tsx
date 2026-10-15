@@ -16,6 +16,8 @@ import {
 
 const fileName = (path: string) => path.split('/').at(-1) ?? path;
 const RESPAWN_NOTE = 'pop_base.ppm 里的秒数，含义按数值推断，尚未与游戏内计时核对';
+const HINT_NOTE =
+  '地点取自物件属性 mTeasureHintNo（第几张 × 100 + 第几处），线索按处的编号对应 treasure_stXXX 的 _H0、_H1……，未在游戏内核对；何时拿到这张寻宝图未解析';
 const MIN_RANK_NOTE = '这些点在 stXXX_high.sobjl 里单独加载，按文件名推断为上位起出现，尚未在游戏内核对';
 
 interface DetailProps {
@@ -71,6 +73,19 @@ export function NodeDetail({ stage, layers, index, rank, items, siblings, onFocu
             未确认
           </span>
         </p>
+      )}
+      {kind.hints && node.step !== undefined && (
+        <section className="mv-detail__hint" aria-label="寻宝线索">
+          <p className="mv-meta">
+            第 {node.step + 1} 处 / 共 {kind.hints.length} 处
+            <span className="mv-unconfirmed" title={HINT_NOTE}>
+              推断
+            </span>
+          </p>
+          {kind.hints[node.step] && (
+            <blockquote className="mv-detail__desc">{kind.hints[node.step]!['zh-Hans']}</blockquote>
+          )}
+        </section>
       )}
       {state && <p className="mv-detail__state">仅在「{state.name['zh-Hans']}」时出现</p>}
       {node.minRank && (

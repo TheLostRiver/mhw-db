@@ -134,7 +134,14 @@ function KindList({
   const q = query.trim().toLowerCase();
   const list = rows
     .filter((r) => (category === 'all' || r.kind.category === category) && (!q || r.text.includes(q)))
-    .sort((a, b) => Number(b.count > 0) - Number(a.count > 0) || b.count - a.count);
+    .sort(
+      (a, b) =>
+        Number(b.count > 0) - Number(a.count > 0) ||
+        // 寻宝按第几张排，其余按数量
+        (a.kind.category === 'treasure' && b.kind.category === 'treasure'
+          ? a.kind.key.localeCompare(b.kind.key)
+          : b.count - a.count),
+    );
   // 当前等级搜不到时，看看其他等级的抽选表里有没有
   const elsewhere =
     q && list.length === 0

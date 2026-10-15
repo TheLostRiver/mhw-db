@@ -150,6 +150,23 @@ test('环境利用', async ({ page }) => {
   await expect(page.getByRole('article', { name: '所选节点' })).toContainText('大自然陷阱');
 });
 
+test('寻宝（默认不画，勾选后显示线索）', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/world/maps/ancient-forest/', { waitUntil: 'networkidle' });
+  const marks = page.locator(".mv-node__icon[data-cat='treasure']");
+  await expect(marks).toHaveCount(0);
+  await page.getByRole('radio', { name: '寻宝' }).click();
+  await page
+    .getByRole('button', { name: /分享的祝福\s*04/ })
+    .first()
+    .click();
+  await expect(marks).toHaveCount(2);
+  await page.locator('.mv-node:has(.mv-node__icon[data-cat="treasure"])').first().dispatchEvent('click');
+  const detail = page.getByRole('article', { name: '所选节点' });
+  await expect(detail).toContainText('共 2 处');
+  await expect(detail.getByRole('region', { name: '寻宝线索' })).toBeVisible();
+});
+
 test('NPC（默认不画，勾选后出现）', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/world/maps/ancient-forest/', { waitUntil: 'networkidle' });
