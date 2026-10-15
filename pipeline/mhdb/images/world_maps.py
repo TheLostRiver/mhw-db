@@ -216,7 +216,30 @@ def camps_of(src: Source, stage: int) -> Camps:
     return Camps(points, areas)
 
 
-def _relabel(pieces, rows, match, unions, scale, region_of, camps: Camps, stage: int, log) -> dict[int, int]:
+# UI 区域文件（stXXX_ui.zon）里的区域长方体按纸片表的行序排列的地图（按采集点投票核对：瘴气之谷 14/14、
+# 陆珊瑚台地 12/13 与重排后的区域号一致）。其余地图的形状是棱柱、条数与纸片表对不上，不用。
+ZONE_BOX_STAGES = (102, 103, 104)
+
+
+def zone_boxes(raw: Path, stage: int) -> dict[int, tuple[float, float, float, float]]:
+    """纸片表行号 → 该区域 UI 长方体在雷达坐标里的 (x0, y0, x1, y1)（世界 x、z）。"""
+    from mhdb.formats import zon
+
+    rel = raw / f"stage/st{stage}/common/zone/st{stage}_ui.zon"
+    if stage not in ZONE_BOX_STAGES or not rel.is_file():
+        return {}
+    out = {}
+    for k, s in enumerate(zon.ui_shapes(rel.read_bytes())[: len(MAP_PATCHES[stage])]):
+        if isinstance(s, zon.Box):
+            xs = sorted((s.lo[0] * RADAR_PER_WORLD, s.hi[0] * RADAR_PER_WORLD))
+            zs = sorted((s.lo[2] * RADAR_PER_WORLD, s.hi[2] * RADAR_PER_WORLD))
+            out[k] = (xs[0], zs[0], xs[1], zs[1])
+    return out
+
+
+def _relabel(
+    pieces, rows, match, unions, scale, region_of, camps: Camps, zones: dict, stage: int, log
+) -> dict[int, int]:
     """区域号复核：按相关性配对时，长得像的相邻地面纸片会互换区域号（营地名里的区域号证实了这一点）。
     这里先按配对结果求出每块纸片的落位，再按「纸片不透明处落在各区域边线包围盒里的比例」在同一层内重新配对；
     营地是锚点：每个营地必须落在营地名所写区域的纸片上（营地与营地名的对应未知，按包含关系做一一配对）。
@@ -250,6 +273,12 @@ def _relabel(pieces, rows, match, unions, scale, region_of, camps: Camps, stage:
                 continue
             x0, y0, x1, y1 = box
             score[i, j] = float(((rx >= x0) & (rx <= x1) & (ry >= y0) & (ry <= y1)).mean())
+            # 有 UI 区域长方体时只用它（游戏数据里区域与长方体一一对应，营地都落在营地名所写区域的长方体里；
+            # 雷达边线只是包围盒，相邻区域常重叠）
+            if (zb := zones.get(rows[j][0])) is not None:
+                zx0, zy0, zx1, zy1 = zb
+                inside = ((rx >= zx0) & (rx <= zx1) & (ry >= zy0) & (ry <= zy1)).mean()
+                score[i, j] = float(inside)
     current = {i: j for j, i in match.items()}
     for i, j in current.items():
         score[i, j] += 0.25  # 重叠差不多时保留原配对
@@ -260,7 +289,7 @@ def _relabel(pieces, rows, match, unions, scale, region_of, camps: Camps, stage:
 
     new = solve(score)
     # 营地锚点：营地 ↔ 营地名区域号一一配对（营地落在某区域的纸片上得 1 分），配不上的营地按排除法对应剩下的名字
-    if camps.points and len(camps.areas) == len(camps.points):
+    if camps.points and len(camps.areas) == len(camps.points) and not zones:
         area_of = {i: rows[j][3] for j, i in new.items()}
         fit = np.array(
             [
@@ -351,7 +380,7 @@ def register(raw: Path, radar_gui: guifmt.Gui, stage: int, camps: Camps, log=pri
             match[j] = i
 
     before = dict(match)
-    match = _relabel(pieces, rows, match, unions, scale, region_of, camps, stage, log)
+    match = _relabel(pieces, rows, match, unions, scale, region_of, camps, zone_boxes(raw, stage), stage, log)
     row_of = {i: j for j, i in before.items()}
 
     # 精修：在工作分辨率 1 下复算一次平移

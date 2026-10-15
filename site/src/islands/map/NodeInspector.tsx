@@ -4,14 +4,13 @@
 import { useMemo } from 'react';
 import type { MapNodeStage, Rank } from '../../data/world/schema';
 import {
-  CAMP_ICON,
   RANK_LABEL,
   formatChance,
   itemIconUrl,
+  kindIconUrl,
   kindName,
   layerCounts,
   lotRows,
-  mainItem,
   type MapItems,
 } from '../../lib/world/mapNodes';
 
@@ -34,9 +33,8 @@ interface DetailProps {
 export function NodeDetail({ stage, layers, index, rank, items, siblings, onFocus, onClose }: DetailProps) {
   const node = stage.nodes[index]!;
   const kind = stage.kinds.find((k) => k.key === node.kind)!;
-  const main = mainItem(kind, stage, rank);
   const camp = kind.category === 'camp';
-  const icon = camp ? CAMP_ICON : main !== null && items[main] ? itemIconUrl(items[main]) : null;
+  const icon = kindIconUrl(kind, stage, rank, items);
   const state = node.state !== null ? stage.states.find((s) => s.id === node.state) : undefined;
   const at = siblings.indexOf(index);
   const step = (d: number) => onFocus(siblings[(at + d + siblings.length) % siblings.length]!);
@@ -65,6 +63,7 @@ export function NodeDetail({ stage, layers, index, rank, items, siblings, onFocu
         </div>
         <button type="button" className="mv-detail__close" aria-label="关闭" onClick={onClose} />
       </header>
+      {kind.desc && <p className="mv-detail__desc">{kind.desc['zh-Hans']}</p>}
       {state && <p className="mv-detail__state">仅在「{state.name['zh-Hans']}」时出现</p>}
       {node.minRank && (
         <p className="mv-detail__state mv-detail__state--rank">
@@ -224,13 +223,7 @@ export default function NodeInspector({
         <h3 className="mv-h">已选种类</h3>
         <ul className="mv-cards">
           {groups.map(({ kind, list, counts }) => {
-            const main = mainItem(kind, stage, rank);
-            const icon =
-              kind.category === 'camp'
-                ? CAMP_ICON
-                : main !== null && items[main]
-                  ? itemIconUrl(items[main])
-                  : null;
+            const icon = kindIconUrl(kind, stage, rank, items);
             const here = list.find((i) => stage.nodes[i]!.layer === layer) ?? list[0]!;
             return (
               <li key={kind.key}>

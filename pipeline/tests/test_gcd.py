@@ -3,7 +3,7 @@ import struct
 import pytest
 
 from mhdb.config import DATA_RAW
-from mhdb.formats.gcd import MAGIC, GcdError, parse
+from mhdb.formats.gcd import MAGIC, GcdError, animal_icons, parse
 
 
 def body(pop: int, lots: tuple[int, int], kind: int, seconds: float) -> bytes:
@@ -51,3 +51,21 @@ def test_gimmick_table_against_game() -> None:
     assert (g["gm000_028_00"].pop, g["gm000_028_00"].lots) == (13, (2, 3))  # 骨冢
     assert (g["gm000_029_01"].pop, g["gm000_029_01"].lots) == (67, (10, 10))  # 百阳草
     assert g["gm000_000_00"].kind == 1 and g["gm000_010_00"].kind == 2  # 投射器弹 / 采集
+
+
+ANIMAL = DATA_RAW / "world/common/gimmick/animal.gcd"
+
+
+@pytest.mark.game
+@pytest.mark.skipif(not ANIMAL.is_file(), reason="需要先运行 mhdb extract")
+def test_animal_map_icons_against_game() -> None:
+    icons = animal_icons(ANIMAL.read_bytes())
+    assert len(icons) == 110
+    # 回复蜜虫、麻痹瓦斯蛙、闪光翅虫、虫（采集）、绕行兔（不显示）
+    assert (icons["EC_020"], icons["EC_018"], icons["EC_025"], icons["EC_032_01"], icons["EC_001"]) == (
+        16,
+        17,
+        18,
+        3,
+        0,
+    )

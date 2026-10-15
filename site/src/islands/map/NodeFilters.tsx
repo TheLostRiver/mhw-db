@@ -5,13 +5,11 @@ import { useId, useMemo, useState, type KeyboardEvent } from 'react';
 import type { MapNodeStage, MapPatch, MapStage, Rank } from '../../data/world/schema';
 import { layerName } from '../../lib/world/maps';
 import {
-  CAMP_ICON,
   CATEGORIES,
   RANK_LABEL,
-  itemIconUrl,
+  kindIconUrl,
   kindName,
   lotItemNames,
-  mainItem,
   type Category,
   type MapItems,
 } from '../../lib/world/mapNodes';
@@ -120,17 +118,11 @@ function KindList({
     () =>
       nodes.kinds.map((k) => {
         const lot = k.lots.length ? lotItemNames(k, nodes, rank, items) : [];
-        const main = mainItem(k, nodes, rank);
         return {
           kind: k,
           name: kindName(k, nodes, rank, items),
           sub: lot.join('・'),
-          icon:
-            k.category === 'camp'
-              ? CAMP_ICON
-              : main !== null && items[main]
-                ? itemIconUrl(items[main])
-                : null,
+          icon: kindIconUrl(k, nodes, rank, items),
           count: counts.get(k.key) ?? 0,
           // 搜索：名称、抽选表里的物品
           text: [kindName(k, nodes, rank, items), ...lot].join(' ').toLowerCase(),
@@ -294,9 +286,8 @@ function StateList({ nodes, items, rank, envState, onEnvState }: Props & { nodes
               {add && (
                 <span className="mv-state__adds">
                   {[...add.keys()].map((key) => {
-                    const id = mainItem(kinds.get(key)!, nodes, rank);
-                    const it = id !== null ? items[id] : undefined;
-                    return it ? <img key={key} src={itemIconUrl(it)} alt="" width={64} height={64} /> : null;
+                    const src = kindIconUrl(kinds.get(key)!, nodes, rank, items);
+                    return src ? <img key={key} src={src} alt="" width={64} height={64} /> : null;
                   })}
                   <span>+{total}</span>
                 </span>

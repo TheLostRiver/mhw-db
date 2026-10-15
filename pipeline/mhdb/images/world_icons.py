@@ -4,6 +4,7 @@
   cmn_item00   64px 网格：技能徽章 96；饰品宝石 66/67/68/72（1–4 级）；防具 144–148；护石 149；
                衣装 112、烟筒 113；武器 160–173；物品按 itemData 的图标编号与颜色全部输出（item/）
   cmn_status00 64px 网格：攻击、会心、属性等状态图标（彩色，原样输出）
+  cmn_action00 64px 网格：大地图上交互环境生物的图标（彩色，原样输出）
   common00     非网格：镶嵌槽框与宝石，按坐标裁切
   equip_egc    非网格：自定义强化的格数六边形
   status00 / menu00 / itemMenu00 / common00  菜单界面零件（UI_SPRITES），按坐标裁切
@@ -219,6 +220,13 @@ def build(raw: Path, data: Path, out: Path, log=print) -> int:
         tex = map_gui.textures[init["Texture"]].path.replace("\\", "/")
         box = tuple(int(v) for v in init["mTextureRect"])
         save(_atlas(raw, f"{tex}.tex").crop(box), f"ui/stage-{stage}.webp")
+
+    # 大地图上的环境生物图标（cmn_action00，格子编号由 animal.gcd 给出，见 mhdb/formats/gcd.py）
+    action = _atlas(raw, "ui/common/tex/cmn_action00_ID.tex")
+    for i in range((action.width // 64) * (action.height // 64)):
+        cell = grid_cell(action, i)
+        if cell.getchannel("A").getbbox():
+            save(cell, f"action/{i}.webp")
 
     # 状态图标原样输出
     for i in range((status.width // 64) * (status.height // 64)):

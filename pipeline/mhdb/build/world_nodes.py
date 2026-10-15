@@ -1,16 +1,18 @@
-"""大地图标记：采集点、矿脉、骨冢、特产、虫与鱼饵、投射器弹、营地，输出 data/world/map-nodes.json。
+"""大地图标记：采集点、矿脉、骨冢、特产、虫与鱼饵、投射器弹、营地、交互环境生物，输出 data/world/map-nodes.json。
 
 来源（布局见各解析器，推断过程见 docs/DATA.md 4.2）：
   stage/stXXX/common/set/stXXX_pop_map.sobj       常驻的采集点；cSetAnimalArea 里的 EC_032 是虫与鱼饵
   stage/stXXX/common/set/stXXX_pop_high_map.sobj  结晶矿脉，由 stXXX_high.sobjl 单独加载（推断为上位起）
   stage/stXXX/common/set/stXXX_pop_rN.sobj        环境状态（「矿脉增殖中」等）时追加的采集点
   stage/stXXX/common/set/stXXX_gm.sobj            营地（gm013，带 mCampId）、少数矿脉
-  stage/stXXX/common/set/stXXX_gm_map.sobj        投射器弹（gimmick.gcd 种类 1）、怪物的粪
+  stage/stXXX/common/set/stXXX_gm_map.sobj        投射器弹（gimmick.gcd 种类 1）、怪物的粪、交互环境生物
+  stage/stXXX/common/set/stXXX_ec.sobj            环境生物（只取交互环境生物，如铁鲎）
   common/gimmick/gimmick.gcd                       物件种类 → 采集类型、两组抽选表
   common/item/pop_base.ppm                         采集类型 → 固定物品、采集次数、再生秒数
   stage/stXXX/common/data/stXXX[_1|_2].itlot       抽选表（下位 / 上位 / 大师）
   common/text/gmk_names                            物件名，键名就是物件名（gm000_012_00_NAME → 矿脉）
-  common/text/animal_names                         虫的名字（EC_032_01_NAME → 苦虫）
+  common/text/animal_names                         虫与交互环境生物的名字（EC_032_01_NAME → 苦虫）
+  common/gimmick/animal.gcd                        环境生物的地图图标（有图标的是交互环境生物，见 mhdb/formats/gcd.py）
   common/text/other_names                          营地名（ST101_Camp02 → 南西营地(1)），按括号里的区域号对应
 
 地图坐标：雷达 2×2 块瓦片（1640 雷达单位）覆盖世界坐标 ±50000，纸片像素 × 比例 = 雷达单位（maps.json 的
@@ -148,6 +150,7 @@ class _Texts:
         self.quest = s.text("common/text/cm_quest")
         self.places = s.text("common/text/other_names")
         self.items = items
+        self.animal_icon = gcd.animal_icons(s.path("common/gimmick/animal.gcd").read_bytes())
         # 投射器弹的物品：物品名与物件名相同的那一个（石块、光苔……）
         self.by_name: dict[str, int] = {}
         for i in sorted(items.values(), key=lambda i: i["id"]):
@@ -155,6 +158,11 @@ class _Texts:
 
     def gimmick(self, name: str) -> Text | None:
         return _keyed(self.gmk, f"{name}_NAME")
+
+    def animal_name(self, key: str, field: str = "NAME") -> Text | None:
+        """animal_names 的键名有两种写法：EC_043_01_NAME 与 EC_043_1_NAME（说明为 _DESC）。"""
+        short = re.sub(r"_0(\d)$", r"_\1", key)
+        return _keyed(self.animal, f"{key}_{field}") or _keyed(self.animal, f"{short}_{field}")
 
     def camps(self, stage: int) -> dict[int, Text]:
         """营地名里括号中的区域号 → 营地名（ST101_Camp02 → 南西营地(1)）。"""
@@ -174,6 +182,7 @@ def _set_files(stage: int) -> list[tuple[str, int | None, str | None]]:
         (f"{st}_pop_high_map.sobj", None, "high"),
         (f"{st}_gm.sobj", None, None),
         (f"{st}_gm_map.sobj", None, None),
+        (f"{st}_ec.sobj", None, None),
     ]
     return files + [(f"{st}_pop_r{n}.sobj", n, None) for n in range(7)]
 
@@ -249,14 +258,27 @@ def build_stage(
                 kinds[obj.name] = _gather_kind(obj.name, g, pop, item, lots, texts.gimmick(obj.name))
             add(obj.name, obj.pos, obj.floor, rel, r, min_rank)
 
-        if "_pop_" in fname:
-            for area in sobj.animal_areas(data):
-                if area.ec != BUG_EC:
-                    continue  # 其他环境生物（EC_054 等）暂不接入
-                key = area.name
+        for area in sobj.animal_areas(data):
+            key = area.name
+            icon = texts.animal_icon.get(key, 0)
+            if area.ec == BUG_EC:
                 if key not in kinds:
                     kinds[key] = _bug_kind(key, area.variant, texts)
-                add(key, area.pos, area.floor, rel, r, min_rank)
+            elif icon:
+                # 交互环境生物：animal.gcd 给了大地图图标的（回复蜜虫、瓦斯蛙、闪光翅虫……）
+                if key not in kinds:
+                    name = texts.animal_name(key)
+                    if name is None:
+                        log(f"  注意：st{stage} 环境生物 {key} 有地图图标但没有名字，跳过")
+                        texts.animal_icon[key] = 0
+                        continue
+                    kinds[key] = _plain_kind(key, "creature", name, None, f"common/gimmick/animal.gcd {key}")
+                    kinds[key]["actionIcon"] = icon
+                    if desc := texts.animal_name(key, "DESC"):
+                        kinds[key]["desc"] = desc
+            else:
+                continue  # 其他环境生物：名字与物品的对应还没找到，暂不接入
+            add(key, area.pos, area.floor, rel, r, min_rank)
 
     patches = stage_map["patches"]
     located = [_depth(masks, patches, n["x"], n["y"]) for n in nodes]

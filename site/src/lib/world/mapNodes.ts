@@ -21,12 +21,26 @@ export const CATEGORIES: { key: Category; label: string }[] = [
   { key: 'mining', label: '矿脉' },
   { key: 'bonepile', label: '骨冢' },
   { key: 'specialty', label: '特产' },
+  { key: 'creature', label: '交互环境生物' },
   { key: 'slinger', label: '投射器弹' },
   { key: 'carry', label: '搬运物' },
   { key: 'other', label: '其他' },
 ];
 
 export const CAMP_ICON = '/assets/game/world/ui/camp.webp';
+
+/** 种类在地图上的图标：营地用帐篷，交互环境生物用游戏地图上的图标，其余用代表物品的图标 */
+export function kindIconUrl(
+  kind: MapNodeKind,
+  stage: MapNodeStage,
+  rank: Rank,
+  items: MapItems,
+): string | null {
+  if (kind.category === 'camp') return CAMP_ICON;
+  if (kind.actionIcon) return `/assets/game/world/action/${kind.actionIcon}.webp`;
+  const id = mainItem(kind, stage, rank);
+  return id !== null && items[id] ? itemIconUrl(items[id]) : null;
+}
 export const stageEmblemUrl = (stageId: number): string => `/assets/game/world/ui/stage-${stageId}.webp`;
 
 export const RANK_LABEL: Record<Rank, string> = { low: '下位', high: '上位', master: '大师' };

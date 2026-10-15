@@ -9,11 +9,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { MapNodeStage, MapPatch, MapStage, Rank } from '../../data/world/schema';
 import { labelPoint, patchUrl } from '../../lib/world/maps';
 import {
-  CAMP_ICON,
   RANK_LABEL,
-  itemIconUrl,
+  kindIconUrl,
   kindName,
-  mainItem,
   nodeInRank,
   nodeVisibleIn,
   type MapItems,
@@ -209,11 +207,9 @@ export default function MapViewer({ stage, nodes, items }: Props) {
       const n = nodes.nodes[i]!;
       if (n.layer !== layer) continue;
       const kind = kinds.get(n.kind)!;
-      const id = mainItem(kind, nodes, rank);
-      const item = id !== null ? items[id] : undefined;
       const camp = kind.category === 'camp';
       const name = (camp && n.label?.['zh-Hans']) || kindName(kind, nodes, rank, items);
-      const src = camp ? CAMP_ICON : item ? itemIconUrl(item) : null;
+      const src = kindIconUrl(kind, nodes, rank, items);
       const img = src ? `<img src="${src}" alt="" width="64" height="64" draggable="false">` : '';
       const size = camp ? 38 : 28;
       const marker = L.marker(toLatLng(n.x, n.y), {

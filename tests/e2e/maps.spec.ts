@@ -122,3 +122,14 @@ test('营地与地区徽章', async ({ page }) => {
   await page.locator('.mv-node:has(.mv-node__icon[data-cat="camp"])').dispatchEvent('click');
   await expect(page.getByRole('article', { name: '所选节点' })).toContainText('古代树营地(17)');
 });
+
+test('交互环境生物', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/world/maps/ancient-forest/', { waitUntil: 'networkidle' });
+  await page.getByRole('radio', { name: '交互环境生物' }).click();
+  const row = page.getByRole('button', { name: /回复蜜虫/ }).first();
+  await expect(row).toBeVisible();
+  await expect(page.locator(".mv-node__icon[data-cat='creature']").first()).toBeAttached();
+  await page.locator('.mv-node:has(.mv-node__icon[data-cat="creature"])').first().dispatchEvent('click');
+  await expect(page.getByRole('article', { name: '所选节点' })).toContainText('生物');
+});

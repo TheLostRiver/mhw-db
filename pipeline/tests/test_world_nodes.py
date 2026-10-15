@@ -84,3 +84,21 @@ def test_camps_bugs_and_slinger() -> None:
     assert kinds["gm000_000_00"]["name"]["zh-Hans"] == "石块"
     # 结晶矿脉（pop_high_map）上位起
     assert {n["minRank"] for n in af["nodes"] if n["kind"] == "gm000_067_00"} == {"high"}
+
+
+@pytest.mark.game
+@pytest.mark.skipif(not NODES.is_file(), reason="需要先运行 mhdb nodes")
+def test_interactive_endemic_life() -> None:
+    st = stages()
+    creatures = {
+        sid: {
+            k["key"]: (k["name"]["zh-Hans"], k["actionIcon"])
+            for k in s["kinds"]
+            if k["category"] == "creature"
+        }
+        for sid, s in st.items()
+    }
+    assert creatures[101]["EC_020"] == ("回复蜜虫", 16)
+    assert creatures[101]["EC_018"] == ("麻痹瓦斯蛙", 17)
+    assert creatures[102]["EC_043_01"] == ("仙人掌", 25)  # 键名写作 EC_043_1_NAME
+    assert creatures[108]["EC_010_02"] == ("雪球虫", 23)
