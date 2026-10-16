@@ -1,0 +1,167 @@
+---
+import SiteLayout from '../../../layouts/SiteLayout.astro';
+import CustomTabs from '../../../components/site/CustomTabs.astro';
+import FilterBox from '../../../components/site/FilterBox.astro';
+import Materials from '../../../components/site/Materials.astro';
+import { itemById, loadWeaponCustom } from '../../../data/world/load';
+import type { WeaponType } from '../../../data/world/schema';
+import { WEAPON_ORDER, WEAPON_TYPE_NAMES, weaponIconUrl } from '../../../lib/world/weapons';
+
+export function getStaticPaths() {
+  return WEAPON_ORDER.map((type) => ({ params: { type } }));
+}
+
+const type = Astro.params.type as WeaponType;
+const parts = loadWeaponCustom().parts[type] ?? [];
+const stages = [...new Set(parts.map((p) => p.stage))].sort((a, b) => a - b);
+const ROMAN = ['', 'Ⅰ', 'Ⅱ', 'Ⅲ', 'Ⅳ', 'Ⅴ', 'Ⅵ', 'Ⅶ'];
+const LABELS = {
+  attack: '攻击',
+  affinity: '会心',
+  element: '属性',
+  defense: '防御',
+  sharpness: '锐利度',
+} as const;
+type Key = keyof typeof LABELS;
+// 攻击为真实值（已核对），会心为 %，属性按真实值（显示 ×10，推断），锐利度单位未确认
+const effectText = (k: Key, v: number) =>
+  k === 'affinity' ? `会心 +${v}%` : k === 'element' ? `属性 +${v * 10}` : `${LABELS[k]} +${v}`;
+const lines = (t?: string) => (t ?? '').replace(/\n/g, '');
+---
+
+<SiteLayout
+  title={`${WEAPON_TYPE_NAMES[type]} · 零件强化`}
+  current="encyclopedia"
+  description={`怪物猎人：世界 冰原 ${WEAPON_TYPE_NAMES[type]}的零件强化：各阶段零件、效果与素材`}
+  wide
+>
+  <nav class="s-crumbs" aria-label="位置">
+    <a href="/world/encyclopedia/">百科</a>
+    <a href="/world/custom-parts/">零件强化</a>
+    <span>{WEAPON_TYPE_NAMES[type]}</span>
+  </nav>
+  <div class="s-head">
+    <h1>
+      {WEAPON_TYPE_NAMES[type]} · 零件强化 <span class="b-label">{parts.length} 个零件</span>
+    </h1>
+    <p>每个强化阶段从下列零件里选一个，效果累加。素材的名称可点击跳到道具一览。</p>
+  </div>
+  <CustomTabs current="parts" />
+  <nav class="s-tabs" aria-label="武器种类">
+    {WEAPON_ORDER.map((w) => (
+      <a href={`/world/custom-parts/${w}/`} aria-current={w === type ? 'page' : undefined}>
+        <img src={weaponIconUrl(w, 0)} alt="" width="22" height="22" loading="lazy" />
+        {WEAPON_TYPE_NAMES[w]}
+      </a>
+    ))}
+  </nav>
+  <FilterBox label="按零件名或素材筛选" placeholder="按零件名或素材筛选" />
+
+  <div class="cp-stages">
+    {stages.map((s) => (
+      <section class="cp-stage" data-filter-section>
+        <h2>
+          <span>{ROMAN[s]}</span>强化阶段 {s}
+        </h2>
+        <ul>
+          {parts
+            .filter((p) => p.stage === s)
+            .map((p) => (
+              <li
+                class="cp-part"
+                data-filter-row
+                data-text={[
+                  p.name['zh-Hans'],
+                  p.name.en,
+                  ...p.materials.map((m) => itemById(m.item)?.name['zh-Hans'] ?? ''),
+                ]
+                  .join(' ')
+                  .toLowerCase()}
+              >
+                <div class="cp-part__head">
+                  <strong title={lines(p.desc?.['zh-Hans'])}>{p.name['zh-Hans']}</strong>
+                  {(Object.entries(p.effect) as [Key, number][]).map(([k, v]) => (
+                    <span class={`cp-fx cp-fx--${k}`}>{effectText(k, v)}</span>
+                  ))}
+                </div>
+                <Materials materials={p.materials} />
+              </li>
+            ))}
+        </ul>
+      </section>
+    ))}
+  </div>
+
+  <p class="s-note">
+    数据来源：<code>common/equip/customParts.cus_pa</code>（零件与效果）、<code>customParts.cus_par</code>
+    （素材）与零件文本。 攻击 +1 为真实值（已在游戏内核对）；属性按真实值 × 10
+    显示（推断）；锐利度加值的单位未确认。
+  </p>
+</SiteLayout>
+
+<style>
+  .cp-stages {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+    gap: var(--space-4);
+    align-items: start;
+  }
+
+  .cp-stage h2 {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-2);
+    margin: 0 0 var(--space-2);
+    padding-bottom: var(--space-2);
+    border-bottom: 1px solid var(--c-line-strong);
+    font-size: var(--text-md);
+  }
+
+  .cp-stage h2 span {
+    color: var(--c-accent);
+    font-family: 'Noto Serif SC Variable', serif;
+    font-size: var(--text-xl);
+  }
+
+  .cp-stage ul {
+    display: grid;
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .cp-part {
+    display: grid;
+    gap: 6px;
+    padding: var(--space-3);
+    border-radius: var(--radius);
+    background: var(--c-surface);
+    box-shadow: inset 0 0 0 1px var(--c-line);
+  }
+
+  .cp-part__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--space-2);
+  }
+
+  .cp-fx {
+    padding: 0 6px;
+    border-radius: 3px;
+    background: var(--c-accent-soft);
+    color: var(--c-accent);
+    font-size: var(--text-xs);
+  }
+
+  .cp-fx--element {
+    background: color-mix(in oklab, var(--el-fire) 14%, transparent);
+    color: var(--el-fire);
+  }
+
+  .cp-fx--defense {
+    background: color-mix(in oklab, var(--c-amber) 14%, transparent);
+    color: var(--c-amber);
+  }
+</style>

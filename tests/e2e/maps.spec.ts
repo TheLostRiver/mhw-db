@@ -20,7 +20,9 @@ test('地图列表', async ({ page }) => {
   await expect(cards.first()).toBeVisible();
   expect(await cards.count()).toBeGreaterThanOrEqual(6);
   await expect(page.getByRole('link', { name: /古代树森林/ })).toBeVisible();
-  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+  );
   expect(overflow, '页面不应横向溢出').toBeLessThanOrEqual(1);
   expect(errors).toEqual([]);
 });
@@ -40,7 +42,9 @@ for (const theme of ['light', 'dark'] as const) {
     ).toBeGreaterThan(0);
     // 地面层显示 12 个区域号，上层的隐藏
     await expect(page.locator(".mv-area[data-state='current']")).toHaveCount(12);
-    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    );
     expect(overflow, '页面不应横向溢出').toBeLessThanOrEqual(1);
     expect(errors, '不应有控制台错误').toEqual([]);
     await page.screenshot({ path: `test-results/maps-af-${theme}-${info.project.name}.png` });

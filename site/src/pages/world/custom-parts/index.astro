@@ -1,0 +1,40 @@
+---
+import SiteLayout from '../../../layouts/SiteLayout.astro';
+import CustomTabs from '../../../components/site/CustomTabs.astro';
+import { loadWeaponCustom } from '../../../data/world/load';
+import { WEAPON_ORDER, WEAPON_TYPE_NAMES, weaponIconUrl } from '../../../lib/world/weapons';
+
+const parts = loadWeaponCustom().parts;
+---
+
+<SiteLayout
+  title="零件强化 · 武器"
+  current="encyclopedia"
+  description="怪物猎人：世界 冰原 武器零件强化：各武器种每个强化阶段可选的零件、效果与素材"
+>
+  <nav class="s-crumbs" aria-label="位置">
+    <a href="/world/encyclopedia/">百科</a>
+    <a href="/world/weapons/">武器</a>
+    <span>零件强化</span>
+  </nav>
+  <div class="s-head">
+    <h1>零件强化</h1>
+    <p>
+      大师级武器在调查资料的研究所里，用怪物素材制作零件，逐阶段强化攻击、会心、属性、防御或锐利度。选择武器种查看各阶段的零件。
+    </p>
+  </div>
+  <CustomTabs current="parts" />
+  <ul class="s-grid">
+    {WEAPON_ORDER.map((w) => (
+      <li>
+        <a class="s-card" href={`/world/custom-parts/${w}/`}>
+          <img src={weaponIconUrl(w, 10)} alt="" width="44" height="44" loading="lazy" />
+          <strong>{WEAPON_TYPE_NAMES[w]}</strong>
+          <small>
+            {(parts[w] ?? []).length} 个零件 · {new Set((parts[w] ?? []).map((p) => p.stage)).size} 个阶段
+          </small>
+        </a>
+      </li>
+    ))}
+  </ul>
+</SiteLayout>

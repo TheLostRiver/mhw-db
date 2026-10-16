@@ -48,7 +48,9 @@ for (const theme of ['light', 'dark'] as const) {
     const poison = page.locator('tr', { hasText: '毒' }).filter({ hasText: '+150' });
     await expect(poison).toContainText('250');
     await expect(poison).toContainText('700');
-    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    );
     expect(overflow, '页面不应横向溢出').toBeLessThanOrEqual(1);
     expect(errors).toEqual([]);
     await page.screenshot({

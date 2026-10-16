@@ -1,0 +1,296 @@
+---
+import SiteLayout from '../../../layouts/SiteLayout.astro';
+import CustomTabs from '../../../components/site/CustomTabs.astro';
+import GameText from '../../../components/site/GameText.astro';
+import { loadSkills, loadWeaponCustom } from '../../../data/world/load';
+import { plainText } from '../../../lib/world/text';
+import { WEAPON_ORDER, WEAPON_TYPE_NAMES, weaponIconUrl } from '../../../lib/world/weapons';
+
+const abilities = loadWeaponCustom().awakening;
+type Ability = (typeof abilities)[number];
+const skills = new Map(loadSkills().map((s) => [s.id, s]));
+const ROMAN = ['', 'Ⅰ', 'Ⅱ', 'Ⅲ', 'Ⅳ', 'Ⅴ', 'Ⅵ'];
+const lines = (t?: string) => plainText(t).replace(/\n/g, '');
+
+// 有数值的种类：按武器种逐列显示
+const VALUE_GROUPS = [
+  { key: 'attack', title: '攻击力强化' },
+  { key: 'affinity', title: '会心率强化' },
+  { key: 'element', title: '属性强化' },
+  { key: 'status', title: '状态异常强化' },
+  { key: 'defense', title: '防御力强化' },
+  { key: 'sharpness', title: '锐利度强化' },
+  { key: 'slot', title: '镶嵌槽强化' },
+  { key: 'ammoNormal', title: '装填数【通常弹】' },
+  { key: 'ammoPierce', title: '装填数【贯通弹】' },
+  { key: 'ammoSpread', title: '装填数【散弹】' },
+  { key: 'ammoElement', title: '装填数【属性弹】' },
+] as const;
+const fmt = (a: Ability, v: number): string => {
+  switch (a.value?.kind) {
+    case 'affinity':
+      return `${v}%`;
+    case 'element':
+    case 'status':
+      return `${v * 10}`;
+    case 'slotLevel':
+      return `Lv${v}`;
+    default:
+      return `${v}`;
+  }
+};
+// 没有数值的种类：武器专属能力与系列技能
+const SPECIAL_GROUPS = [
+  { key: 'melody', title: '旋律（狩猎笛）' },
+  { key: 'shelling', title: '炮击类型（铳枪）' },
+  { key: 'saPhial', title: '瓶（斩击斧）' },
+  { key: 'cbPhial', title: '瓶（盾斧）' },
+  { key: 'coating', title: '瓶（弓）' },
+  { key: 'kinsect', title: '猎虫' },
+  { key: 'recoil', title: '后坐力（弩）' },
+  { key: 'reload', title: '装填速度（弩）' },
+  { key: 'deviation', title: '偏移（弩）' },
+] as const;
+const setBonus = abilities.filter((a) => a.category === 'setBonus');
+---
+
+<SiteLayout
+  title="冥赤觉醒 · 武器"
+  current="encyclopedia"
+  description="怪物猎人：世界 冰原 冥赤龙武器的觉醒能力：各武器种的加值、系列技能与专属能力"
+  wide
+>
+  <nav class="s-crumbs" aria-label="位置">
+    <a href="/world/encyclopedia/">百科</a>
+    <a href="/world/weapons/">武器</a>
+    <span>冥赤觉醒</span>
+  </nav>
+  <div class="s-head">
+    <h1>
+      冥赤觉醒 <span class="b-label">{abilities.length} 种能力</span>
+    </h1>
+    <p>
+      冥赤龙武器有 5 个觉醒栏，每栏设定一个觉醒能力。同一种能力的加值因武器种而异，下表逐列给出；
+      攻击为真实值，属性、状态异常按 ×10 显示。
+    </p>
+  </div>
+  <CustomTabs current="awakening" />
+
+  <section class="s-section">
+    <h2>
+      基础能力 <small class="s-dim">各武器种的加值</small>
+    </h2>
+    <div class="s-table-wrap aw-wrap">
+      <table class="s-table aw-table">
+        <thead>
+          <tr>
+            <th class="s-left">能力</th>
+            {WEAPON_ORDER.map((w) => (
+              <th title={WEAPON_TYPE_NAMES[w]}>
+                <img src={weaponIconUrl(w, 0)} alt={WEAPON_TYPE_NAMES[w]} width="22" height="22" />
+              </th>
+            ))}
+          </tr>
+        </thead>
+        {VALUE_GROUPS.map((g) => {
+          const rows = abilities.filter((a) => a.category === g.key).sort((a, b) => a.rank - b.rank);
+          return rows.length ? (
+            <tbody>
+              <tr class="aw-group">
+                <th class="s-left" colspan={WEAPON_ORDER.length + 1}>
+                  {g.title}
+                </th>
+              </tr>
+              {rows.map((a) => (
+                <tr>
+                  <td class="s-left aw-name" title={lines(a.desc?.['zh-Hans'])}>
+                    <span class="aw-rank">{ROMAN[a.rank]}</span>
+                    {a.name['zh-Hans']}
+                    {!a.stackable && (
+                      <small class="aw-once" title="不可重复设定">
+                        唯一
+                      </small>
+                    )}
+                  </td>
+                  {WEAPON_ORDER.map((w) => {
+                    const v = a.value?.byWeapon[w];
+                    return v ? <td class="s-num">{fmt(a, v)}</td> : <td class="s-dim">—</td>;
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          ) : null;
+        })}
+      </table>
+    </div>
+  </section>
+
+  <section class="s-section">
+    <h2>武器专属能力</h2>
+    <div class="aw-specials">
+      {SPECIAL_GROUPS.map((g) => {
+        const rows = abilities.filter((a) => a.category === g.key).sort((a, b) => a.rank - b.rank);
+        return rows.length ? (
+          <article class="aw-card">
+            <h3>
+              <span class="aw-weapons">
+                {rows[0]!.weapons.map((w) => (
+                  <img src={weaponIconUrl(w, 0)} alt={WEAPON_TYPE_NAMES[w]} width="20" height="20" />
+                ))}
+              </span>
+              {g.title}
+            </h3>
+            <ul>
+              {rows.map((a) => (
+                <li>
+                  <strong>
+                    <span class="aw-rank">{ROMAN[a.rank]}</span>
+                    {a.name['zh-Hans']}
+                  </strong>
+                  <span>
+                    <GameText text={a.desc?.['zh-Hans']} />
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </article>
+        ) : null;
+      })}
+    </div>
+  </section>
+
+  <section class="s-section">
+    <h2>
+      系列技能 <small class="s-dim">{setBonus.length} 种，同一把武器只能设定一种</small>
+    </h2>
+    <div class="s-table-wrap">
+      <table class="s-table">
+        <thead>
+          <tr>
+            <th class="s-left">能力</th>
+            <th>等级</th>
+            <th class="s-left">系列技能</th>
+            <th class="s-left">说明</th>
+          </tr>
+        </thead>
+        <tbody>
+          {setBonus.map((a) => {
+            const s = a.setSkill != null ? skills.get(a.setSkill) : undefined;
+            return (
+              <tr>
+                <td class="s-left">{a.name['zh-Hans']}</td>
+                <td class="aw-rank">{ROMAN[a.rank]}</td>
+                <td class="s-left">
+                  {s ? (
+                    <a href={`/world/skills/#skill-${s.id}`}>{s.name['zh-Hans']}</a>
+                  ) : (
+                    <span class="s-dim">—</span>
+                  )}
+                </td>
+                <td class="s-left aw-desc">
+                  <GameText text={a.desc?.['zh-Hans']} />
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <p class="s-note">
+    数据来源：<code>common/equip/em104_limit_break.em104lb</code>（能力、种类、可用武器）、
+    <code>em104_limit_break_recipe.em104lbr</code>（各武器种的加值）与觉醒能力文本。 「唯一」=
+    不可重复设定（数据标记，与教程说明一致）。锐利度加值的单位未确认。
+  </p>
+</SiteLayout>
+
+<style>
+  .s-section h2 small {
+    font-size: var(--text-sm);
+    font-weight: 400;
+  }
+
+  .aw-wrap {
+    max-height: none;
+  }
+
+  .aw-table th img {
+    display: block;
+    margin: auto;
+  }
+
+  .aw-group th {
+    padding-top: var(--space-4);
+    color: var(--c-accent);
+    font-size: var(--text-sm);
+    letter-spacing: 0.06em;
+  }
+
+  .aw-name {
+    min-width: 12rem;
+  }
+
+  .aw-rank {
+    display: inline-block;
+    min-width: 1.6em;
+    color: var(--c-accent);
+    font-family: 'Noto Serif SC Variable', serif;
+    font-weight: 700;
+  }
+
+  .aw-once {
+    margin-left: 6px;
+    padding: 0 4px;
+    border: 1px solid var(--c-line-strong);
+    border-radius: 3px;
+    color: var(--c-text-3);
+    font-size: 10px;
+  }
+
+  .aw-specials {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 360px), 1fr));
+    gap: var(--space-3);
+    align-items: start;
+  }
+
+  .aw-card {
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius);
+    background: var(--c-surface);
+    box-shadow: inset 0 0 0 1px var(--c-line);
+  }
+
+  .aw-card h3 {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin: 0 0 var(--space-2);
+    font-size: var(--text-md);
+  }
+
+  .aw-weapons {
+    display: inline-flex;
+  }
+
+  .aw-card ul {
+    display: grid;
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .aw-card li {
+    display: grid;
+    gap: 2px;
+  }
+
+  .aw-card li span:last-child,
+  .aw-desc {
+    color: var(--c-text-2);
+    font-size: var(--text-sm);
+    white-space: normal;
+  }
+</style>

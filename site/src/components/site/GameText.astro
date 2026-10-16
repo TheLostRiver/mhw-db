@@ -1,0 +1,11 @@
+---
+/** 游戏文本：按 [color]…[/] 标记着色，换行去掉（游戏里的换行是按界面宽度断的） */
+import { textSegments } from '../../lib/world/text';
+
+interface Props {
+  text: string | undefined;
+}
+const segments = textSegments((Astro.props.text ?? '').replace(/\n/g, ''));
+---
+
+{segments.map((s) => (s.color ? <span class={`s-gt s-gt--${s.color}`}>{s.text}</span> : s.text))}

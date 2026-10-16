@@ -137,6 +137,12 @@ def read_sharpness_multipliers(data: bytes) -> dict:
 def build_augments(s: Source) -> dict:
     rel = "common/equip/new_limit_break.new_lb"
     texts = s.text("common/text/vfont/new_limit_break")
+    recipe_rel = "common/equip/new_limit_break.new_lbr"
+    recipes: dict[int, dict[str, list[dict]]] = {}
+    for r in s.table(recipe_rel, S.AUGMENT_RECIPE):
+        if r["level_id"] and r["rarity"]:
+            mats = _mats(r, [(f"mat_{k}", f"mat_{k}_count") for k in range(1, 5)])
+            recipes.setdefault(r["level_id"], {})[str(r["rarity"] + 1)] = mats
     levels = []
     for row, r in enumerate(s.table(rel, S.AUGMENT)):
         if row == 0:
@@ -152,14 +158,55 @@ def build_augments(s: Source) -> dict:
                 "slotCost": r["slot_cost"],
                 "name": name,
                 "desc": tr(texts, 2 * row + 1) or {},
-                "zenny": {"10": r["cost_r10"], "11": r["cost_r11"], "12": r["cost_r12"]},
+                "points": {"10": r["points_r10"], "11": r["points_r11"], "12": r["points_r12"]},
+                "materials": recipes.get(row, {}),
                 "_src": src(rel, row),
             }
         )
     plp = crypto.decrypt_file(PLP_REL, s.path(PLP_REL).read_bytes())
     effects = read_augment_effects(plp)
     effects["_src"] = {"file": PLP_REL, "offset": PLP_AUGMENT_OFFSET}
-    return {"levels": levels, "effects": effects}
+    return {"levels": levels, "effects": effects, "hr": build_hr_augment_materials(s)}
+
+
+HR_AUGMENTS = ["attack", "affinity", "defense", "slot", "health"]
+ARMOR_SLOTS = ["head", "chest", "arms", "waist", "legs"]
+
+
+def _mats(r: dict, keys: list[tuple[str, str]]) -> list[dict]:
+    return [{"item": r[i], "count": r[c]} for i, c in keys if r[i] and r[c]]
+
+
+def build_hr_augment_materials(s: Source) -> dict:
+    """上位自定义强化（稀有度 6–8）与防具强化的解放费用、素材；每项强化各自的素材。"""
+    base_rel = "common/equip/limit_break_mat_base.lbm_base"
+    skill_rel = "common/equip/limit_break_mat_skill.lbm_skill"
+    unlock: list[dict] = []
+    armor: list[dict] = []
+    for row, r in enumerate(s.table(base_rel, S.AUGMENT_UNLOCK)):
+        entry = {
+            "rarity": r["rarity"] + 1,
+            "zenny": r["zenny"],
+            "materials": _mats(r, [("item_1", "item_1_count"), ("item_2", "item_2_count")]),
+            "_src": src(base_rel, row),
+        }
+        if r["equip_type"] < len(WEAPON_KEYS):
+            unlock.append({"weapon": WEAPON_KEYS[r["equip_type"]], **entry})
+        elif r["equip_type"] - len(WEAPON_KEYS) < len(ARMOR_SLOTS):
+            armor.append({"slot": ARMOR_SLOTS[r["equip_type"] - len(WEAPON_KEYS)], **entry})
+        else:
+            raise ValueError(f"{base_rel} 行 {row}：未知装备种类 {r['equip_type']}")
+    materials = []
+    for row, r in enumerate(s.table(skill_rel, S.AUGMENT_MATERIAL)):
+        materials.append(
+            {
+                "rarity": r["rarity"] + 1,
+                "augment": HR_AUGMENTS[r["augment"] - 1],
+                "materials": _mats(r, [("item", "count")]),
+                "_src": src(skill_rel, row),
+            }
+        )
+    return {"unlock": unlock, "materials": materials, "armor": armor}
 
 
 # 游戏文本里有一处写成「强化段阶」（弓 金火龙零件），一并匹配
@@ -168,7 +215,9 @@ STAGE_RE = re.compile(r"强化(?:阶段|段阶)(\d)")
 
 def build_parts(s: Source) -> dict[str, list[dict]]:
     rel = "common/equip/customParts.cus_pa"
+    recipe_rel = "common/equip/customParts.cus_par"
     texts = s.text("common/text/vfont/customParts")
+    recipes = {r["id"]: r for r in s.table(recipe_rel, S.CUSTOM_PART_RECIPE, encrypted=True) if r["id"]}
     out: dict[str, list[dict]] = {k: [] for k in WEAPON_KEYS}
     for row, r in enumerate(s.table(rel, S.CUSTOM_PART, encrypted=True)):
         if r["id"] != row or r["cost"] == 0:
@@ -182,6 +231,9 @@ def build_parts(s: Source) -> dict[str, list[dict]]:
         if not m or int(m.group(1)) != stage or r["cost"] % 100:
             raise ValueError(f"{rel} 行 {row}：强化阶段与文本不符（cost={r['cost']}）")
         effect = {k: r[k] for k in ("attack", "affinity", "element", "defense", "sharpness") if r[k]}
+        recipe = recipes.get(row)
+        if not recipe or recipe["weapon_type"] != r["weapon_type"]:
+            raise ValueError(f"{recipe_rel}：零件 {row} 没有对应的素材行")
         out[WEAPON_KEYS[r["weapon_type"]]].append(
             {
                 "id": row,
@@ -189,6 +241,7 @@ def build_parts(s: Source) -> dict[str, list[dict]]:
                 "name": name,
                 "desc": desc,
                 "effect": effect,
+                "materials": _mats(recipe, [(f"mat_{k}", f"mat_{k}_count") for k in range(1, 5)]),
                 "_src": src(rel, row),
             }
         )

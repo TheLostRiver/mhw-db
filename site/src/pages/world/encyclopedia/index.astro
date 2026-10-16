@@ -1,4 +1,8 @@
 ---
+/**
+ * 百科目录「调查资料馆」：九个章节，每章一种色调；卡片是档案标签（编号、徽记、名称、条目数）。
+ * 顶部搜索可跨章节筛选，左侧章节索引随滚动高亮。尚未整理完的类别以「整理中」标出，不可点击。
+ */
 import SiteLayout from '../../../layouts/SiteLayout.astro';
 import {
   loadArmor,
@@ -11,140 +15,1016 @@ import {
   loadMonsters,
   loadMoves,
   loadSkills,
+  loadWeaponCustom,
   loadWeapons,
 } from '../../../data/world/load';
 import { WEAPON_TYPES } from '../../../data/world/schema';
+import { contours } from '../../../lib/contours';
 import { ITEM_TYPES, equipIconUrl, itemIconUrl } from '../../../lib/world/encyclopedia';
 import { weaponIconUrl } from '../../../lib/world/weapons';
 
+const G = '/assets/game/world';
 const items = loadItems();
-const weaponCount = WEAPON_TYPES.reduce(
-  (s, t) => s + loadWeapons(t).filter((w) => w.duplicateOf == null).length,
-  0,
-);
-const groups = [
+const itemIcon = (zh: string) => {
+  const i = items.find((x) => x.name['zh-Hans'] === zh);
+  return i ? itemIconUrl(i) : '';
+};
+const weapons = WEAPON_TYPES.flatMap((t) => loadWeapons(t).filter((w) => w.duplicateOf == null));
+const monsters = loadMonsters().filter((m) => m.name);
+const combos = loadCombinations();
+const custom = loadWeaponCustom();
+
+interface Entry {
+  label: string;
+  note: string;
+  icon: string;
+  href?: string;
+  count?: number;
+}
+interface Chapter {
+  key: string;
+  numeral: string;
+  title: string;
+  en: string;
+  hue: string;
+  lead: string;
+  entries: Entry[];
+}
+
+const chapters: Chapter[] = [
   {
-    title: '怪物与地图',
-    cards: [
+    key: 'field',
+    numeral: '壹',
+    title: '怪物与原野',
+    en: 'Monsters & Fields',
+    hue: '#e0773f',
+    lead: '新大陆的生态：大型怪物的肉质与耐性、各地区的采集点与环境生物。',
+    entries: [
       {
-        href: '/world/monsters/',
         label: '怪物',
-        note: `${loadMonsters().filter((m) => m.name).length} 种 · 肉质、部位、异常耐性`,
-        icon: '/assets/game/world/monster/em001.webp',
+        note: '肉质、部位、异常耐性',
+        icon: `${G}/monster/em001.webp`,
+        href: '/world/monsters/',
+        count: monsters.length,
       },
+      { label: '怪物招式', note: '攻击动作与伤害', icon: `${G}/monster/em113.webp` },
+      { label: '环境生物', note: '栖息地、捕获、稀有度', icon: itemIcon('捕获用网子') },
       {
-        href: '/world/maps/',
         label: '地图',
-        note: `${loadMaps().length} 张 · 采集点、环境生物、钓点`,
-        icon: '/assets/game/world/ui/treasure.webp',
+        note: '采集点、环境生物、钓点',
+        icon: `${G}/ui/treasure.webp`,
+        href: '/world/maps/',
+        count: loadMaps().length,
       },
+      { label: '聚魔之地', note: '地区等级与素材', icon: itemIcon('龙脉结晶') },
     ],
   },
   {
-    title: '武器',
-    cards: [
+    key: 'weapons',
+    numeral: '贰',
+    title: '武器工坊',
+    en: 'Weapons',
+    hue: '#6fa8dc',
+    lead: '十四种武器的数值、招式与强化：动作值、补正、卡肉、客制强化与冥赤觉醒。',
+    entries: [
       {
-        href: '/world/weapons/',
         label: '武器',
-        note: `${weaponCount} 把 · 攻击、会心、属性、锐利度`,
+        note: '攻击、会心、属性、锐利度',
         icon: weaponIconUrl('long-sword', 8),
+        href: '/world/weapons/',
+        count: weapons.length,
       },
       {
-        href: '/world/moves/',
         label: '武器招式',
-        note: `${loadMoves().length} 条 · 动作值、补正、卡肉`,
+        note: '动作值、补正、卡肉时间',
         icon: weaponIconUrl('dual-blades', 8),
+        href: '/world/moves/',
+        count: loadMoves().length,
       },
+      {
+        label: '客制强化',
+        note: '占用格数、研究点数与素材',
+        icon: `${G}/augment/attack.webp`,
+        href: '/world/augments/',
+        count: custom.augments.levels.length,
+      },
+      {
+        label: '零件强化',
+        note: '各阶段零件、效果与素材',
+        icon: `${G}/augment/element.webp`,
+        href: '/world/custom-parts/',
+        count: Object.values(custom.parts).flat().length,
+      },
+      {
+        label: '冥赤觉醒',
+        note: '觉醒能力与各武器种的加值',
+        icon: `${G}/status/90.webp`,
+        href: '/world/awakening/',
+        count: custom.awakening.length,
+      },
+      { label: '武器外观', note: '自定义外观与所需素材', icon: weaponIconUrl('great-sword', 10) },
+      { label: '武器饰物', note: '挂件一览', icon: weaponIconUrl('gunlance', 6) },
+      { label: '猎虫', note: '力量、速度、回复与粉尘', icon: weaponIconUrl('insect-glaive', 8) },
+      { label: '狩猎笛旋律', note: '音色组合与旋律效果', icon: `${G}/status/33.webp` },
     ],
   },
   {
-    title: '防具与技能',
-    cards: [
+    key: 'armor',
+    numeral: '叁',
+    title: '防具与随从',
+    en: 'Armor & Palico',
+    hue: '#d9a441',
+    lead: '防具、护石、饰品与特殊装备，以及随从艾露猫的装备与道具。',
+    entries: [
       {
-        href: '/world/armor/',
         label: '防具',
-        note: `${loadArmor().length} 件 · 防御、耐性、技能`,
+        note: '防御、耐性、技能',
         icon: equipIconUrl('head', 8),
+        href: '/world/armor/',
+        count: loadArmor().length,
       },
+      { label: '防具幻化', note: '外观装备', icon: equipIconUrl('chest', 10) },
       {
-        href: '/world/charms/',
         label: '护石',
-        note: `${loadCharms().length} 个`,
+        note: '技能与等级',
         icon: equipIconUrl('charm', 8),
+        href: '/world/charms/',
+        count: loadCharms().length,
       },
       {
-        href: '/world/decorations/',
         label: '饰品',
-        note: `${loadDecorations().length} 种`,
-        icon: '/assets/game/world/deco/4-1.webp',
+        note: '镶嵌等级与技能',
+        icon: `${G}/deco/4-1.webp`,
+        href: '/world/decorations/',
+        count: loadDecorations().length,
       },
       {
-        href: '/world/skills/',
-        label: '技能',
-        note: `${loadSkills().length} 个 · 每级效果、来源`,
-        icon: '/assets/game/world/skill/5.webp',
-      },
-      {
+        label: '特殊装备',
+        note: '衣装的效果与镶嵌槽',
+        icon: `${G}/mantle/empty.webp`,
         href: '/world/mantles/',
-        label: '衣装',
-        note: `${loadMantles().length} 件`,
-        icon: '/assets/game/world/mantle/empty.webp',
+        count: loadMantles().length,
       },
+      { label: '随从装备', note: '随从的武器与防具', icon: itemIcon('随从票') },
+      { label: '随从道具', note: '随从的特殊道具', icon: `${G}/status/34.webp` },
     ],
   },
   {
-    title: '道具',
-    cards: [
+    key: 'skills',
+    numeral: '肆',
+    title: '技能与猫饭',
+    en: 'Skills & Canteen',
+    hue: '#b48be0',
+    lead: '装备技能的每级效果与来源；食堂的猫饭技能与食材。',
+    entries: [
+      {
+        label: '装备技能',
+        note: '每级效果、来源',
+        icon: `${G}/skill/5.webp`,
+        href: '/world/skills/',
+        count: loadSkills().length,
+      },
+      { label: '猫饭技能', note: '发动条件与效果', icon: itemIcon('餐券') },
+      { label: '猫饭食材', note: '肉、鱼、蔬菜等食材', icon: itemIcon('生肉') },
+      { label: '艾露猫', note: '随从的等级与成长', icon: `${G}/status/38.webp` },
+    ],
+  },
+  {
+    key: 'items',
+    numeral: '伍',
+    title: '道具与调和',
+    en: 'Items & Crafting',
+    hue: '#5cc98f',
+    lead: '道具、素材与弹药的稀有度、携带上限与价格；调和配方。',
+    entries: [
       ...ITEM_TYPES.map((t) => {
         const first = items.find(
           (i) => i.type === t.type && i.rarity > 0 && !i.name['zh-Hans'].startsWith('－'),
         );
         return {
-          href: `/world/items/${t.slug}/`,
           label: t.label,
-          note: `${items.filter((i) => i.type === t.type).length} 种 · ${t.note}`,
+          note: t.note,
           icon: first ? itemIconUrl(first) : '',
+          href: `/world/items/${t.slug}/`,
+          count: items.filter((i) => i.type === t.type).length,
         };
       }),
       {
-        href: '/world/combinations/',
         label: '调和列表',
-        note: `${loadCombinations().length} 种 · 素材、成品与个数`,
-        icon: itemIconUrl(items.find((i) => i.id === 2)!),
+        note: '素材、成品与个数',
+        icon: itemIcon('回复药·大'),
+        href: '/world/combinations/',
+        count: combos.length,
       },
+      { label: '投射器弹', note: '地图上可捡的投射物', icon: itemIcon('投射器闪光弹') },
+    ],
+  },
+  {
+    key: 'quests',
+    numeral: '陆',
+    title: '任务与调查',
+    en: 'Quests',
+    hue: '#d8c27a',
+    lead: '任务的目标、地图、限时与报酬；调查任务。',
+    entries: [
+      { label: '任务', note: '目标、地图、报酬', icon: itemIcon('调查团票') },
+      { label: '调查任务', note: '生成条件与报酬', icon: itemIcon('调查点数') },
+    ],
+  },
+  {
+    key: 'base',
+    numeral: '柒',
+    title: '据点设施',
+    en: 'Base Facilities',
+    hue: '#4fc3c0',
+    lead: '阿斯特拉与瑟利纳的各个设施：炼金、商店、委托、交易船与农场。',
+    entries: [
+      { label: '神秘炼金', note: '炼金方式与可得物品', icon: itemIcon('神秘炼金珠·银') },
+      { label: '补给物资所', note: '出售物品与解锁条件', icon: itemIcon('回复药') },
+      { label: '交货委托', note: '委托内容与奖励', icon: itemIcon('金之龙人票据') },
+      { label: '重要赏金', note: '赏金条件与奖励', icon: itemIcon('银之龙人票据') },
+      { label: '蒸汽机关管理所', note: '奖励表', icon: itemIcon('击龙杭炮的燃料') },
+      { label: '随从探险队', note: '探险地点与收获', icon: itemIcon('随从票') },
+      { label: '交易船', note: '交易与以物易物', icon: itemIcon('钢之龙人票据') },
+      { label: '植生研究所', note: '可种植物与肥料', icon: itemIcon('怪力种子') },
+    ],
+  },
+  {
+    key: 'records',
+    numeral: '捌',
+    title: '纪录与祭典',
+    en: 'Records & Festivals',
+    hue: '#e07a9a',
+    lead: '成就、祭典的轮换日程、人物与追加内容。',
+    entries: [
+      { label: '成就', note: '条件一览', icon: `${G}/status/62.webp` },
+      { label: '祭典与日历', note: '轮换日程', icon: itemIcon('祭典票') },
+      { label: 'NPC', note: '人物与介绍', icon: `${G}/ui/npc.webp` },
+      { label: 'DLC', note: '追加内容', icon: `${G}/status/55.webp` },
+    ],
+  },
+  {
+    key: 'mechanics',
+    numeral: '玖',
+    title: '机制与参数',
+    en: 'Mechanics',
+    hue: '#8fb8ff',
+    lead: '把游戏里看不见的数值摊开：伤害公式、异常状态、龙封力、加护、无敌帧与防御性能。',
+    entries: [
+      {
+        label: '伤害计算器',
+        note: '物理、属性、会心期望',
+        icon: `${G}/status/27.webp`,
+        href: '/world/damage/',
+      },
+      { label: '状态异常数值', note: '毒、睡眠、麻痹、爆破等', icon: `${G}/status/10.webp` },
+      { label: '属性异常数值', note: '猎人身上的属性异常', icon: `${G}/status/3.webp` },
+      { label: '龙封力积蓄', note: '积蓄量与效果', icon: `${G}/status/7.webp` },
+      { label: '加护减伤', note: '减伤概率与比例', icon: `${G}/status/89.webp` },
+      { label: '回避性能', note: '动作的无敌时间', icon: `${G}/status/41.webp` },
+      { label: '防御性能', note: '武器的防御性能', icon: `${G}/status/26.webp` },
+      { label: '猎虫数据', note: '猎虫攻击与粉尘', icon: `${G}/status/80.webp` },
+      { label: '寒气炼成', note: '冰原的炼成参数', icon: `${G}/status/74.webp` },
     ],
   },
 ];
+
+const ready = chapters.reduce((n, c) => n + c.entries.filter((e) => e.href).length, 0);
+const total = chapters.reduce((n, c) => n + c.entries.length, 0);
+const stats = [
+  { label: '怪物', value: monsters.length },
+  { label: '武器', value: weapons.length },
+  { label: '防具', value: loadArmor().length },
+  { label: '技能', value: loadSkills().length },
+  { label: '道具', value: items.length },
+];
+const lines = contours({ width: 1600, height: 640, peaks: 4, rings: 12, seed: 23 });
+let no = 0;
 ---
 
 <SiteLayout
   title="百科"
   current="encyclopedia"
-  description="怪物猎人：世界 冰原 资料百科：怪物、地图、武器、招式、防具、护石、饰品、技能、衣装、道具、调和列表"
+  description="怪物猎人：世界 冰原 资料百科：怪物、地图、武器、招式、防具、技能、道具、调和、任务、设施与机制数值"
+  wide
 >
-  <div class="s-head">
-    <h1>
-      百科 <span class="b-label">数据均来自游戏文件</span>
-    </h1>
-    <p>
-      各类资料的目录。数值与文本都由本站从游戏数据解包整理（简体中文为游戏内文本），每页底部注明来源文件；
-      推断或未确认的字段会在页面上标出。
-    </p>
-  </div>
-  {groups.map((g) => (
-    <section class="s-section">
-      <h2>{g.title}</h2>
-      <ul class="s-grid">
-        {g.cards.map((c) => (
+  <section class="ec-hero">
+    <svg
+      class="ec-hero__lines"
+      viewBox="0 0 1600 640"
+      preserveAspectRatio="xMidYMid slice"
+      aria-hidden="true"
+    >
+      {lines.map((d) => (
+        <path d={d} />
+      ))}
+    </svg>
+    <span class="ec-hero__glyph" aria-hidden="true">
+      鉴
+    </span>
+    <div class="ec-hero__copy">
+      <p class="ec-kicker">
+        <span>Archive</span>新大陆调查团 · 资料馆
+      </p>
+      <h1>
+        百科
+        <small>
+          {ready} / {total} 类已整理
+        </small>
+      </h1>
+      <p class="ec-lead">
+        数值与文本全部由本站从游戏文件解包整理，简体中文为游戏内文本；每页底部注明来源文件，
+        推断或未确认的字段会在页面上标出。
+      </p>
+      <label class="ec-search">
+        <span class="sr-only">查找资料</span>
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="11" cy="11" r="6.5"></circle>
+          <path d="m16 16 4.5 4.5"></path>
+        </svg>
+        <input type="search" placeholder="查找资料：怪物、调和、猎虫……" data-ec-search />
+        <kbd aria-hidden="true">/</kbd>
+      </label>
+      <p class="ec-search__count" aria-live="polite" data-ec-count></p>
+    </div>
+    <dl class="ec-stats">
+      {stats.map((s) => (
+        <div>
+          <dt>{s.label}</dt>
+          <dd>{s.value.toLocaleString('en-US')}</dd>
+        </div>
+      ))}
+    </dl>
+  </section>
+
+  <div class="ec-body">
+    <nav class="ec-rail" aria-label="章节">
+      <ol>
+        {chapters.map((c) => (
           <li>
-            <a class="s-card" href={c.href}>
-              {c.icon ? <img src={c.icon} alt="" width="44" height="44" loading="lazy" /> : <span />}
-              <strong>{c.label}</strong>
-              <small>{c.note}</small>
+            <a href={`#ch-${c.key}`} style={`--hue: ${c.hue}`} data-ec-rail={c.key}>
+              <span class="ec-rail__num">{c.numeral}</span>
+              <span>{c.title}</span>
             </a>
           </li>
         ))}
-      </ul>
-    </section>
-  ))}
+      </ol>
+    </nav>
+
+    <div class="ec-chapters">
+      {chapters.map((c) => (
+        <section class="ec-ch" id={`ch-${c.key}`} style={`--hue: ${c.hue}`} data-ec-chapter={c.key}>
+          <header class="ec-ch__head">
+            <span class="ec-ch__num" aria-hidden="true">
+              {c.numeral}
+            </span>
+            <div>
+              <p class="ec-ch__en">{c.en}</p>
+              <h2>{c.title}</h2>
+              <p class="ec-ch__lead">{c.lead}</p>
+            </div>
+          </header>
+          <ul class="ec-grid">
+            {c.entries.map((e) => {
+              no += 1;
+              const body = (
+                <>
+                  <span class="ec-card__no">{String(no).padStart(2, '0')}</span>
+                  <span class="ec-seal" aria-hidden="true">
+                    <svg viewBox="0 0 64 64">
+                      <circle class="ec-seal__ring" cx="32" cy="32" r="29" />
+                      <circle class="ec-seal__dash" cx="32" cy="32" r="24.5" />
+                    </svg>
+                    {e.icon && <img src={e.icon} alt="" width="40" height="40" loading="lazy" />}
+                  </span>
+                  <strong>{e.label}</strong>
+                  <small>{e.note}</small>
+                  {e.count != null ? (
+                    <span class="ec-card__count">{e.count.toLocaleString('en-US')}</span>
+                  ) : (
+                    !e.href && <span class="ec-card__todo">整理中</span>
+                  )}
+                </>
+              );
+              return (
+                <li data-ec-entry data-text={`${e.label} ${e.note} ${c.title}`.toLowerCase()}>
+                  {e.href ? (
+                    <a class="ec-card" href={e.href}>
+                      {body}
+                    </a>
+                  ) : (
+                    <div class="ec-card is-todo" aria-disabled="true">
+                      {body}
+                    </div>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      ))}
+      <p class="ec-empty" hidden data-ec-empty>
+        没有匹配的类别。
+      </p>
+    </div>
+  </div>
 </SiteLayout>
+
+<script>
+  const input = document.querySelector<HTMLInputElement>('[data-ec-search]');
+  const count = document.querySelector<HTMLElement>('[data-ec-count]');
+  const empty = document.querySelector<HTMLElement>('[data-ec-empty]');
+  const entries = [...document.querySelectorAll<HTMLElement>('[data-ec-entry]')];
+  const chapters = [...document.querySelectorAll<HTMLElement>('[data-ec-chapter]')];
+
+  input?.addEventListener('input', () => {
+    const q = input.value.trim().toLowerCase();
+    let shown = 0;
+    for (const e of entries) {
+      const hit = !q || (e.dataset.text ?? '').includes(q);
+      e.hidden = !hit;
+      if (hit) shown++;
+    }
+    for (const c of chapters) c.hidden = !c.querySelector('[data-ec-entry]:not([hidden])');
+    if (count) count.textContent = q ? `${shown} 类匹配` : '';
+    if (empty) empty.hidden = shown > 0;
+  });
+
+  // 「/」聚焦搜索框（输入框里不拦截）
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== '/' || e.ctrlKey || e.metaKey || e.altKey) return;
+    const t = e.target as HTMLElement | null;
+    if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
+    e.preventDefault();
+    input?.focus();
+  });
+
+  // 章节索引随滚动高亮
+  const rail = new Map(
+    [...document.querySelectorAll<HTMLElement>('[data-ec-rail]')].map((a) => [a.dataset.ecRail!, a]),
+  );
+  const io = new IntersectionObserver(
+    (list) => {
+      for (const it of list) {
+        if (!it.isIntersecting) continue;
+        const key = (it.target as HTMLElement).dataset.ecChapter!;
+        for (const [k, a] of rail) a.toggleAttribute('aria-current', k === key);
+      }
+    },
+    { rootMargin: '-35% 0px -60% 0px' },
+  );
+  chapters.forEach((c) => io.observe(c));
+</script>
+
+<style>
+  /* ---------- 题头 ---------- */
+  .ec-hero {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    gap: var(--space-8);
+    margin: calc(var(--space-5) * -1) calc(var(--space-5) * -1) var(--space-8);
+    padding: var(--space-16) var(--space-8) var(--space-10);
+    overflow: hidden;
+    isolation: isolate;
+    border-bottom: 1px solid var(--c-line);
+    background:
+      radial-gradient(
+        80% 120% at 85% 10%,
+        color-mix(in oklab, var(--c-accent) 10%, transparent),
+        transparent 60%
+      ),
+      radial-gradient(60% 90% at 0% 100%, rgb(224 119 63 / 0.08), transparent 70%), var(--c-bg);
+  }
+
+  .ec-hero__lines {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    width: 100%;
+    height: 100%;
+    fill: none;
+    stroke: color-mix(in oklab, var(--c-accent) 16%, transparent);
+    stroke-width: 1;
+    mask-image: linear-gradient(90deg, transparent, #000 30%, #000 80%, transparent);
+  }
+
+  .ec-hero__glyph {
+    position: absolute;
+    right: 4%;
+    top: 50%;
+    z-index: -1;
+    color: transparent;
+    font-family: 'Noto Serif SC Variable', serif;
+    font-size: min(30rem, 42vw);
+    font-weight: 900;
+    line-height: 1;
+    -webkit-text-stroke: 1px color-mix(in oklab, var(--c-accent) 35%, transparent);
+    opacity: 0.35;
+    transform: translateY(-50%);
+    user-select: none;
+  }
+
+  .ec-hero__copy {
+    max-width: 40rem;
+  }
+
+  .ec-kicker {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    margin: 0 0 var(--space-4);
+    color: var(--c-text-2);
+    font-size: var(--text-sm);
+    letter-spacing: 0.2em;
+  }
+
+  .ec-kicker span {
+    padding: 2px 8px;
+    border: 1px solid var(--c-accent-line, color-mix(in oklab, var(--c-accent) 50%, transparent));
+    border-radius: 999px;
+    color: var(--c-accent);
+    font-family: var(--font-num);
+    font-size: var(--text-xs);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  .ec-hero h1 {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-5);
+    margin: 0 0 var(--space-4);
+    font-family: 'MHDB Display', 'Noto Serif SC Variable', serif;
+    font-size: clamp(3.2rem, 2rem + 5vw, 6.5rem);
+    font-weight: 400;
+    line-height: 1;
+  }
+
+  .ec-hero h1 small {
+    color: var(--c-text-3);
+    font-family: var(--font-num);
+    font-size: var(--text-sm);
+    letter-spacing: 0.08em;
+  }
+
+  .ec-lead {
+    margin: 0 0 var(--space-6);
+    color: var(--c-text-2);
+    line-height: 1.8;
+  }
+
+  .ec-search {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    max-width: 30rem;
+    padding: 0 var(--space-4);
+    border: 1px solid var(--c-line-strong);
+    border-radius: 999px;
+    background: color-mix(in oklab, var(--c-surface) 80%, transparent);
+    backdrop-filter: blur(8px);
+    transition:
+      border-color var(--dur-fast),
+      box-shadow var(--dur-base) var(--ease-out);
+  }
+
+  .ec-search:focus-within {
+    border-color: var(--c-accent);
+    box-shadow: 0 0 0 4px var(--c-accent-soft);
+  }
+
+  .ec-search svg {
+    flex: none;
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: var(--c-text-3);
+    stroke-width: 2;
+    stroke-linecap: round;
+  }
+
+  .ec-search input {
+    flex: 1;
+    min-width: 0;
+    height: 46px;
+    border: 0;
+    outline: 0;
+    background: none;
+    color: var(--c-text);
+    font: inherit;
+  }
+
+  .ec-search kbd {
+    padding: 1px 7px;
+    border: 1px solid var(--c-line-strong);
+    border-radius: 4px;
+    color: var(--c-text-3);
+    font-family: var(--font-num);
+    font-size: var(--text-xs);
+  }
+
+  .ec-search__count {
+    min-height: 1.5em;
+    margin: var(--space-2) 0 0 var(--space-4);
+    color: var(--c-text-3);
+    font-size: var(--text-sm);
+  }
+
+  .ec-stats {
+    display: grid;
+    grid-template-columns: repeat(5, auto);
+    gap: var(--space-2) var(--space-6);
+    margin: 0;
+  }
+
+  .ec-stats div {
+    display: grid;
+    gap: 2px;
+    padding-left: var(--space-3);
+    border-left: 1px solid var(--c-line-strong);
+  }
+
+  .ec-stats dt {
+    color: var(--c-text-3);
+    font-size: var(--text-xs);
+    letter-spacing: 0.2em;
+  }
+
+  .ec-stats dd {
+    margin: 0;
+    font-family: var(--font-num);
+    font-size: var(--text-2xl);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ---------- 正文：章节索引 + 章节 ---------- */
+  .ec-body {
+    display: grid;
+    grid-template-columns: 180px minmax(0, 1fr);
+    gap: var(--space-10);
+  }
+
+  .ec-rail ol {
+    position: sticky;
+    top: 80px;
+    display: grid;
+    gap: 2px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .ec-rail a {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: 7px var(--space-3);
+    border-radius: var(--radius);
+    color: var(--c-text-2);
+    font-size: var(--text-sm);
+    text-decoration: none;
+    transition:
+      color var(--dur-fast),
+      background var(--dur-fast);
+  }
+
+  .ec-rail a::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 2px;
+    height: 0;
+    background: var(--hue);
+    transform: translateY(-50%);
+    transition: height var(--dur-base) var(--ease-out);
+  }
+
+  .ec-rail a:hover,
+  .ec-rail a[aria-current] {
+    color: var(--c-text);
+    background: color-mix(in oklab, var(--hue) 9%, transparent);
+  }
+
+  .ec-rail a[aria-current]::before {
+    height: 60%;
+  }
+
+  .ec-rail__num {
+    width: 1.4em;
+    color: var(--hue);
+    font-family: 'Noto Serif SC Variable', serif;
+    font-weight: 700;
+    text-align: center;
+  }
+
+  .ec-chapters {
+    display: grid;
+    gap: var(--space-16);
+  }
+
+  .ec-ch {
+    scroll-margin-top: 72px;
+  }
+
+  .ec-ch__head {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: var(--space-5);
+    margin-bottom: var(--space-6);
+    padding-bottom: var(--space-4);
+    border-bottom: 1px solid var(--c-line);
+    background: linear-gradient(90deg, var(--hue), transparent 40%) bottom / 100% 1px no-repeat;
+  }
+
+  .ec-ch__num {
+    color: transparent;
+    font-family: 'Noto Serif SC Variable', serif;
+    font-size: clamp(3.5rem, 2.5rem + 3vw, 5.5rem);
+    font-weight: 900;
+    line-height: 1;
+    -webkit-text-stroke: 1.5px var(--hue);
+    opacity: 0.85;
+  }
+
+  .ec-ch__en {
+    margin: 0;
+    color: var(--hue);
+    font-family: var(--font-num);
+    font-size: var(--text-xs);
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+  }
+
+  .ec-ch h2 {
+    margin: 2px 0 6px;
+    font-family: 'MHDB Display', 'Noto Serif SC Variable', serif;
+    font-size: var(--text-3xl);
+    font-weight: 400;
+  }
+
+  .ec-ch__lead {
+    margin: 0;
+    color: var(--c-text-2);
+    font-size: var(--text-sm);
+  }
+
+  /* ---------- 档案卡 ---------- */
+  .ec-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 232px), 1fr));
+    gap: var(--space-3);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .ec-card {
+    position: relative;
+    display: grid;
+    grid-template-columns: 64px minmax(0, 1fr);
+    grid-template-rows: auto auto auto;
+    align-items: center;
+    gap: 0 var(--space-4);
+    height: 100%;
+    padding: var(--space-4) var(--space-4) var(--space-3);
+    overflow: hidden;
+    isolation: isolate;
+    border-radius: var(--radius);
+    background: var(--c-surface);
+    box-shadow: inset 0 0 0 1px var(--c-line);
+    color: inherit;
+    text-decoration: none;
+    transition:
+      box-shadow var(--dur-base) var(--ease-out),
+      transform var(--dur-base) var(--ease-out);
+  }
+
+  /* 悬停时从徽记处晕开的章节色 */
+  .ec-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: radial-gradient(
+      120% 140% at 18% 30%,
+      color-mix(in oklab, var(--hue) 16%, transparent),
+      transparent 55%
+    );
+    opacity: 0;
+    transition: opacity var(--dur-slow) var(--ease-out);
+  }
+
+  a.ec-card:hover,
+  a.ec-card:focus-visible {
+    box-shadow:
+      inset 0 0 0 1px color-mix(in oklab, var(--hue) 55%, transparent),
+      0 18px 40px -22px color-mix(in oklab, var(--hue) 60%, transparent);
+    transform: translateY(-3px);
+  }
+
+  a.ec-card:hover::before,
+  a.ec-card:focus-visible::before {
+    opacity: 1;
+  }
+
+  a.ec-card:focus-visible {
+    outline: 2px solid var(--c-focus);
+    outline-offset: 2px;
+  }
+
+  .ec-card__no {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    color: var(--c-text-3);
+    font-family: var(--font-num);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+  }
+
+  .ec-seal {
+    position: relative;
+    display: grid;
+    grid-row: 1 / span 3;
+    place-items: center;
+    width: 64px;
+    height: 64px;
+  }
+
+  .ec-seal svg {
+    position: absolute;
+    inset: 0;
+    fill: none;
+    transition: transform 1.2s var(--ease-out);
+  }
+
+  .ec-seal__ring {
+    stroke: color-mix(in oklab, var(--hue) 45%, var(--c-line));
+    stroke-width: 1;
+  }
+
+  .ec-seal__dash {
+    stroke: color-mix(in oklab, var(--hue) 70%, transparent);
+    stroke-width: 1.5;
+    stroke-dasharray: 2 5;
+    opacity: 0.6;
+  }
+
+  a.ec-card:hover .ec-seal svg,
+  a.ec-card:focus-visible .ec-seal svg {
+    transform: rotate(120deg);
+  }
+
+  .ec-seal img {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    filter: drop-shadow(0 2px 6px rgb(0 0 0 / 0.35));
+  }
+
+  .ec-card strong {
+    align-self: end;
+    padding-right: var(--space-6);
+    font-family: 'MHDB Display', var(--font-body);
+    font-size: var(--text-lg);
+    font-weight: 400;
+  }
+
+  .ec-card small {
+    color: var(--c-text-2);
+    font-size: var(--text-xs);
+    line-height: 1.5;
+  }
+
+  .ec-card__count,
+  .ec-card__todo {
+    align-self: start;
+    margin-top: 4px;
+    font-family: var(--font-num);
+    font-size: var(--text-xs);
+  }
+
+  .ec-card__count {
+    color: color-mix(in oklab, var(--hue) 75%, var(--c-text));
+  }
+
+  .ec-card__todo {
+    justify-self: start;
+    padding: 0 6px;
+    border: 1px dashed var(--c-line-strong);
+    border-radius: 3px;
+    color: var(--c-text-3);
+    font-family: var(--font-body);
+    letter-spacing: 0.1em;
+  }
+
+  .ec-card.is-todo {
+    background: transparent;
+    box-shadow: inset 0 0 0 1px var(--c-line);
+  }
+
+  .ec-card.is-todo .ec-seal img {
+    filter: grayscale(1);
+    opacity: 0.45;
+  }
+
+  .ec-card.is-todo strong {
+    color: var(--c-text-2);
+  }
+
+  .ec-card.is-todo .ec-seal__ring,
+  .ec-card.is-todo .ec-seal__dash {
+    stroke: var(--c-line-strong);
+  }
+
+  .ec-empty {
+    color: var(--c-text-3);
+  }
+
+  [data-ec-entry][hidden],
+  [data-ec-chapter][hidden] {
+    display: none;
+  }
+
+  /* ---------- 窄屏 ---------- */
+  @media (max-width: 1100px) {
+    .ec-hero {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .ec-stats {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
+
+    .ec-body {
+      grid-template-columns: minmax(0, 1fr);
+      gap: var(--space-6);
+    }
+
+    .ec-rail ol {
+      position: static;
+      display: flex;
+      gap: var(--space-1);
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .ec-rail a {
+      flex: none;
+      border: 1px solid var(--c-line);
+      white-space: nowrap;
+    }
+
+    .ec-rail a::before {
+      display: none;
+    }
+  }
+
+  @media (max-width: 700px) {
+    .ec-hero {
+      margin: calc(var(--space-3) * -1) calc(var(--space-3) * -1) var(--space-6);
+      padding: var(--space-10) var(--space-4) var(--space-6);
+    }
+
+    .ec-stats {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .ec-stats dd {
+      font-size: var(--text-xl);
+    }
+
+    .ec-ch__head {
+      gap: var(--space-3);
+    }
+
+    .ec-chapters {
+      gap: var(--space-10);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ec-card,
+    .ec-card::before,
+    .ec-seal svg,
+    .ec-rail a,
+    .ec-rail a::before {
+      transition: none;
+    }
+
+    a.ec-card:hover,
+    a.ec-card:focus-visible {
+      transform: none;
+    }
+
+    a.ec-card:hover .ec-seal svg {
+      transform: none;
+    }
+  }
+</style>

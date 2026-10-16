@@ -23,7 +23,9 @@ for (const theme of ['light', 'dark'] as const) {
     await expect(today.locator('h3')).not.toBeEmpty();
     await expect(today.locator('.td-el')).toHaveCount(5);
     expect(await page.locator('.mq-track img').count()).toBeGreaterThan(60);
-    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    );
     expect(overflow, '页面不应横向溢出').toBeLessThanOrEqual(1);
     expect(errors).toEqual([]);
     await page.screenshot({ path: `test-results/home-${theme}-${info.project.name}.png` });

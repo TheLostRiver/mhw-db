@@ -27,7 +27,9 @@ for (const path of pages) {
       await page.evaluate(() => document.fonts.ready);
 
       await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
-      const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+      const overflow = await page.evaluate(
+        () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      );
       expect(overflow, '页面不应横向溢出').toBeLessThanOrEqual(1);
       expect(errors, '不应有控制台错误').toEqual([]);
 

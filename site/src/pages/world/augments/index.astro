@@ -1,0 +1,345 @@
+---
+import SiteLayout from '../../../layouts/SiteLayout.astro';
+import CustomTabs from '../../../components/site/CustomTabs.astro';
+import Materials from '../../../components/site/Materials.astro';
+import { loadWeaponCustom } from '../../../data/world/load';
+import type { WeaponType } from '../../../data/world/schema';
+import { WEAPON_ORDER, WEAPON_TYPE_NAMES, weaponIconUrl } from '../../../lib/world/weapons';
+
+const { levels, effects, hr } = loadWeaponCustom().augments;
+type Level = (typeof levels)[number];
+const MR_RARITIES = ['10', '11', '12'] as const;
+const HR_RARITIES = [6, 7, 8];
+const ROMAN = ['', 'Ⅰ', 'Ⅱ', 'Ⅲ', 'Ⅳ'];
+
+const ICON: Record<string, string> = {
+  attack: 'attack',
+  affinity: 'affinity',
+  defense: 'defense',
+  slot: 'slot',
+  health: 'health',
+  element: 'element',
+  extend: 'hex-used',
+};
+const MR_GROUPS = [
+  { key: 'attack', title: '攻击力强化' },
+  { key: 'affinity', title: '会心率强化' },
+  { key: 'element', title: '属性·状态异常强化' },
+  { key: 'defense', title: '防御力强化' },
+  { key: 'slot', title: '镶嵌槽强化' },
+  { key: 'health', title: '赋予回复能力' },
+  { key: 'extend', title: '扩充自定义栏' },
+] as const;
+const lines = (t?: string) => (t ?? '').replace(/\n/g, '');
+/** 数值已核对的种类显示累计加值，其余用游戏内说明 */
+const effectText = (a: Level): string => {
+  const i = a.level - 1;
+  if (a.category === 'attack') return `攻击 +${effects.attack[i]}`;
+  if (a.category === 'affinity') return `会心 +${effects.affinity[i]}%`;
+  if (a.category === 'defense') return `防御 +${effects.defense[i]}`;
+  if (a.category === 'slot') return `镶嵌槽 Lv${a.level}`;
+  return lines(a.desc?.['zh-Hans']);
+};
+
+// 上位：解放费用按「各稀有度素材相同」把武器种分组（同一种龙脉石）
+const unlockGroups = new Map<
+  string,
+  { weapons: WeaponType[]; byRarity: Map<number, (typeof hr.unlock)[number]> }
+>();
+for (const w of WEAPON_ORDER) {
+  const rows = hr.unlock.filter((u) => u.weapon === w);
+  const sig = JSON.stringify(rows.map((u) => [u.rarity, u.zenny, u.materials]).sort());
+  const g = unlockGroups.get(sig) ?? { weapons: [], byRarity: new Map(rows.map((u) => [u.rarity, u])) };
+  g.weapons.push(w);
+  unlockGroups.set(sig, g);
+}
+const HR_LABELS = {
+  attack: '攻击力',
+  affinity: '会心率',
+  defense: '防御力',
+  slot: '镶嵌槽',
+  health: '回复能力',
+} as const;
+const hrEffect = (k: keyof typeof HR_LABELS) =>
+  k === 'attack' || k === 'affinity' || k === 'defense'
+    ? effects.hr[k].map((v) => (k === 'affinity' ? `${v}%` : `+${v}`)).join(' / ')
+    : '';
+---
+
+<SiteLayout
+  title="客制强化 · 武器"
+  current="encyclopedia"
+  description="怪物猎人：世界 冰原 武器自定义强化：大师级每一级的占用格数、研究点数与素材，上位自定义强化的解放费用与素材"
+  wide
+>
+  <nav class="s-crumbs" aria-label="位置">
+    <a href="/world/encyclopedia/">百科</a>
+    <a href="/world/weapons/">武器</a>
+    <span>客制强化</span>
+  </nav>
+  <div class="s-head">
+    <h1>客制强化</h1>
+    <p>
+      在工房对强化到最终阶段的武器追加强化。大师级（稀有度 10–12）按格数自由组合，每一项选一个等级；
+      上位（稀有度 6–8）每格选一项，同一项可以重复。
+    </p>
+  </div>
+  <CustomTabs current="augments" />
+
+  <section class="s-section">
+    <h2>
+      大师自定义强化 <small class="s-dim">稀有度 10 / 11 / 12 最多 9 / 8 / 6 格</small>
+    </h2>
+    <p class="au-intro">
+      「占用」是这一级的总格数（升级时替换而不是叠加）。效果为累计值，攻击是真实值。
+      某个稀有度的格子写「—」表示该稀有度没有这一级的配方（总格数放不下）。
+    </p>
+    <div class="au-groups">
+      {MR_GROUPS.map((g) => (
+        <article class="au-card">
+          <header>
+            <img src={`/assets/game/world/augment/${ICON[g.key]}.webp`} alt="" width="36" height="36" />
+            <h3>{g.title}</h3>
+          </header>
+          <div class="s-table-wrap au-wrap">
+            <table class="s-table au-table">
+              <thead>
+                <tr>
+                  <th>等级</th>
+                  {g.key !== 'extend' && <th>占用</th>}
+                  <th class="s-left">效果</th>
+                  {MR_RARITIES.map((r) => (
+                    <th class="s-left">稀有度 {r}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {levels
+                  .filter((a) => a.category === g.key)
+                  .map((a) => (
+                    <tr>
+                      <td class="au-lv">{ROMAN[a.level]}</td>
+                      {g.key !== 'extend' && (
+                        <td>
+                          <span class="au-hex" aria-label={`占用 ${a.slotCost} 格`}>
+                            {Array.from({ length: a.slotCost }, () => (
+                              <img
+                                src="/assets/game/world/augment/hex-used.webp"
+                                alt=""
+                                width="12"
+                                height="12"
+                              />
+                            ))}
+                          </span>
+                        </td>
+                      )}
+                      <td class="s-left au-effect">{effectText(a)}</td>
+                      {MR_RARITIES.map((r) => {
+                        const mats = a.materials[r];
+                        return (
+                          <td class="s-left au-cost">
+                            {mats ? (
+                              <>
+                                <span class="au-points">{a.points[r]} 点</span>
+                                <Materials materials={mats} compact />
+                              </>
+                            ) : (
+                              <span class="s-dim">—</span>
+                            )}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </div>
+        </article>
+      ))}
+    </div>
+  </section>
+
+  <section class="s-section">
+    <h2>
+      上位自定义强化 <small class="s-dim">稀有度 6 / 7 / 8 可强化 3 / 2 / 1 次</small>
+    </h2>
+    <p class="au-intro">先付费「解放」强化，之后每次强化消耗对应素材；同一项重复强化时加值按次数累计。</p>
+    <div class="s-table-wrap">
+      <table class="s-table">
+        <thead>
+          <tr>
+            <th class="s-left">强化项目</th>
+            <th class="s-left">累计加值（第 1 / 2 / 3 次）</th>
+            {HR_RARITIES.map((r) => (
+              <th class="s-left">稀有度 {r}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {(Object.keys(HR_LABELS) as (keyof typeof HR_LABELS)[]).map((k) => (
+            <tr>
+              <td class="s-left">
+                <span class="s-icon-cell">
+                  <img src={`/assets/game/world/augment/${ICON[k]}.webp`} alt="" width="24" height="24" />
+                  {HR_LABELS[k]}
+                </span>
+              </td>
+              <td class="s-left">{hrEffect(k) || <span class="s-dim">—</span>}</td>
+              {HR_RARITIES.map((r) => {
+                const m = hr.materials.find((x) => x.augment === k && x.rarity === r);
+                return (
+                  <td class="s-left">
+                    {m ? <Materials materials={m.materials} /> : <span class="s-dim">—</span>}
+                  </td>
+                );
+              })}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="au-sub">解放费用</h3>
+    <div class="s-table-wrap">
+      <table class="s-table">
+        <thead>
+          <tr>
+            <th class="s-left">武器</th>
+            {HR_RARITIES.map((r) => (
+              <th class="s-left">稀有度 {r}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {[...unlockGroups.values()].map((g) => (
+            <tr>
+              <td class="s-left au-weapons">
+                {g.weapons.map((w) => (
+                  <span class="s-icon-cell">
+                    <img src={weaponIconUrl(w, 0)} alt="" width="22" height="22" loading="lazy" />
+                    {WEAPON_TYPE_NAMES[w]}
+                  </span>
+                ))}
+              </td>
+              {HR_RARITIES.map((r) => {
+                const u = g.byRarity.get(r);
+                return (
+                  <td class="s-left">
+                    {u ? (
+                      <>
+                        <span class="au-points">{u.zenny.toLocaleString('en-US')}z</span>
+                        <Materials materials={u.materials} />
+                      </>
+                    ) : (
+                      <span class="s-dim">—</span>
+                    )}
+                  </td>
+                );
+              })}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <p class="s-note">
+    数据来源：<code>new_limit_break.new_lb</code>（大师：等级、占用、研究点数）、
+    <code>new_limit_break.new_lbr</code>（大师素材）、
+    <code>pl_param.plp</code>（效果值）、<code>limit_break_mat_base.lbm_base</code> /{' '}
+    <code>limit_break_mat_skill.lbm_skill</code>（上位解放与素材）。 已与公开资料核对：攻击力强化1（稀有度
+    10）= 400 点 + 摇曳炎毛皮 ×9、龙脉的强龙骨 ×3、荒地岩骨 ×5； 上位稀有度 6 攻击 = 火龙的逆鳞 ×2、会心 =
+    惨爪龙的逆鳞 ×2，解放 40,000z。
+    大师级未扩充时的格数、扩充每级加几格尚未确认；属性与回复能力的具体数值未确认，显示游戏内说明。
+  </p>
+</SiteLayout>
+
+<style>
+  .s-section h2 small,
+  .au-sub {
+    font-size: var(--text-sm);
+    font-weight: 400;
+  }
+
+  .au-sub {
+    margin: var(--space-6) 0 var(--space-2);
+    color: var(--c-text-2);
+    font-size: var(--text-md);
+  }
+
+  .au-intro {
+    max-width: 60rem;
+    margin: 0 0 var(--space-4);
+    color: var(--c-text-2);
+    font-size: var(--text-sm);
+  }
+
+  .au-groups {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-4);
+  }
+
+  .au-card {
+    border-radius: var(--radius);
+    background: var(--c-surface);
+    box-shadow: inset 0 0 0 1px var(--c-line);
+  }
+
+  .au-card header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4) 0;
+  }
+
+  .au-card h3 {
+    margin: 0;
+    font-size: var(--text-lg);
+  }
+
+  .au-wrap {
+    max-height: none;
+    box-shadow: none;
+    background: none;
+  }
+
+  .au-lv {
+    color: var(--c-accent);
+    font-family: 'Noto Serif SC Variable', serif;
+    font-weight: 700;
+  }
+
+  .au-hex {
+    display: inline-flex;
+    gap: 1px;
+  }
+
+  .au-hex img {
+    display: block;
+  }
+
+  .au-effect {
+    min-width: 9rem;
+    color: var(--c-text);
+    white-space: normal;
+  }
+
+  .au-cost {
+    min-width: 13rem;
+  }
+
+  .au-points {
+    display: block;
+    margin-bottom: 2px;
+    color: var(--c-text);
+    font-family: var(--font-num);
+    font-size: var(--text-xs);
+  }
+
+  .au-weapons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px var(--space-3);
+  }
+</style>

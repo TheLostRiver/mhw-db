@@ -1,0 +1,36 @@
+---
+/**
+ * 素材清单：图标 + 名称 × 个数，名称链接到道具页对应的行。compact 时只显示图标与个数（悬停看名称）。
+ */
+import { itemById } from '../../data/world/load';
+import { ITEM_TYPES, itemIconUrl } from '../../lib/world/encyclopedia';
+
+interface Props {
+  materials: { item: number; count: number }[];
+  compact?: boolean;
+}
+const { materials, compact = false } = Astro.props;
+const slugOf = new Map(ITEM_TYPES.map((t) => [t.type, t.slug]));
+const rows = materials.flatMap((m) => {
+  const item = itemById(m.item);
+  if (!item) return [];
+  const slug = slugOf.get(item.type);
+  return [{ ...m, item, href: slug ? `/world/items/${slug}/#item-${item.id}` : undefined }];
+});
+---
+
+<ul class:list={['s-mats', { 's-mats--compact': compact }]}>
+  {rows.map((m) => (
+    <li>
+      <a href={m.href} title={compact ? `${m.item.name['zh-Hans']} × ${m.count}` : undefined}>
+        <img src={itemIconUrl(m.item)} alt="" width="22" height="22" loading="lazy" />
+        {compact ? (
+          <span class="sr-only">{m.item.name['zh-Hans']}</span>
+        ) : (
+          <span>{m.item.name['zh-Hans']}</span>
+        )}
+        <b>×{m.count}</b>
+      </a>
+    </li>
+  ))}
+</ul>

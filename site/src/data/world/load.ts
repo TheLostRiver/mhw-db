@@ -42,8 +42,15 @@ function read<T>(rel: string): T {
 export const loadMeta = () => read<Meta>('meta.json');
 export const loadColors = () => read<Colors>('colors.json');
 export const loadItems = () => read<{ items: Item[] }>('items.json').items;
-export const loadCombinations = () =>
-  read<{ combinations: Combination[] }>('combinations.json').combinations;
+/** 物品编号 → 物品（随 items.json 的缓存一起失效） */
+const itemIndex = new WeakMap<Item[], Map<number, Item>>();
+export function itemById(id: number): Item | undefined {
+  const items = loadItems();
+  let map = itemIndex.get(items);
+  if (!map) itemIndex.set(items, (map = new Map(items.map((i) => [i.id, i]))));
+  return map.get(id);
+}
+export const loadCombinations = () => read<{ combinations: Combination[] }>('combinations.json').combinations;
 export const loadSkills = () => read<{ skills: Skill[] }>('skills.json').skills;
 export const loadDecorations = () => read<{ decorations: Decoration[] }>('decorations.json').decorations;
 export const loadArmor = () => read<{ armor: Armor[] }>('armor.json').armor;

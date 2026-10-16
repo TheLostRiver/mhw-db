@@ -33,7 +33,9 @@ for (const theme of ['light', 'dark'] as const) {
     await expect(row).toContainText('8');
     await expect(row).toContainText('0.6');
     await expect(row).toContainText('0.07');
-    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    );
     expect(overflow, '页面不应横向溢出（表格在自己的滚动容器里）').toBeLessThanOrEqual(1);
     expect(errors).toEqual([]);
     await page.screenshot({ path: `test-results/moves-db-${theme}-${info.project.name}.png` });

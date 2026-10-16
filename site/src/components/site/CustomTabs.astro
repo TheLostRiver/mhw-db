@@ -1,0 +1,21 @@
+---
+/** 武器客制三页（客制强化 / 零件强化 / 冥赤觉醒）之间的切换标签 */
+interface Props {
+  current: 'augments' | 'parts' | 'awakening';
+}
+const { current } = Astro.props;
+const TABS = [
+  { key: 'augments', href: '/world/augments/', label: '客制强化', icon: 'augment/attack' },
+  { key: 'parts', href: '/world/custom-parts/', label: '零件强化', icon: 'augment/element' },
+  { key: 'awakening', href: '/world/awakening/', label: '冥赤觉醒', icon: 'status/90' },
+] as const;
+---
+
+<nav class="s-tabs" aria-label="武器客制">
+  {TABS.map((t) => (
+    <a href={t.href} aria-current={t.key === current ? 'page' : undefined}>
+      <img src={`/assets/game/world/${t.icon}.webp`} alt="" width="22" height="22" />
+      {t.label}
+    </a>
+  ))}
+</nav>

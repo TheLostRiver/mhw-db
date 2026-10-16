@@ -333,6 +333,9 @@ export const AWAKENING_CATEGORIES = [
   'status',
 ] as const;
 
+/** 素材：物品编号 × 个数 */
+const Material = z.object({ item: z.number().int().positive(), count: z.number().int().positive() }).strict();
+
 export const WeaponCustom = z
   .object({
     augments: z
@@ -346,7 +349,10 @@ export const WeaponCustom = z
               slotCost: z.number().int().nonnegative(),
               name: Text,
               desc: OptText,
-              zenny: z.record(z.enum(['10', '11', '12']), z.number().int().nonnegative()),
+              /** 各稀有度的研究点数 */
+              points: z.record(z.enum(['10', '11', '12']), z.number().int().nonnegative()),
+              /** 各稀有度的素材（new_lbr）；缺少的稀有度不能做这一级 */
+              materials: z.partialRecord(z.enum(['10', '11', '12']), z.array(Material).min(1)),
               _src: Src,
             })
             .strict(),
@@ -375,6 +381,43 @@ export const WeaponCustom = z
             _src: z.object({ file: z.string(), offset: z.number().int() }).strict(),
           })
           .strict(),
+        /** 上位自定义强化（稀有度 6–8）与防具强化的解放费用、素材（lbm_base / lbm_skill） */
+        hr: z
+          .object({
+            unlock: z.array(
+              z
+                .object({
+                  weapon: z.enum(WEAPON_TYPES),
+                  rarity: Rarity,
+                  zenny: z.number().int().nonnegative(),
+                  materials: z.array(Material),
+                  _src: Src,
+                })
+                .strict(),
+            ),
+            materials: z.array(
+              z
+                .object({
+                  rarity: Rarity,
+                  augment: z.enum(['attack', 'affinity', 'defense', 'slot', 'health']),
+                  materials: z.array(Material),
+                  _src: Src,
+                })
+                .strict(),
+            ),
+            armor: z.array(
+              z
+                .object({
+                  slot: z.enum(['head', 'chest', 'arms', 'waist', 'legs']),
+                  rarity: Rarity,
+                  zenny: z.number().int().nonnegative(),
+                  materials: z.array(Material),
+                  _src: Src,
+                })
+                .strict(),
+            ),
+          })
+          .strict(),
       })
       .strict(),
     parts: z.record(
@@ -396,6 +439,7 @@ export const WeaponCustom = z
               })
               .partial()
               .strict(),
+            materials: z.array(Material).min(1),
             _src: Src,
           })
           .strict(),

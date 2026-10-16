@@ -135,7 +135,7 @@ export interface AugmentEffects {
 export type HrAugment = 'attack' | 'affinity' | 'defense' | 'slot' | 'health';
 export const HR_AUGMENTS: HrAugment[] = ['attack', 'affinity', 'defense', 'slot', 'health'];
 
-/** 上位自定义强化的格数（⚠ 待确认：用户说明「有的武器有两个槽」，此处按稀有度 6 / 7 / 8 = 3 / 2 / 1） */
+/** 上位自定义强化的次数：稀有度 6 / 7 / 8 = 3 / 2 / 1（与 Kiranico 等公开资料核对） */
 export const HR_AUGMENT_SLOTS: Partial<Record<number, number>> = { 6: 3, 7: 2, 8: 1 };
 /**
  * 大师自定义强化的格数上限（稀有度 10 / 11 / 12 = 9 / 8 / 6，用户在游戏内确认，含扩充自定义栏）。

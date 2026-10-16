@@ -2,6 +2,7 @@
  * 配装器的精简数据（简中）：/data/world/builder.json 的内容，也供单元测试直接调用。
  */
 import type { BuilderData } from '../../lib/world/builder';
+import { plainText } from '../../lib/world/text';
 import {
   loadArmor,
   loadCharms,
@@ -35,7 +36,7 @@ export function makeBuilderData(): BuilderData {
       levels: s.levels.map((l) => ({
         level: l.level,
         ...(l.name ? { name: pick(l.name, L) } : {}),
-        desc: pick(l.desc, L),
+        desc: plainText(pick(l.desc, L)),
         params: l.params,
         ...(l.unlockedBy ? { unlockedBy: l.unlockedBy } : {}),
       })),
@@ -60,7 +61,12 @@ export function makeBuilderData(): BuilderData {
       ...(a.setSkill ? { setSkill: a.setSkill } : {}),
       series: pick(a.series.name, L),
     })),
-    charms: loadCharms().map((c) => ({ id: c.id, name: pick(c.name, L), rarity: c.rarity, skills: c.skills })),
+    charms: loadCharms().map((c) => ({
+      id: c.id,
+      name: pick(c.name, L),
+      rarity: c.rarity,
+      skills: c.skills,
+    })),
     mantles: loadMantles().map((m) => ({ id: m.id, name: pick(m.name, L), slots: m.slots, icon: m.icon })),
     augments: {
       levels: custom.augments.levels.map((a) => ({
@@ -69,7 +75,7 @@ export function makeBuilderData(): BuilderData {
         level: a.level,
         slotCost: a.slotCost,
         name: pick(a.name, L),
-        desc: pick(a.desc, L),
+        desc: plainText(pick(a.desc, L)),
       })),
       effects: {
         attack: custom.augments.effects.attack,

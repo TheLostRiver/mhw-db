@@ -3,6 +3,23 @@
  * 各页面只写自己特有的样式；这里的类名都带 s- 前缀，避免与设计稿的类名冲突。
  */
 
+/* 标题用的展示字体（构建时按站内用字子集化，见 mhdb fonts）；只有用到它的页面才会下载 */
+@font-face {
+  font-family: 'MHDB Display';
+  src: url('/fonts/mhdb-display/MHDBDisplay-Oblique.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 .s-head {
   margin-bottom: var(--space-5);
 }
@@ -285,4 +302,50 @@
   .s-card:hover {
     transform: none;
   }
+}
+
+/* 素材清单（components/site/Materials.astro） */
+.s-mats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.s-mats a {
+  /* 让紧凑模式里 .sr-only 的名称定位在链接内，不会撑出表格的滚动区 */
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--c-text-2);
+  font-size: var(--text-sm);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.s-mats a:hover span {
+  color: var(--c-accent);
+}
+
+.s-mats b {
+  color: var(--c-text);
+  font-family: var(--font-num);
+  font-size: var(--text-xs);
+  font-weight: 500;
+}
+
+.s-mats--compact {
+  gap: 2px var(--space-2);
+}
+
+/* 游戏文本的强调色（components/site/GameText.astro） */
+.s-gt--yellow {
+  color: var(--c-amber);
+}
+
+.s-gt--red {
+  color: var(--c-danger);
 }

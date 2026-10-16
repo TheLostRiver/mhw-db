@@ -35,7 +35,9 @@ for (const theme of ['light', 'dark'] as const) {
     await page.getByRole('radiogroup', { name: '部位' }).getByRole('radio', { name: /颈部/ }).click();
     await expect(page.locator('.dc-result__meta').first()).toContainText('会心率 0%');
 
-    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    );
     expect(overflow, '页面不应横向溢出').toBeLessThanOrEqual(1);
     expect(errors).toEqual([]);
     await page.screenshot({ path: `test-results/damage-${theme}-${info.project.name}.png`, fullPage: true });

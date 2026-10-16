@@ -25,6 +25,10 @@ const PAGES = [
   ['/world/items/materials/', '素材'],
   ['/world/items/consumables/', '道具'],
   ['/world/combinations/', '调和列表'],
+  ['/world/augments/', '客制强化'],
+  ['/world/custom-parts/', '零件强化'],
+  ['/world/custom-parts/long-sword/', '太刀'],
+  ['/world/awakening/', '冥赤觉醒'],
 ] as const;
 
 for (const [path, heading] of PAGES) {
@@ -32,7 +36,9 @@ for (const [path, heading] of PAGES) {
     const errors = watchErrors(page);
     await page.goto(path, { waitUntil: 'networkidle' });
     await expect(page.getByRole('heading', { level: 1 })).toContainText(heading);
-    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    );
     expect(overflow, '页面不应横向溢出').toBeLessThanOrEqual(1);
     expect(errors).toEqual([]);
   });
@@ -74,4 +80,21 @@ test('调和列表按素材筛选，点成品跳到道具页对应行', async ({
   await herbal.locator('.cb-result a').click();
   await expect(page).toHaveURL(/\/world\/items\/consumables\/#item-\d+$/);
   await expect(page.locator('tr:target')).toContainText('汉方药');
+});
+
+test('技能说明里的强调色标记被渲染而不是原样显示', async ({ page }) => {
+  await page.goto('/world/awakening/', { waitUntil: 'networkidle' });
+  await expect(page.locator('main')).not.toContainText('[yellow]');
+  await expect(page.locator('.s-gt--yellow').first()).toBeVisible();
+});
+
+test('百科目录的搜索跨章节筛选', async ({ page }) => {
+  await page.goto('/world/encyclopedia/', { waitUntil: 'networkidle' });
+  await page.keyboard.press('/');
+  await page.keyboard.type('觉醒');
+  const shown = page.locator('[data-ec-entry]:not([hidden])');
+  await expect(shown).toHaveCount(1);
+  await expect(shown.first()).toContainText('冥赤觉醒');
+  await shown.first().locator('a').click();
+  await expect(page).toHaveURL(/\/world\/awakening\/$/);
 });

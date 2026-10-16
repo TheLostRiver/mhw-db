@@ -6,6 +6,7 @@ import type { APIRoute, GetStaticPaths } from 'astro';
 import type { WeaponPayload } from '../../../../lib/world/builder';
 import { loadWeaponCustom, loadWeapons, pick } from '../../../../data/world/load';
 import { WEAPON_TYPES, type WeaponType } from '../../../../data/world/schema';
+import { plainText } from '../../../../lib/world/text';
 
 export const getStaticPaths = (() => WEAPON_TYPES.map((type) => ({ params: { type } }))) satisfies GetStaticPaths;
 
@@ -37,7 +38,7 @@ export const GET: APIRoute = ({ params }) => {
       id: p.id,
       stage: p.stage,
       name: pick(p.name, L),
-      desc: pick(p.desc, L),
+      desc: plainText(pick(p.desc, L)),
       effect: p.effect,
     })),
     awakening: custom.awakening
@@ -47,7 +48,7 @@ export const GET: APIRoute = ({ params }) => {
         category: a.category,
         rank: a.rank,
         name: pick(a.name, L),
-        desc: pick(a.desc, L),
+        desc: plainText(pick(a.desc, L)),
         stackable: a.stackable,
         onePerCategory: a.onePerCategory,
         setSkill: a.setSkill,

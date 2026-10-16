@@ -110,19 +110,22 @@ describe('引用完整', () => {
         }
       }
       for (const rows of Object.values(st.lots)) {
-        for (const e of Object.values(rows).flat()) expect(itemIds.has(e.item), `抽选表物品 ${e.item}`).toBe(true);
+        for (const e of Object.values(rows).flat())
+          expect(itemIds.has(e.item), `抽选表物品 ${e.item}`).toBe(true);
       }
     }
   });
 
   it('饰品、衣装对应的物品存在', () => {
     for (const d of rows['decorations.json'] ?? []) expect(itemIds.has(d.id), `饰品 ${d.id}`).toBe(true);
-    for (const m of rows['mantles.json'] ?? []) expect(itemIds.has(m.itemId as number), `衣装 ${m.id}`).toBe(true);
+    for (const m of rows['mantles.json'] ?? [])
+      expect(itemIds.has(m.itemId as number), `衣装 ${m.id}`).toBe(true);
   });
 
   it('调和的素材与成品都存在', () => {
     for (const c of Combinations.parse(read('combinations.json')).combinations) {
-      for (const id of [...c.materials, c.result]) expect(itemIds.has(id), `调和 ${c.id} 的物品 ${id}`).toBe(true);
+      for (const id of [...c.materials, c.result])
+        expect(itemIds.has(id), `调和 ${c.id} 的物品 ${id}`).toBe(true);
     }
   });
 

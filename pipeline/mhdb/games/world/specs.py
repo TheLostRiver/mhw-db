@@ -134,14 +134,44 @@ AWAKENING_VALUES = spec(
 
 AUGMENT = spec(
     "new_limit_break.new_lb",
-    # category：0 扩充自定义栏 1 攻击 2 会心 3 防御 4 镶嵌槽 5 回复能力 6 属性·状态异常；slot_cost 为该等级的总占用
-    "category:I level:I slot_cost:I cost_r10:I cost_r11:I cost_r12:I",
+    # category：0 扩充自定义栏 1 攻击 2 会心 3 防御 4 镶嵌槽 5 回复能力 6 属性·状态异常；slot_cost 为该等级的总占用；
+    # points_* 是各稀有度的研究点数（与公开资料核对：攻击力强化1 稀有度 10 = 400 点）
+    "category:I level:I slot_cost:I points_r10:I points_r11:I points_r12:I",
+)
+
+# 大师自定义强化每一级的素材：rarity 为稀有度 − 1，level_id 为 new_lb 的行号；没有行 = 该稀有度不能做这一级
+AUGMENT_RECIPE = spec(
+    "new_limit_break.new_lbr",
+    "rarity:H level_id:H unlock_item:H unk_1:i unk_2:i "
+    + " ".join(f"mat_{k}:H mat_{k}_count:B" for k in range(1, 5))
+    + " unk_3:I unk_4:I unk_5:H unk_6:B unk_7:B",
 )
 
 CUSTOM_PART = spec(
     "customParts.cus_pa",
     # 整文件 Blowfish 加密；cost 为强化阶段 × 100（与文本「强化阶段 N」一致，见测试）
     "id:I weapon_type:I part_id:I unk_1:B cost:I attack:H defense:H affinity:B element:H sharpness:B",
+)
+
+# 零件强化的素材（整文件加密）；id 与 cus_pa 的行号对应。unlock_item 按 MHW-Editor 的命名是「解锁所需物品」，
+# 后面的 u_* 里前几个像是前置零件编号，均未确认，不输出
+CUSTOM_PART_RECIPE = spec(
+    "customParts.cus_par",
+    "weapon_type:B id:I unlock_item:H unk_1:i unk_2:i "
+    + " ".join(f"mat_{k}:H mat_{k}_count:B" for k in range(1, 5))
+    + " "
+    + " ".join(f"u_{k}:H" for k in range(12)),
+)
+
+# 上位自定义强化 / 防具强化的解放素材：rarity 为稀有度 − 1；equip_type 0–13 为武器种（内部顺序），14–18 为头、胸、腕、腰、脚
+AUGMENT_UNLOCK = spec(
+    "limit_break_mat_base.lbm_base",
+    "rarity:B equip_type:B zenny:I item_1:H item_1_count:H item_2:H item_2_count:H",
+)
+# 上位自定义强化每一项的素材：augment 1–5 = 攻击、会心、防御、镶嵌槽、回复能力（游戏内的排列顺序，素材对应关系为推断）
+AUGMENT_MATERIAL = spec(
+    "limit_break_mat_skill.lbm_skill",
+    "rarity:B augment:B item:H count:H unk:I",
 )
 
 # 武器种：文件名、站内键、文本文件、是否远程
