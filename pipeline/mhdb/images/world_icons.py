@@ -243,6 +243,14 @@ def build(raw: Path, data: Path, out: Path, log=print) -> int:
     for i in action_cells(raw):
         save(grid_cell(action, i), f"action/{i}.webp")
 
+    # 怪物图标：狩猎笔记的 ui/note/tex/micon/emXXX[_YY]_ID.tex（512px），缩到 192px、有损压缩
+    for tex in sorted((raw / "ui/note/tex/micon").glob("em*_ID.tex")):
+        img = _atlas(raw, tex.relative_to(raw).as_posix()).resize((192, 192), Image.Resampling.LANCZOS)
+        path = out / f"monster/{tex.name.removesuffix('_ID.tex')}.webp"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        img.save(path, "WEBP", quality=86, method=6)
+        n += 1
+
     # 状态图标原样输出
     for i in range((status.width // 64) * (status.height // 64)):
         cell = grid_cell(status, i)

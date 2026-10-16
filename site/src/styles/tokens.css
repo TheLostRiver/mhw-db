@@ -116,6 +116,12 @@
   --sharp-blue: #3e7fe0;
   --sharp-white: #f1f1ee;
   --sharp-purple: #a65ee0;
+
+  /* 猎虫精华 */
+  --extract-red: #d8443a;
+  --extract-white: #f2f2ee;
+  --extract-orange: #e48a2e;
+  --extract-green: #5aae4a;
 }
 
 @media (prefers-reduced-motion: reduce) {

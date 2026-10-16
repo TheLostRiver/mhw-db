@@ -1,0 +1,496 @@
+---
+import SiteLayout from '../../../layouts/SiteLayout.astro';
+import { loadMonsters } from '../../../data/world/load';
+import type { Buildup, Monster } from '../../../data/world/schema';
+import {
+  ELEMENTS,
+  ELEMENT_LABEL,
+  EXTRACT_LABEL,
+  STATE_LABELS,
+  STATUS_LABEL,
+  hitzoneRows,
+  isWeakElement,
+  isWeakPhysical,
+  monsterIconUrl,
+  monsterName,
+  sameAcrossRanks,
+  stars,
+} from '../../../lib/world/monsters';
+
+export function getStaticPaths() {
+  return loadMonsters()
+    .filter((m) => m.name)
+    .map((m) => ({ params: { key: m.key }, props: { m } }));
+}
+
+const { m } = Astro.props as { m: Monster };
+const name = monsterName(m);
+const icon = monsterIconUrl(m);
+const same = sameAcrossRanks(m);
+const ranks = same
+  ? [{ key: 'all', label: '', rows: hitzoneRows(m, false) }]
+  : [
+      { key: 'mr', label: '大师级', rows: hitzoneRows(m, true) },
+      { key: 'hr', label: '上位及以下', rows: hitzoneRows(m, false) },
+    ];
+const PHYS = ['sever', 'blunt', 'shot'] as const;
+const STATUS_ROWS = ['poison', 'sleep', 'paralysis', 'blast', 'stun', 'exhaust', 'mount'] as const;
+const STAR_STATUS = ['poison', 'sleep', 'paralysis', 'blast', 'stun'] as const;
+const text = (t: Monster['desc']) => t?.['zh-Hans']?.split('\n') ?? [];
+const sec = (v: number) => `${+v.toFixed(2)} 秒`;
+const decay = (b: Buildup) => (b.decay && b.decayInterval ? `每 ${sec(b.decayInterval)} −${b.decay}` : '—');
+const duration = (b: Buildup) =>
+  b.duration
+    ? b.durationStep
+      ? `${sec(b.duration)}（每次 −${+b.durationStep.toFixed(2)}，最短 ${+b.durationMin.toFixed(2)}）`
+      : sec(b.duration)
+    : '—';
+const traps = [
+  ['麻痹陷阱', m.status.traps.shock],
+  ['落穴陷阱', m.status.traps.pitfall],
+  ['藤蔓', m.status.traps.ivy],
+] as const;
+const others = [m.name?.ja, m.name?.en].filter(Boolean).join(' · ');
+const starRows = m.stars.map((st, i) => [`记录 ${i + 1}`, st] as const);
+---
+
+<SiteLayout
+  title={`${name} · 怪物`}
+  current="monsters"
+  description={`怪物猎人：世界 冰原 ${name}的肉质、部位耐久、切断值、异常耐性与弱点`}
+  wide
+>
+  <nav class="s-crumbs" aria-label="位置">
+    <a href="/world/monsters/">怪物</a>
+    <span>{name}</span>
+  </nav>
+
+  <header class="mo-head">
+    {icon && <img src={icon} alt="" width="104" height="104" />}
+    <div>
+      <h1>{name}</h1>
+      {others && <p class="mo-alt">{others}</p>}
+      <dl class="mo-facts">
+        <div>
+          <dt>基础体力</dt>
+          <dd class="s-num">{m.hp.toLocaleString('zh-CN')}</dd>
+        </div>
+        <div>
+          <dt>部位数</dt>
+          <dd class="s-num">{m.parts.length}</dd>
+        </div>
+        <div>
+          <dt>内部编号</dt>
+          <dd class="s-num">{m.key}</dd>
+        </div>
+      </dl>
+    </div>
+  </header>
+
+  {(m.desc || m.tips) && (
+    <section class="s-section mo-text">
+      {text(m.desc).length > 0 && (
+        <p>
+          {text(m.desc).map((l) => (
+            <>
+              {l}
+              <br />
+            </>
+          ))}
+        </p>
+      )}
+      {text(m.tips).length > 0 && (
+        <p class="mo-tips">
+          {text(m.tips).map((l) => (
+            <>
+              {l}
+              <br />
+            </>
+          ))}
+        </p>
+      )}
+    </section>
+  )}
+
+  {starRows.length > 0 && (
+    <section class="s-section">
+      <h2>
+        弱点星级 <span class="b-label">狩猎笔记</span>
+      </h2>
+      <div class="s-table-wrap mo-auto">
+        <table class="s-table">
+          <thead>
+            <tr>
+              {starRows.length > 1 && <th class="s-left">笔记记录</th>}
+              {ELEMENTS.map((e) => (
+                <th class={`mo-el mo-el--${e}`}>{ELEMENT_LABEL[e]}</th>
+              ))}
+              {STAR_STATUS.map((k) => (
+                <th>{STATUS_LABEL[k]}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {starRows.map(([label, st]) => (
+              <tr>
+                {starRows.length > 1 && <td class="s-left">{label}</td>}
+                {[...ELEMENTS, ...STAR_STATUS].map((k) => (
+                  <td class="mo-star">{stars(st[k])}</td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {starRows.length > 1 && (
+        <p class="s-note">
+          这只怪物在笔记数据里有 {starRows.length} 条记录（等级或形态不同），哪条对应哪种形态未逐一确认。
+        </p>
+      )}
+    </section>
+  )}
+
+  <section class="s-section" data-ranks>
+    <h2>
+      肉质
+      <span class="b-label">
+        物理 ≥ 45 与属性 ≥ 20 加粗；{same ? '上位与大师级相同' : '大师级没有单独设置的部位沿用上位'}
+      </span>
+    </h2>
+    {!same && (
+      <div class="mo-ranks" role="tablist" aria-label="等级">
+        {ranks.map((r, i) => (
+          <button type="button" role="tab" aria-selected={i === 0 ? 'true' : 'false'} data-rank-tab={r.key}>
+            {r.label}
+          </button>
+        ))}
+      </div>
+    )}
+    {ranks.map((r, i) => (
+      <div class="s-table-wrap mo-auto" data-rank-panel={r.key} hidden={i > 0}>
+        <table class="s-table mo-hz">
+          <thead>
+            <tr>
+              <th class="s-left">部位</th>
+              <th>状态</th>
+              <th>斩</th>
+              <th>打</th>
+              <th>弹</th>
+              {ELEMENTS.map((e) => (
+                <th class={`mo-el mo-el--${e}`}>{ELEMENT_LABEL[e]}</th>
+              ))}
+              <th title="眩晕值的肉质（打击头部时）">眩晕</th>
+              <th title="减气值的肉质">减气</th>
+            </tr>
+          </thead>
+          <tbody>
+            {r.rows.map((row) => (
+              <tr class={row.state > 0 ? 'mo-sub' : undefined}>
+                <td class="s-left" title={row.names.length ? `受击判定：${row.names.join('、')}` : undefined}>
+                  {row.label}
+                </td>
+                <td class={row.state ? '' : 's-dim'}>{STATE_LABELS[row.state]}</td>
+                {PHYS.map((k) => (
+                  <td class:list={['s-num', { 'mo-weak': isWeakPhysical(row.hz[k]) }]}>{row.hz[k]}</td>
+                ))}
+                {ELEMENTS.map((k) => (
+                  <td class:list={['s-num', { 'mo-weak': isWeakElement(row.hz[k]) }]}>{row.hz[k]}</td>
+                ))}
+                <td class="s-num">{row.hz.stun}</td>
+                <td class="s-num">{row.hz.exhaust}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    ))}
+    <p class="s-note">
+      部位名由受击判定的开发名翻译（鼠标停在部位名上可看原名）；带「推断」的按判定挂的骨骼推断。 *
+      状态名取自格式说明里的字段名（受伤、特殊状态 1–3），游戏内对应哪种状态未逐一确认。
+    </p>
+  </section>
+
+  <section class="s-section">
+    <h2>部位</h2>
+    <div class="s-table-wrap mo-auto">
+      <table class="s-table">
+        <thead>
+          <tr>
+            <th class="s-left">部位</th>
+            <th title="累计受到这么多伤害时怯缩（数据字段名为 Flinch Value）">怯缩值</th>
+            <th title="猎虫吸取的精华颜色">精华</th>
+            <th title="累计斩击伤害达到此值时切断">切断值</th>
+          </tr>
+        </thead>
+        <tbody>
+          {m.parts.map((p) => (
+            <tr>
+              <td class="s-left">{p.label}</td>
+              <td class="s-num">{p.flinch}</td>
+              <td>
+                {p.extract ? (
+                  <span class={`mo-extract mo-extract--${p.extract}`}>{EXTRACT_LABEL[p.extract]}</span>
+                ) : (
+                  <span class="s-dim">—</span>
+                )}
+              </td>
+              <td class="s-num">{p.sever ?? <span class="s-dim">—</span>}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="s-section">
+    <h2>异常耐性</h2>
+    <div class="s-table-wrap mo-auto">
+      <table class="s-table">
+        <thead>
+          <tr>
+            <th class="s-left">异常</th>
+            <th title="第一次发作需要的积累值">初始耐性</th>
+            <th title="每发作一次耐性增加">每次增加</th>
+            <th>上限</th>
+            <th class="s-left">自然衰减</th>
+            <th class="s-left">持续时间</th>
+          </tr>
+        </thead>
+        <tbody>
+          {STATUS_ROWS.map((k) => {
+            const b = m.status[k];
+            return (
+              <tr>
+                <td class="s-left">{STATUS_LABEL[k]}</td>
+                {b.base ? (
+                  <>
+                    <td class="s-num">{b.base}</td>
+                    <td class="s-num">+{b.increase}</td>
+                    <td class="s-num">{b.max}</td>
+                    <td class="s-left s-num">{decay(b)}</td>
+                    <td class="s-left s-num">{duration(b)}</td>
+                  </>
+                ) : (
+                  <td class="s-left s-dim" colspan="5">
+                    无效
+                  </td>
+                )}
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+    <dl class="mo-facts mo-facts--row">
+      <div>
+        <dt>爆破伤害</dt>
+        <dd class="s-num">{m.status.blastDamage || '—'}</dd>
+      </div>
+      <div>
+        <dt>减气伤害</dt>
+        <dd class="s-num">{m.status.exhaustDamage || '—'}</dd>
+      </div>
+      {traps.map(([label, seq]) => (
+        <div>
+          <dt>{label}</dt>
+          <dd class="s-num">{seq.length ? `${seq.join(' → ')} 秒` : '无效'}</dd>
+        </div>
+      ))}
+    </dl>
+  </section>
+
+  <p class="s-note">
+    数据来源：<code>{m._src.epg}</code>（部位与肉质）、<code>{m._src.eda}</code>（异常耐性）、
+    <code>{m._src.col}</code>（受击判定与部位的对应）、<code>{m._src.note}</code>（弱点星级）。 字段顺序参照
+    MHW-Editor 的格式说明（代码自写），雌火龙的肉质、怯缩值、切断值、精华颜色、异常耐性已与 Kiranico
+    核对一致。 基础体力未乘任务倍率。
+  </p>
+</SiteLayout>
+
+<script>
+  for (const box of document.querySelectorAll<HTMLElement>('[data-ranks]')) {
+    const tabs = [...box.querySelectorAll<HTMLButtonElement>('[data-rank-tab]')];
+    const panels = [...box.querySelectorAll<HTMLElement>('[data-rank-panel]')];
+    for (const t of tabs) {
+      t.addEventListener('click', () => {
+        for (const x of tabs) x.setAttribute('aria-selected', String(x === t));
+        for (const p of panels) p.hidden = p.dataset.rankPanel !== t.dataset.rankTab;
+      });
+    }
+  }
+</script>
+
+<style>
+  .mo-head {
+    display: flex;
+    gap: var(--space-5);
+    align-items: center;
+    margin-bottom: var(--space-5);
+  }
+
+  .mo-head img {
+    flex: none;
+    filter: drop-shadow(0 4px 12px rgb(0 0 0 / 0.25));
+  }
+
+  .mo-head h1 {
+    font-size: var(--text-2xl);
+    font-weight: 800;
+  }
+
+  .mo-alt {
+    color: var(--c-text-3);
+    font-size: var(--text-sm);
+  }
+
+  .mo-facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-6);
+    margin: var(--space-3) 0 0;
+  }
+
+  .mo-facts--row {
+    margin-top: var(--space-4);
+  }
+
+  .mo-facts dt {
+    color: var(--c-text-3);
+    font-size: var(--text-xs);
+  }
+
+  .mo-facts dd {
+    margin: 0;
+    font-size: var(--text-md);
+    font-weight: 700;
+  }
+
+  .mo-text {
+    max-width: 80ch;
+    color: var(--c-text-2);
+  }
+
+  .mo-tips {
+    margin-top: var(--space-3);
+    padding-left: var(--space-3);
+    border-left: 2px solid var(--c-accent);
+  }
+
+  .mo-auto {
+    width: fit-content;
+    max-width: 100%;
+  }
+
+  .mo-el--fire {
+    color: var(--el-fire);
+  }
+
+  .mo-el--water {
+    color: var(--el-water);
+  }
+
+  .mo-el--thunder {
+    color: var(--el-thunder);
+  }
+
+  .mo-el--ice {
+    color: var(--el-ice);
+  }
+
+  .mo-el--dragon {
+    color: var(--el-dragon);
+  }
+
+  .mo-star {
+    color: var(--c-amber);
+    letter-spacing: 1px;
+  }
+
+  .mo-weak {
+    color: var(--c-text);
+    font-weight: 800;
+  }
+
+  .mo-hz td.s-num:not(.mo-weak) {
+    color: var(--c-text-2);
+  }
+
+  .mo-sub td:first-child {
+    padding-left: 28px;
+    color: var(--c-text-2);
+  }
+
+  .mo-ranks {
+    display: inline-flex;
+    gap: 2px;
+    margin-bottom: var(--space-3);
+    padding: 3px;
+    border-radius: var(--radius);
+    background: var(--c-surface);
+    box-shadow: inset 0 0 0 1px var(--c-line);
+  }
+
+  .mo-ranks button {
+    padding: 5px 14px;
+    border: 0;
+    border-radius: calc(var(--radius) - 2px);
+    background: none;
+    color: var(--c-text-2);
+    font: inherit;
+    cursor: pointer;
+    transition:
+      background-color var(--dur-fast),
+      color var(--dur-fast);
+  }
+
+  .mo-ranks button[aria-selected='true'] {
+    background: var(--c-accent-soft);
+    color: var(--c-text);
+    box-shadow: inset 0 0 0 1px var(--c-accent);
+  }
+
+  .mo-ranks button:focus-visible {
+    outline: 2px solid var(--c-focus);
+  }
+
+  .mo-extract {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .mo-extract::before {
+    content: '';
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.25);
+  }
+
+  .mo-extract--red::before {
+    background: var(--extract-red);
+  }
+
+  .mo-extract--white::before {
+    background: var(--extract-white);
+  }
+
+  .mo-extract--orange::before {
+    background: var(--extract-orange);
+  }
+
+  .mo-extract--green::before {
+    background: var(--extract-green);
+  }
+
+  [data-rank-panel][hidden] {
+    display: none;
+  }
+
+  @media (max-width: 700px) {
+    .mo-head img {
+      width: 72px;
+      height: 72px;
+    }
+  }
+</style>

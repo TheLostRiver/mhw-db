@@ -1,0 +1,96 @@
+---
+import SiteLayout from '../../../layouts/SiteLayout.astro';
+import { loadMonsters } from '../../../data/world/load';
+import { monsterIconUrl, monsterName } from '../../../lib/world/monsters';
+
+const monsters = loadMonsters().filter((m) => m.name);
+---
+
+<SiteLayout
+  title="怪物"
+  current="monsters"
+  description="怪物猎人：世界 冰原 大型怪物资料：肉质、部位耐久、可切断部位、异常耐性、弱点星级"
+>
+  <div class="s-head">
+    <h1>
+      怪物 <span class="b-label">{monsters.length} 种（含亚种、特殊个体）</span>
+    </h1>
+    <p>
+      大型怪物的肉质（上位与大师级）、部位怯缩值、精华颜色、切断值、异常耐性与狩猎笔记的弱点星级，取自每只怪物的数据表
+      （<code>em/emXXX/YY/data/*.dtt_epg</code>、<code>*.dtt_eda</code>）。
+    </p>
+  </div>
+
+  <div class="s-toolbar">
+    <input
+      class="s-search"
+      type="search"
+      placeholder="按名字筛选"
+      aria-label="按名字筛选怪物"
+      data-monster-search
+    />
+    <span data-monster-count aria-live="polite"></span>
+  </div>
+
+  <ul class="s-grid mo-grid">
+    {monsters.map((m) => {
+      const icon = monsterIconUrl(m);
+      const alt = [m.name?.ja, m.name?.en].filter(Boolean).join(' ');
+      return (
+        <li data-monster data-name={`${monsterName(m)} ${alt}`.toLowerCase()}>
+          <a class="s-card mo-card" href={`/world/monsters/${m.key}/`}>
+            {icon ? (
+              <img src={icon} alt="" width="56" height="56" loading="lazy" />
+            ) : (
+              <span class="mo-noicon" />
+            )}
+            <strong>{monsterName(m)}</strong>
+            <small>体力 {m.hp.toLocaleString('zh-CN')}</small>
+          </a>
+        </li>
+      );
+    })}
+  </ul>
+</SiteLayout>
+
+<script>
+  const input = document.querySelector<HTMLInputElement>('[data-monster-search]');
+  const counter = document.querySelector<HTMLElement>('[data-monster-count]');
+  const items = [...document.querySelectorAll<HTMLElement>('[data-monster]')];
+  input?.addEventListener('input', () => {
+    const q = input.value.trim().toLowerCase();
+    let shown = 0;
+    for (const li of items) {
+      const hit = !q || (li.dataset.name ?? '').includes(q);
+      li.hidden = !hit;
+      if (hit) shown++;
+    }
+    if (counter) counter.textContent = q ? `${shown} 种` : '';
+  });
+</script>
+
+<style>
+  .mo-grid {
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  }
+
+  .mo-card {
+    grid-template-columns: 56px minmax(0, 1fr);
+  }
+
+  .mo-card img,
+  .mo-noicon {
+    width: 56px;
+    height: 56px;
+  }
+
+  .mo-noicon {
+    grid-row: 1 / span 2;
+    border-radius: 50%;
+    background: var(--c-surface-2);
+  }
+
+  .mo-grid li[hidden] {
+    display: none;
+  }
+</style>

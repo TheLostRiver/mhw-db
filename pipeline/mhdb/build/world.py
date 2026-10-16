@@ -16,6 +16,7 @@ from mhdb.build.world_custom import (
     read_crit,
     read_sharpness_multipliers,
 )
+from mhdb.build.world_monsters import build_monsters
 from mhdb.build.world_moves import build_moves
 from mhdb.formats import crypto
 from mhdb.games.world import exe as EXE
@@ -357,6 +358,7 @@ def build(raw: Path, out: Path, log=print) -> dict:
     weapons = build_weapons(s)
     custom = build_weapon_custom(s)
     moves = build_moves(s, log)
+    monsters = build_monsters(s, log)
     crit = read_crit(crypto.decrypt_file(PLP_REL, s.path(PLP_REL).read_bytes()))
 
     write_json(out / "meta.json", meta)
@@ -371,6 +373,7 @@ def build(raw: Path, out: Path, log=print) -> dict:
         write_records(out / "weapons" / f"{key}.json", "weapons", rows)
     write_json(out / "weapon-custom.json", custom)
     write_records(out / "moves.json", "moves", moves)
+    write_records(out / "monsters.json", "monsters", monsters)
     write_json(
         out / "constants.json",
         {
@@ -399,6 +402,7 @@ def build(raw: Path, out: Path, log=print) -> dict:
         "customParts": sum(len(v) for v in custom["parts"].values()),
         "awakening": len(custom["awakening"]),
         "moves": len(moves),
+        "monsters": len(monsters),
     }
     write_json(out / "counts.json", counts)
     log(f"写入 {out}：{counts}")

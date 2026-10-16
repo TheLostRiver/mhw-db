@@ -4,7 +4,7 @@
 
   头：u32 0x18091001、"COL\\0"、u32 版本、u32、u32、u32 名字数
   名字表：每条 名字 \\0（日文开发名，可为空）、i32 判定形状编号、i32 攻击参数编号（-1 无）、i32、u16、u8、u32
-  CLND / CLGM 段：判定形状（未解析，按标签跳过）
+  CLND / CLGM 段：判定形状（攻击参数解析时按标签跳过；怪物的受击判定见 damage_nodes）
   ATK 段：u32 0x18091001、"ATK\\0"、u32 版本、u32 条数、u32 类型（1 近战、3 弹体）、随后定长记录
   OAP 段：结尾
 
@@ -197,7 +197,67 @@ def _shell(v: tuple) -> Attack:
     )
 
 
-def parse(data: bytes) -> Col:
+@dataclass(frozen=True)
+class DamageNode:
+    """怪物的受击判定：判定名（开发名，如 damage_head_0）指向 dtt_epg 的第 part 个部位、第 slot 个肉质槽。"""
+
+    name: str
+    part: int
+    slot: int
+    # 判定形状挂在的骨骼编号（各怪物通用的编号：3、4 头，100–105 颈，140–149 尾……）
+    joints: tuple[int, ...] = ()
+
+
+_CLGM_SHAPE_SIZE = 72
+
+
+def damage_nodes(data: bytes) -> list[DamageNode]:
+    """怪物 .col 里不带攻击参数的判定节点（受击判定）与它们的部位、肉质槽。
+
+    CLND 段：u32 魔数、"CLND"、u32 版本、u32 节点数、u32 类型、u8；之后每个节点一个 CLGM 段：
+    u32 魔数、"CLGM"、u32 版本、u32 形状数、形状 × 72 字节（第 18 字节起两个 i16 是两端挂的骨骼编号），
+    再 26 字节参数 + 类型 2 时 8 个 i32 + u8。
+    类型 2（怪物）的 8 个 i32 里，前两个是部位编号与部位内的肉质槽（-1 为不属于任何部位）：
+    雌火龙 damage_head_0 → 部位 0 槽 0（头 70 / 75 / 65）、damage_neck_0 → 部位 0 槽 1（颈 40 / 45 / 35），与 Kiranico 一致。
+    """
+    entries, o = _entries(data)
+    magic, tag, _, count, kind = struct.unpack_from("<I4sIII", data, o)
+    if magic != MAGIC or tag != b"CLND":
+        raise ColError("名字表之后不是 CLND 段")
+    if kind != 2:
+        return []
+    o += 21
+    params: list[tuple[int, int, tuple[int, ...]]] = []
+    for _ in range(count):
+        magic, tag, _, shapes = struct.unpack_from("<I4sII", data, o)
+        if magic != MAGIC or tag != b"CLGM":
+            raise ColError(f"CLGM 段位置不符（{o:#x}）")
+        joints = sorted(
+            {
+                j
+                for k in range(shapes)
+                for j in struct.unpack_from("<hh", data, o + 16 + _CLGM_SHAPE_SIZE * k + 18)
+                if j >= 0
+            }
+        )
+        o += 16 + _CLGM_SHAPE_SIZE * shapes + 26
+        part, slot = struct.unpack_from("<ii", data, o)
+        params.append((part, slot, tuple(joints)))
+        o += 32 + 1
+    if data[o + 3 + 4 : o + 3 + 8] != b"ATK\0":  # 节点之后还有 3 个 u8
+        raise ColError("CLND 段长度不符")
+    out = []
+    for e in entries:
+        if e.attack >= 0 or not 0 <= e.node < count:
+            continue
+        part, slot, joints = params[e.node]
+        if part >= 0 and slot >= 0:
+            out.append(DamageNode(e.name, part, slot, joints))
+    return out
+
+
+def _entries(data: bytes) -> tuple[list[Entry], int]:
+    """名字表与它之后的偏移。"""
     magic, tag, _, _, _, count = _HEAD.unpack_from(data, 0)
     if magic != MAGIC or tag != b"COL\0":
         raise ColError("不是 COL 文件")
@@ -208,6 +268,11 @@ def parse(data: bytes) -> Col:
         node, attack, *_ = _NAME_TAIL.unpack_from(data, e + 1)
         entries.append(Entry(data[o:e].decode("utf-8"), node, attack))
         o = e + 1 + _NAME_TAIL.size
+    return entries, o
+
+
+def parse(data: bytes) -> Col:
+    entries, o = _entries(data)
     a = data.find(b"ATK\0", o) - 4
     if a < 0:
         raise ColError("没有 ATK 段")

@@ -13,7 +13,7 @@ import { loadMeta } from '../data/world/load';
 interface Props {
   title: string;
   description?: string;
-  current?: 'home' | 'builder' | 'maps' | 'moves' | 'encyclopedia' | 'damage';
+  current?: 'home' | 'builder' | 'damage' | 'monsters' | 'moves' | 'maps' | 'encyclopedia';
   wide?: boolean;
 }
 
@@ -27,8 +27,11 @@ const meta = loadMeta();
 const nav = [
   { key: 'home', label: '首页', href: '/' },
   { key: 'builder', label: '配装', href: '/world/builder/' },
-  { key: 'maps', label: '地图', href: '/world/maps/' },
+  { key: 'damage', label: '伤害计算', href: '/world/damage/' },
+  { key: 'monsters', label: '怪物', href: '/world/monsters/' },
   { key: 'moves', label: '武器招式', href: '/world/moves/' },
+  { key: 'maps', label: '地图', href: '/world/maps/' },
+  { key: 'encyclopedia', label: '百科', href: '/world/encyclopedia/' },
 ] as const;
 ---
 
@@ -42,7 +45,7 @@ const nav = [
     <ThemeScript />
   </head>
   <body>
-    <header class="b-head">
+    <header class="b-head site-head">
       <a class="b-logo" href="/">
         <span class="b-logo__mark"></span>mhw·db
       </a>
@@ -79,6 +82,29 @@ const nav = [
 
       .site-main--wide {
         max-width: 1680px;
+      }
+
+      /* 窄屏：导航换到第二行，横向滚动（设计稿的 b.css 在 900px 以下隐藏导航） */
+      @media (max-width: 900px) {
+        .site-head {
+          flex-wrap: wrap;
+          height: auto;
+          row-gap: 0;
+          padding-top: 8px;
+        }
+
+        .site-head .b-nav {
+          display: flex;
+          order: 3;
+          width: 100%;
+          overflow-x: auto;
+          padding-bottom: 6px;
+          scrollbar-width: none;
+        }
+
+        .site-head .b-nav a {
+          flex: none;
+        }
       }
 
       @media (max-width: 700px) {

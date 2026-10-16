@@ -1,0 +1,179 @@
+# 怪物受击判定名（em/emXXX/YY/collision/emXXX.col 的开发名）→ 本站中文部位名。
+# 左列是规范化后的词干：去掉 damage_ / damege_ / 【dmg】等前缀，去掉末尾的序号与 push / service / skip / omake 等附注，转小写。
+# 全角括号里是同一部位的细分（上 / 下、愤怒时等）；同一肉质槽里只有同一部位的几种细分时，页面只显示括号前的部分。
+# 前缀 g_ / p_（绚辉龙、天地煌啼龙）的含义未确认，照原文写作「G·」「P·」。
+head	头部
+head_up	头部（上）
+head_top	头部（上）
+head_dowm	头部（下）
+head_under	头部（下）
+head_defend	头部（防御）
+chin	下巴
+horn	角
+horn_l	左角
+horn_r	右角
+horn_left	左角
+horn_right	右角
+horn_left_lost	左角（折断后）
+horn_right_lost	右角（折断后）
+shokkaku	触角
+angry_nose	鼻子（愤怒时）
+neck	颈部
+neck_top	颈部（上）
+neck_bottom	颈部（下）
+balloon	颈袋
+body	躯干
+body_sp	躯干（特殊）
+body_defend	躯干（防御）
+body_front	躯干（前）
+body_back	背部
+back	背部
+body_tummy	腹部
+body_stomach	腹部
+body_stomack	腹部
+body_chest	胸部
+chest	胸部
+breast	胸部
+upper_body	上半身
+lower_body	下半身
+arm	臂
+arm_left	左臂
+arm_right	右臂
+armleft	左臂
+armright	右臂
+left_arm	左臂
+right_arm	右臂
+arm_left_up	左臂（上）
+arm_left_down	左臂（下）
+arm_right_up	右臂（上）
+arm_right_down	右臂（下）
+arm_left_blade	左臂刃
+arm_right_blade	右臂刃
+iwa	岩石
+iwa_arm_left	左臂（持岩）
+iwa_arm_right	右臂（持岩）
+leg	脚
+leg_l	左脚
+leg_r	右脚
+leg_left	左脚
+leg_right	右脚
+legleft	左脚
+legright	右脚
+left_leg	左脚
+right_leg	右脚
+leg_left_t	左脚（上）
+leg_left_b	左脚（下）
+leg_right_t	右脚（上）
+leg_right_b	右脚（下）
+leg_l_saki	左脚（末端）
+leg_r_saki	右脚（末端）
+foreleg_left	左前脚
+foreleg_right	右前脚
+frontleg_l	左前脚
+frontleg_r	右前脚
+frontleg_left	左前脚
+frontleg_right	右前脚
+leg_front_left	左前脚
+leg_front_right	右前脚
+hindleg_l	左后脚
+hindleg_r	右后脚
+hindleg_left	左后脚
+hindleg_right	右后脚
+rearleg_left	左后脚
+rearleg_right	右后脚
+leg_back_left	左后脚
+leg_back_right	右后脚
+wing	翼
+wing_left	左翼
+wing_right	右翼
+wingleft	左翼
+wingright	右翼
+left_wing	左翼
+right_wing	右翼
+wing_serviceleft	左翼
+wing_serviceright	右翼
+wing2_serviceleft	左翼（2）
+wing2_serviceright	右翼（2）
+wing_left_spike	左翼棘
+wing_right_spike	右翼棘
+wing_left_arm	左翼臂
+wing_right_arm	右翼臂
+wing_left_armfoot	左翼脚
+wing_right_armfoot	右翼脚
+ngrywing_left	左翼（愤怒时）
+angrywing_right	右翼（愤怒时）
+fin_left	左鳍
+fin_right	右鳍
+fin_back	背鳍
+tail	尾巴
+tail_saki	尾尖
+tail_fin	尾鳍
+tail_toge	尾棘
+tail_top	尾巴（上）
+tail_bottom	尾巴（下）
+tail1_top	尾巴 1（上）
+tail1_bottom	尾巴 1（下）
+tail1_under	尾巴 1（下）
+tail2_top	尾巴 2（上）
+shell_all	外壳
+shell_kakouleft	左火口
+shell_kakouright	右火口
+bone_head	骨甲（头部）
+bone_body	骨甲（躯干）
+bone_leg_l	骨甲（左脚）
+bone_leg_r	骨甲（右脚）
+ball_body_l	球状部位（躯干左）
+ball_body_r	球状部位（躯干右）
+ball_chest_l	球状部位（胸部左）
+ball_chest_r	球状部位（胸部右）
+ball_tail	球状部位（尾巴）
+g_head_l	G·头部（左）
+g_head_r	G·头部（右）
+g_body	G·躯干
+g_upper_body_l	G·上半身（左）
+g_upper_body_r	G·上半身（右）
+g_upper_body_under	G·上半身（下）
+g_lower_body	G·下半身
+g_left_breast	G·左胸
+g_right_breast	G·右胸
+g_arm_left	G·左臂
+g_arm_right	G·右臂
+g_left_arm	G·左臂
+g_right_arm	G·右臂
+g_leg_left	G·左脚
+g_leg_right	G·右脚
+g_l_leg	G·左脚
+g_r_leg	G·右脚
+g_l_tail	G·尾巴（左）
+g_r_tail	G·尾巴（右）
+g_wing_left	G·左翼
+g_wing_right	G·右翼
+push_g_tail	G·尾巴
+p_head	P·头部
+p_body_back	P·背部
+p_body_tummy	P·腹部
+p_arm_left	P·左臂
+p_arm_right	P·右臂
+p_leg_left	P·左脚
+p_leg_right	P·右脚
+p_tail	P·尾巴
+p_wing_left	P·左翼
+p_wing_right	P·右翼
+頭部　上	头部（上）
+頭部　下	头部（下）
+首	颈部
+胴体	躯干
+前脚　右	右前脚
+前脚　左	左前脚
+尻尾　根本	尾巴（根部）
+左後ろ足　上部	左后脚（上）
+左後ろ足　足元	左后脚（下）
+右後ろ足　上部	右后脚（上）
+右後ろ足　足元	右后脚（下）
+【特殊】喉	喉咙（特殊）
+【壊れ】尻尾	尾巴（破坏后）
+【壊れ】排熱殻	排热壳（破坏后）
+キズ表現_胴	躯干（伤痕）
+左後足_背後ダメージコリジョン	左后脚（背后）
+右後足_背後ダメージコリジョン	右后脚（背后）
+ニクイドリレーシェン当たり	群鸟

@@ -5,7 +5,18 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { Colors, Constants, FILES, LANGS, MapNodes, Maps, Meta, Moves, WeaponCustom } from './schema';
+import {
+  Colors,
+  Constants,
+  FILES,
+  LANGS,
+  MapNodes,
+  Maps,
+  Meta,
+  Monsters,
+  Moves,
+  WeaponCustom,
+} from './schema';
 
 const ROOT = new URL('../../../../data/world/', import.meta.url);
 const read = (rel: string): unknown => JSON.parse(readFileSync(fileURLToPath(new URL(rel, ROOT)), 'utf-8'));
@@ -25,6 +36,7 @@ describe('结构', () => {
     Maps.parse(read('maps.json'));
     MapNodes.parse(read('map-nodes.json'));
     Moves.parse(read('moves.json'));
+    Monsters.parse(read('monsters.json'));
   });
 
   for (const [file, { schema }] of Object.entries(FILES)) {

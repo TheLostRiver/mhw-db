@@ -600,6 +600,141 @@ export const Move = z
 export const Moves = z.object({ moves: z.array(Move).min(1) }).strict();
 export type Move = z.infer<typeof Move>;
 
+/**
+ * 大型怪物（monsters.json）：部位、肉质、异常耐性，见 pipeline/mhdb/build/world_monsters.py。
+ * 肉质槽 hz 是 10 个肉质编号：上位及以下 5 个状态（通常、受伤、特殊 1–3）+ 大师级 5 个状态，-1 为该状态不存在
+ * （大师级为 -1 时沿用上位）。
+ */
+export const HITZONE_KEYS = [
+  'sever',
+  'blunt',
+  'shot',
+  'fire',
+  'water',
+  'thunder',
+  'ice',
+  'dragon',
+  'stun',
+  'exhaust',
+] as const;
+const hzValue = z.number().int().min(0);
+const Hitzone = z
+  .object({
+    sever: hzValue,
+    blunt: hzValue,
+    shot: hzValue,
+    fire: hzValue,
+    water: hzValue,
+    thunder: hzValue,
+    ice: hzValue,
+    dragon: hzValue,
+    stun: hzValue,
+    exhaust: hzValue,
+  })
+  .strict();
+const Buildup = z
+  .object({
+    base: z.number().int().min(0),
+    increase: z.number().int().min(0),
+    max: z.number().int().min(0),
+    decayInterval: z.number().min(0),
+    decay: z.number().int().min(0),
+    duration: z.number().min(0),
+    durationStep: z.number().min(0),
+    durationMin: z.number().min(0),
+  })
+  .strict();
+export const STAR_KEYS = [
+  'fire',
+  'water',
+  'thunder',
+  'ice',
+  'dragon',
+  'poison',
+  'sleep',
+  'paralysis',
+  'blast',
+  'stun',
+] as const;
+const star = z.number().int().min(-1).max(3);
+const Stars = z
+  .object({
+    fire: star,
+    water: star,
+    thunder: star,
+    ice: star,
+    dragon: star,
+    poison: star,
+    sleep: star,
+    paralysis: star,
+    blast: star,
+    stun: star,
+  })
+  .strict();
+export const Monster = z
+  .object({
+    key: z.string().regex(/^em\d{3}_\d{2}$/),
+    em: z.number().int(),
+    sub: z.number().int(),
+    gameId: z.number().int().min(0),
+    name: Text.nullable(),
+    desc: Text.nullable(),
+    tips: Text.nullable(),
+    icon: z.string().nullable(),
+    hp: z.number().int().positive(),
+    parts: z.array(
+      z
+        .object({
+          label: z.string().min(1),
+          flinch: z.number().int().min(0),
+          extract: z.enum(['red', 'white', 'orange', 'green']).nullable(),
+          sever: z.number().int().nullable(),
+          slots: z
+            .array(
+              z
+                .object({
+                  label: z.string().min(1),
+                  names: z.array(z.string()),
+                  hz: z.array(z.number().int().min(-1)).length(10),
+                })
+                .strict(),
+            )
+            .min(1),
+        })
+        .strict(),
+    ),
+    hitzones: z.array(Hitzone).min(1),
+    status: z
+      .object({
+        poison: Buildup,
+        sleep: Buildup,
+        paralysis: Buildup,
+        stun: Buildup,
+        exhaust: Buildup,
+        mount: Buildup,
+        blast: Buildup,
+        blastDamage: z.number().int().min(0),
+        exhaustDamage: z.number().min(0),
+        traps: z
+          .object({
+            shock: z.array(z.number()),
+            pitfall: z.array(z.number()),
+            ivy: z.array(z.number()),
+            dung: z.array(z.number()),
+          })
+          .strict(),
+      })
+      .strict(),
+    /** 狩猎笔记的星级；同一怪物有几条记录（等级或形态不同）时按文件顺序给出，对应关系未逐一确认 */
+    stars: z.array(Stars),
+    _src: z.object({ epg: z.string(), eda: z.string(), col: z.string(), note: z.string() }).strict(),
+  })
+  .strict();
+export const Monsters = z.object({ monsters: z.array(Monster).min(1) }).strict();
+export type Monster = z.infer<typeof Monster>;
+export type Hitzone = z.infer<typeof Hitzone>;
+export type Buildup = z.infer<typeof Buildup>;
+
 export type Charm = z.infer<typeof Charm>;
 export type Mantle = z.infer<typeof Mantle>;
 export type Weapon = z.infer<typeof Weapon>;
