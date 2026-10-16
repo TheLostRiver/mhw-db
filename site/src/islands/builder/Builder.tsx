@@ -32,6 +32,7 @@ import {
   type WeaponPayload,
 } from '../../lib/world/builder';
 import type { SearchResult } from '../../lib/world/search';
+import { buildFromHash, shareUrl } from '../../lib/world/share';
 import AutoSearch from './AutoSearch';
 import Picker, { type PickerSort } from './Picker';
 import WeaponCustomPanel, { AWAKENING_GROUPS, ROMAN, awakeningMeta } from './WeaponCustom';
@@ -91,11 +92,78 @@ function loadSaved(): Build {
   return emptyBuild();
 }
 
+/**
+ * 初始配装：地址里有分享链接（#b=…）时用它，并把片段从地址栏去掉；本机原来的配装放进撤销历史，
+ * 点「撤销」能回到自己的配装。没有分享链接时读本机存档。
+ */
+function initialHistory(): History {
+  const shared = buildFromHash(location.hash);
+  if (shared) {
+    history.replaceState(null, '', location.pathname + location.search);
+    return { past: [loadSaved()], present: shared, future: [] };
+  }
+  return { past: [], present: loadSaved(), future: [] };
+}
+
+const HISTORY_LIMIT = 100;
+
+interface History {
+  past: Build[];
+  present: Build;
+  future: Build[];
+}
+
 export default function Builder() {
   const [data, setData] = useState<BuilderData | null>(null);
   const [payload, setPayload] = useState<WeaponPayload>({ weapons: [], parts: [], awakening: [] });
-  // 组件只在客户端渲染（client:only），可以直接从 localStorage 初始化
-  const [build, setBuild] = useState<Build>(loadSaved);
+  // 组件只在客户端渲染（client:only），可以直接从 localStorage / 地址初始化。
+  // 配装带撤销 / 重做历史：每次修改把旧值压进 past，撤销时取回
+  const [hist, setHist] = useState<History>(initialHistory);
+  const build = hist.present;
+  const setBuild = useCallback((next: Build | ((b: Build) => Build)) => {
+    setHist((h) => {
+      const value = typeof next === 'function' ? next(h.present) : next;
+      if (value === h.present || JSON.stringify(value) === JSON.stringify(h.present)) return h;
+      return { past: [...h.past, h.present].slice(-HISTORY_LIMIT), present: value, future: [] };
+    });
+  }, []);
+  const undo = useCallback(
+    () =>
+      setHist((h) =>
+        h.past.length
+          ? { past: h.past.slice(0, -1), present: h.past.at(-1)!, future: [h.present, ...h.future] }
+          : h,
+      ),
+    [],
+  );
+  const redo = useCallback(
+    () =>
+      setHist((h) =>
+        h.future.length
+          ? { past: [...h.past, h.present], present: h.future[0]!, future: h.future.slice(1) }
+          : h,
+      ),
+    [],
+  );
+  const [shareNote, setShareNote] = useState<string | null>(null);
+  useEffect(() => {
+    if (!shareNote) return;
+    const t = setTimeout(() => setShareNote(null), 6000);
+    return () => clearTimeout(t);
+  }, [shareNote]);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const t = e.target as HTMLElement | null;
+      if (t && (t.closest('input, textarea, select, [contenteditable]') || !(e.ctrlKey || e.metaKey))) return;
+      const k = e.key.toLowerCase();
+      if (k === 'z' && !e.shiftKey) undo();
+      else if (k === 'y' || (k === 'z' && e.shiftKey)) redo();
+      else return;
+      e.preventDefault();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [undo, redo]);
   const [selected, setSelected] = useState<Target>({ kind: 'weapon' });
   const [picking, setPicking] = useState<Picking>(null);
   const [error, setError] = useState<string | null>(null);
@@ -141,7 +209,10 @@ export default function Builder() {
   const skills = useMemo(() => (idx ? computeSkills(build, idx) : []), [build, idx]);
   const stats = useMemo(() => (idx ? computeStats(build, idx, skills) : null), [build, idx, skills]);
 
-  const update = useCallback((fn: (b: Build) => Build) => setBuild((b) => fn(structuredClone(b))), []);
+  const update = useCallback(
+    (fn: (b: Build) => Build) => setBuild((b) => fn(structuredClone(b))),
+    [setBuild],
+  );
 
   if (error) return <p className="gb-error">{error}</p>;
   if (!data || !idx || !stats) return <BuilderSkeleton />;
@@ -456,6 +527,45 @@ export default function Builder() {
               <GameIcon src={iconUrl.weapon(key, 12)} size={26} alt={name} />
             </button>
           ))}
+        </div>
+        <div className="gb-history">
+          <button
+            type="button"
+            className="gb-btn gb-btn--ghost"
+            title="撤销（Ctrl+Z）"
+            disabled={hist.past.length === 0}
+            onClick={undo}
+          >
+            撤销
+          </button>
+          <button
+            type="button"
+            className="gb-btn gb-btn--ghost"
+            title="重做（Ctrl+Shift+Z / Ctrl+Y）"
+            disabled={hist.future.length === 0}
+            onClick={redo}
+          >
+            重做
+          </button>
+          <button
+            type="button"
+            className="gb-btn"
+            title="把当前配装编码进链接并复制"
+            onClick={() => {
+              const url = shareUrl(location.origin, build);
+              navigator.clipboard
+                .writeText(url)
+                .then(() => setShareNote('分享链接已复制'))
+                .catch(() => setShareNote(url));
+            }}
+          >
+            分享
+          </button>
+          {shareNote && (
+            <span className="gb-share-note" role="status">
+              {shareNote}
+            </span>
+          )}
         </div>
         {mode === 'manual' && (
           <>

@@ -246,3 +246,46 @@ test('下拉框：键盘与鼠标都能选择，Esc 关闭不改值', async ({ p
   await expect(page.getByRole('listbox')).toHaveCount(0);
   await expect(limit).toContainText('5000 个方案');
 });
+
+test('撤销 / 重做与快捷键', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await open(page);
+  const undo = page.getByRole('button', { name: '撤销' });
+  const redo = page.getByRole('button', { name: '重做' });
+  await expect(undo).toBeDisabled();
+  await pick(page, '.gb-row__piece[aria-label^="武器"]', '黑龙玄刃');
+  const weaponRow = page.locator('.gb-row').first();
+  await expect(weaponRow).toContainText('黑龙玄刃');
+  await page.getByRole('button', { name: '清空', exact: true }).click();
+  await expect(weaponRow).not.toContainText('黑龙玄刃');
+  await undo.click();
+  await expect(weaponRow).toContainText('黑龙玄刃');
+  await redo.click();
+  await expect(weaponRow).not.toContainText('黑龙玄刃');
+  // Ctrl+Z 撤销
+  await page.locator('body').click({ position: { x: 5, y: 5 } });
+  await page.keyboard.press('Control+z');
+  await expect(weaponRow).toContainText('黑龙玄刃');
+});
+
+test('分享链接：复制的地址打开后还原配装', async ({ page, context, browserName }) => {
+  test.skip(browserName !== 'chromium', '剪贴板权限只在 Chromium 里授予');
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await open(page);
+  await pick(page, '.gb-row__piece[aria-label^="武器"]', '黑龙玄刃');
+  await pick(page, '.gb-slot[aria-label^="4 级镶嵌槽"]', '攻击珠2');
+  await page.getByRole('button', { name: '分享' }).click();
+  await expect(page.getByRole('status').filter({ hasText: '分享链接已复制' })).toBeVisible();
+  const url = await page.evaluate(() => navigator.clipboard.readText());
+  expect(url).toMatch(/\/world\/builder\/#b=[A-Za-z0-9_-]+$/);
+
+  // 新的浏览器页（没有本机存档）打开分享链接
+  const other = await context.newPage();
+  await other.addInitScript(() => localStorage.clear());
+  await other.goto(url, { waitUntil: 'networkidle' });
+  await expect(other.locator('.gb-row').first()).toContainText('黑龙玄刃');
+  await expect(other.locator('.gb-skills')).toContainText('攻击');
+  // 地址栏里的片段读完后去掉
+  expect(new URL(other.url()).hash).toBe('');
+});
