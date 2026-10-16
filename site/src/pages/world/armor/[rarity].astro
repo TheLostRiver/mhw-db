@@ -1,7 +1,8 @@
 ---
 import SiteLayout from '../../../layouts/SiteLayout.astro';
 import FilterBox from '../../../components/site/FilterBox.astro';
-import { loadArmor, loadColors, loadSkills } from '../../../data/world/load';
+import Materials from '../../../components/site/Materials.astro';
+import { itemById, loadArmor, loadColors, loadSkills } from '../../../data/world/load';
 import type { Armor } from '../../../data/world/schema';
 import { SLOT_NAMES, SLOT_ORDER, equipIconUrl, socketIconUrl } from '../../../lib/world/encyclopedia';
 
@@ -78,6 +79,7 @@ const RESIST = [
           ))}
           <th>镶嵌槽</th>
           <th class="s-left">技能</th>
+          <th class="s-left">生产素材</th>
         </tr>
       </thead>
       {groups.map((list) => {
@@ -87,7 +89,7 @@ const RESIST = [
         return (
           <tbody data-filter-section>
             <tr class="am-series">
-              <th class="s-left" colspan="9">
+              <th class="s-left" colspan="10">
                 {head.series.name['zh-Hans'] ?? `系列 ${head.series.id}`}
                 {setName && (
                   <span class="am-set">
@@ -108,6 +110,7 @@ const RESIST = [
                 head.series.name['zh-Hans'],
                 setName,
                 ...a.skills.map((s) => skills.get(s.id)?.name['zh-Hans']),
+                ...a.materials.map((m) => itemById(m.item)?.name['zh-Hans']),
               ]
                 .filter(Boolean)
                 .join(' ')
@@ -144,6 +147,13 @@ const RESIST = [
                   <td class="s-left">
                     {a.skills.length ? (
                       a.skills.map((s) => <span class="am-skill">{skillText(s.id, s.level)}</span>)
+                    ) : (
+                      <span class="s-dim">—</span>
+                    )}
+                  </td>
+                  <td class="s-left am-craft">
+                    {a.materials.length ? (
+                      <Materials materials={a.materials} compact />
                     ) : (
                       <span class="s-dim">—</span>
                     )}
@@ -193,6 +203,10 @@ const RESIST = [
 
   .am-name {
     min-width: 220px;
+  }
+
+  .am-craft {
+    min-width: 150px;
   }
 
   .am-strong {

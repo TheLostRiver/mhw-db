@@ -94,9 +94,11 @@ export const Combination = z
   .strict();
 export const Combinations = z.object({ combinations: z.array(Combination).min(1) }).strict();
 
-const MaterialList = z.array(
-  z.object({ item: z.number().int().positive(), count: z.number().int().positive() }).strict(),
-);
+/** 素材：物品编号 × 个数 */
+const Material = z.object({ item: z.number().int().positive(), count: z.number().int().positive() }).strict();
+const MaterialList = z.array(Material);
+/** 生产 / 强化配方：素材，强化还带下一级武器 */
+const Upgrade = z.object({ materials: z.array(Material), to: z.array(z.number().int()) }).strict();
 
 /** 猎虫（rod_insect.rod_inse + insect.eq_cus 培养树） */
 export const Kinsect = z
@@ -172,6 +174,23 @@ export const LayeredWeapon = z
   })
   .strict();
 export type LayeredWeapon = z.infer<typeof LayeredWeapon>;
+
+/** 幻化服装（armor-layered.json）：armor.am_dat 的 type 2，纯外观 */
+export const LayeredArmor = z
+  .object({
+    id: z.number().int().positive(),
+    name: Text,
+    rarity: Rarity,
+    slot: z.enum(['head', 'chest', 'arms', 'waist', 'legs']),
+    variant: z.number().int(),
+    series: z.object({ id: z.number().int(), name: OptText }).strict(),
+    order: z.number().int(),
+    cost: z.number().int().nonnegative(),
+    materials: MaterialList,
+    _src: Src,
+  })
+  .strict();
+export type LayeredArmor = z.infer<typeof LayeredArmor>;
 export type Combination = z.infer<typeof Combination>;
 
 const SkillLevel = z
@@ -242,6 +261,8 @@ export const Armor = z
     gender: z.number().int().min(0).max(3),
     group: z.number().int(),
     cost: z.number().int(),
+    /** 生产素材（armor.eq_crt），空数组表示不是打造的（活动赠品等） */
+    materials: z.array(Material),
     _src: Src,
   })
   .strict();
@@ -256,6 +277,8 @@ export const Charm = z
     order: z.number().int(),
     group: z.number().int(),
     iconColor: z.number().int(),
+    /** 生产素材（armor.eq_crt），空数组表示不是打造的 */
+    materials: z.array(Material),
     _src: Src,
   })
   .strict();
@@ -359,6 +382,10 @@ export const Weapon = z
     awakened: z.literal(true).optional(),
     /** 同名同数值的重复行，指向保留的那一条 */
     duplicateOf: z.number().int().optional(),
+    /** 生产素材（weapon.eq_crt，只有铁/骨系根部有） */
+    materials: z.array(Material).optional(),
+    /** 强化素材与下一级武器（weapon.eq_cus） */
+    upgrade: Upgrade.optional(),
     _src: Src,
   })
   .strict();
@@ -420,8 +447,6 @@ export const AWAKENING_CATEGORIES = [
   'status',
 ] as const;
 
-/** 素材：物品编号 × 个数 */
-const Material = z.object({ item: z.number().int().positive(), count: z.number().int().positive() }).strict();
 
 export const WeaponCustom = z
   .object({
@@ -936,6 +961,7 @@ export const FILES = {
   'kinsects.json': { key: 'kinsects', schema: Kinsect },
   'melodies.json': { key: 'melodies', schema: Melody },
   'pendants.json': { key: 'pendants', schema: Pendant },
+  'armor-layered.json': { key: 'layered', schema: LayeredArmor },
   ...Object.fromEntries(WEAPON_TYPES.map((t) => [`weapons/${t}.json`, { key: 'weapons', schema: Weapon }])),
 } as const satisfies Record<string, { key: string; schema: z.ZodType }>;
 

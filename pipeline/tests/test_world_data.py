@@ -228,6 +228,57 @@ def test_pendant_and_layered_weapon_recipes() -> None:
     assert (iron["kind"], iron["cost"]) == ("base", 250)
 
 
+def test_armor_craft_recipes() -> None:
+    items = {i["id"]: i["name"]["zh-Hans"] for i in load("items.json", "items")}
+    helm = by_name(load("armor.json", "armor"), "雌火龙头盔")
+    assert {items[m["item"]]: m["count"] for m in helm["materials"]} == {
+        "雌火龙的甲壳": 2,
+        "雌火龙的鳞": 3,
+        "雌火龙的翼膜": 2,
+        "火炎袋": 1,
+    }
+    # 防具都在同一张配方表里，拿到配方的比例应超过九成
+    armor = load("armor.json", "armor")
+    assert sum(1 for a in armor if a["materials"]) / len(armor) > 0.9
+
+
+def test_layered_armor() -> None:
+    items = {i["id"]: i["name"]["zh-Hans"] for i in load("items.json", "items")}
+    layered = load("armor-layered.json", "layered")
+    # 幻化装备是纯外观：五个部位都有，且全部带配方
+    assert {x["slot"] for x in layered} == {"head", "chest", "arms", "waist", "legs"}
+    # 少数是活动赠品，没有配方
+    assert sum(1 for x in layered if x["materials"]) / len(layered) > 0.9
+    # Kiranico：黎明武士【寂】头部 = 黎明武士票 ×3 + 爆锤龙的上鳞 ×3
+    dawn = by_name(layered, "黎明武士【寂】·头部")
+    assert {items[m["item"]]: m["count"] for m in dawn["materials"]} == {
+        "黎明武士票": 3,
+        "爆锤龙的上鳞": 3,
+    }
+
+
+def test_weapon_craft_and_upgrade_recipes() -> None:
+    items = {i["id"]: i["name"]["zh-Hans"] for i in load("items.json", "items")}
+    katana = load("weapons/long-sword.json", "weapons")
+    # Kiranico：飞龙刀【绿叶】 = 雌火龙的甲壳 ×5、燕雀石 ×10、毒袋 ×4、雌火龙的逆鳞 ×1
+    leaf = by_name(katana, "飞龙刀【绿叶】")
+    assert {items[m["item"]]: m["count"] for m in leaf["materials"]} == {
+        "雌火龙的甲壳": 5,
+        "燕雀石": 10,
+        "毒袋": 4,
+        "雌火龙的逆鳞": 1,
+    }
+    # 铁刀 3 之后分叉成铁刀【禊】与眩刀【摇】
+    names = {w["id"]: w["name"]["zh-Hans"] for w in katana}
+    iron3 = by_name(katana, "铁刀3")
+    assert {names[i] for i in iron3["upgrade"]["to"]} == {"铁刀【禊】1", "眩刀【摇】1"}
+    # 每一级的下一级都应在同一个文件里
+    ids = set(names)
+    for w in katana:
+        for nxt in (w.get("upgrade") or {}).get("to", []):
+            assert nxt in ids, f"{w['id']} 的下一级 {nxt}"
+
+
 def facility(name: str, key: str | None = None):
     data = json.loads((WORLD / "facilities" / f"{name}.json").read_text(encoding="utf-8"))
     return data[key] if key else data

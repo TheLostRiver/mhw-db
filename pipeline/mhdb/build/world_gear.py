@@ -19,6 +19,8 @@ LAYERED_FILES = [
     "Lswd", "Swd", "Wswd", "Tachi", "Hammer", "Wsl", "Lance", "Glance", "Saxe", "Caxe", "Rod", "Bow", "Hbg", "Lbg",
 ]  # fmt: skip
 DUMMY_NAMES = {"DUMMY", "HARDUMMY"}
+# 与 world.EQUIP_SLOTS 一致；放在这里避免 world_gear ↔ world 循环导入
+EQUIP_SLOTS = ["head", "chest", "arms", "waist", "legs", "charm"]
 
 
 def _mats(r: dict, n: int = 4) -> list[dict]:
@@ -203,3 +205,75 @@ def build_layered_weapons(s: Source) -> dict[str, list[dict]]:
             )
         out[key] = sorted(rows, key=lambda x: (x["sort"], x["id"]))
     return out
+
+
+def build_armor_craft(s: Source) -> dict[int, list[dict]]:
+    """armor.eq_crt：key = armor.am_dat 的 index（category 与装备部位一一对应，已验证 3029 行全对得上）。"""
+    rel = "common/equip/armor.eq_crt"
+    out: dict[int, list[dict]] = {}
+    for r in s.table(rel, S.CRAFT):
+        out[r["equip_index"]] = _mats(r)
+    return out
+
+
+def build_weapon_recipes(s: Source) -> dict[int, dict]:
+    """key = (武器类型序号, wp_dat 的 index)。
+
+    eq_crt 是生产配方（377 行），eq_cus 是强化配方（2544 行，child_* 指向本表行号，解出来是下一级武器的 index）。
+    树根在 eq_cus 里有两条同名行（一条无素材无子节点），取带配方的那条。
+    """
+    craft_rel = "common/equip/weapon.eq_crt"
+    cus_rel = "common/equip/weapon.eq_cus"
+    craft = s.table(craft_rel, S.CRAFT)
+    cus = s.table(cus_rel, S.UPGRADE)
+    craft_of = {(r["category"], r["equip_index"]): _mats(r) for r in craft}
+    order = [(r["category"], r["equip_index"]) for r in cus if r["equip_index"]]
+    child_of = {i: r["equip_index"] for i, r in enumerate(cus) if r["equip_index"]}
+    up: dict[tuple[int, int], dict] = {}
+    for r in cus:
+        if not r["equip_index"]:
+            continue
+        key = (r["category"], r["equip_index"])
+        to = sorted({child_of[c] for c in (r[f"child_{k}"] for k in range(1, 5)) if c and c in child_of})
+        rec = {"materials": _mats(r), "to": to}
+        if key in up and (up[key]["materials"] or up[key]["to"]) and not (rec["materials"] or rec["to"]):
+            continue
+        up[key] = rec
+    out = {}
+    for key in order:
+        rec = up[key]
+        entry: dict = {}
+        if mats := craft_of.get(key):
+            entry["materials"] = mats
+        if rec["materials"] or rec["to"]:
+            entry["upgrade"] = rec
+        if entry:
+            out[key] = entry
+    return out
+
+
+def build_layered_armor(s: Source, craft: dict[int, list[dict]]) -> list[dict]:
+    """幻化服装：armor.am_dat 的 type 2（纯外观，防御与技能都是 0），配方在 armor.eq_crt。"""
+    rel = "common/equip/armor.am_dat"
+    names = s.text("common/text/steam/armor")
+    series = s.text("common/text/steam/armor_series")
+    out = []
+    for row, r in enumerate(s.table(rel, S.ARMOR)):
+        name = tr(names, r["name_index"])
+        if r["type"] != 2 or _is_dummy(name):
+            continue
+        out.append(
+            {
+                "id": r["index"],
+                "name": name,
+                "rarity": r["rarity"] + 1,
+                "slot": EQUIP_SLOTS[r["equip_slot"]],
+                "variant": r["variant"],
+                "series": {"id": r["set_id"], "name": tr(series, r["set_id"]) or {}},
+                "order": r["order"],
+                "cost": r["cost"],
+                "materials": craft.get(r["index"], []),
+                "_src": src(rel, row),
+            }
+        )
+    return sorted(out, key=lambda x: (x["series"]["id"], x["slot"], x["variant"]))

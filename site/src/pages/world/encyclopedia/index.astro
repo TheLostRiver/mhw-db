@@ -16,6 +16,7 @@ import {
   loadDeliveries,
   loadItems,
   loadKinsects,
+  loadLayeredArmor,
   loadLayeredWeapons,
   loadMantles,
   loadMaps,
@@ -191,7 +192,13 @@ const chapters: Chapter[] = [
         href: '/world/armor/',
         count: loadArmor().length,
       },
-      { label: '防具幻化', note: '外观装备', glyph: 'layered-armor' },
+      {
+        label: '防具幻化',
+        note: '外观装备与素材',
+        glyph: 'layered-armor',
+        href: '/world/layered-armor/',
+        count: loadLayeredArmor().length,
+      },
       {
         label: '护石',
         note: '技能与等级',

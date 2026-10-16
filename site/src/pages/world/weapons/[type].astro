@@ -2,6 +2,7 @@
 import SiteLayout from '../../../layouts/SiteLayout.astro';
 import FilterBox from '../../../components/site/FilterBox.astro';
 import Notes from '../../../components/site/Notes.astro';
+import Materials from '../../../components/site/Materials.astro';
 import { loadColors, loadConstants, loadSkills, loadWeapons } from '../../../data/world/load';
 import { RANGED, type Weapon, type WeaponType } from '../../../data/world/schema';
 import { SHARPNESS_COLORS, sharpnessBar } from '../../../lib/world/builder';
@@ -56,6 +57,7 @@ const specialText = (w: Weapon): string => {
       .join('、');
   return '';
 };
+const nameOf = (id: number) => weapons.find((x) => x.id === id)?.name['zh-Hans'] ?? `#${id}`;
 const elementsOf = (w: Weapon) => w.special?.elements ?? (w.element ? [w.element] : []);
 ---
 
@@ -110,6 +112,8 @@ const elementsOf = (w: Weapon) => w.special?.elements ?? (w.element ? [w.element
               <th>防御</th>
               <th>龙封力</th>
               <th class="s-left">技能</th>
+              <th class="s-left">生产素材</th>
+              <th class="s-left">强化素材</th>
             </tr>
           </thead>
           <tbody>
@@ -206,6 +210,27 @@ const elementsOf = (w: Weapon) => w.special?.elements ?? (w.element ? [w.element
                     <td class="s-left">
                       {w.skill != null ? skillNames.get(w.skill) : <span class="s-dim">—</span>}
                     </td>
+                    <td class="s-left wp-craft">
+                      {w.materials?.length ? (
+                        <Materials materials={w.materials} compact />
+                      ) : (
+                        <span class="s-dim">—</span>
+                      )}
+                    </td>
+                    <td class="s-left wp-craft">
+                      {w.upgrade ? (
+                        <span class="wp-up">
+                          {w.upgrade.materials.length > 0 && (
+                            <Materials materials={w.upgrade.materials} compact />
+                          )}
+                          {w.upgrade.to.length > 0 && (
+                            <small>→ {w.upgrade.to.map((id) => nameOf(id)).join('、')}</small>
+                          )}
+                        </span>
+                      ) : (
+                        <span class="s-dim">—</span>
+                      )}
+                    </td>
                   </tr>
                 );
               })}
@@ -227,6 +252,21 @@ const elementsOf = (w: Weapon) => w.special?.elements ?? (w.element ? [w.element
 </SiteLayout>
 
 <style>
+  .wp-craft {
+    min-width: 140px;
+    vertical-align: top;
+  }
+
+  .wp-up {
+    display: grid;
+    gap: 2px;
+  }
+
+  .wp-up small {
+    color: var(--c-text-3);
+    font-size: var(--text-xs);
+  }
+
   .wp-rarity::before {
     content: '';
     width: 10px;

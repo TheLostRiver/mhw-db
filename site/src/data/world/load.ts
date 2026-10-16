@@ -13,6 +13,7 @@ import type {
   Item,
   Kinsect,
   Lang,
+  LayeredArmor,
   LayeredWeapon,
   Mantle,
   MapNodeStage,
@@ -84,6 +85,7 @@ export const loadMonsters = () => read<{ monsters: Monster[] }>('monsters.json')
 export const loadKinsects = () => read<{ kinsects: Kinsect[] }>('kinsects.json').kinsects;
 export const loadMelodies = () => read<{ melodies: Melody[] }>('melodies.json').melodies;
 export const loadPendants = () => read<{ pendants: Pendant[] }>('pendants.json').pendants;
+export const loadLayeredArmor = () => read<{ layered: LayeredArmor[] }>('armor-layered.json').layered;
 export const loadLayeredWeapons = () => read<Partial<Record<WeaponType, LayeredWeapon[]>>>('weapon-layered.json');
 export const loadPalicoGear = () => read<{ gear: PalicoGearItem[] }>('palico-gear.json').gear;
 export const loadPalico = () => read<Palico>('palico.json');

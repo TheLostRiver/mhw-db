@@ -1,0 +1,176 @@
+---
+import SiteLayout from '../../../layouts/SiteLayout.astro';
+import FilterBox from '../../../components/site/FilterBox.astro';
+import Materials from '../../../components/site/Materials.astro';
+import { loadLayeredArmor } from '../../../data/world/load';
+import { equipIconUrl } from '../../../lib/world/encyclopedia';
+
+const all = loadLayeredArmor();
+const SLOTS = ['head', 'chest', 'arms', 'waist', 'legs'] as const;
+const SLOT_NAMES: Record<string, string> = {
+  head: '头部',
+  chest: '身体',
+  arms: '腕部',
+  waist: '腰部',
+  legs: '脚部',
+};
+
+// 按系列分组（一套 5 件；少数只有 1 件的散件单独成组）
+const groups = new Map<number, typeof all>();
+for (const a of all) groups.set(a.series.id, [...(groups.get(a.series.id) ?? []), a]);
+const series = [...groups.values()]
+  .map((rows) => ({
+    name: rows[0]!.series.name['zh-Hans'] ?? '—',
+    rarity: Math.max(...rows.map((r) => r.rarity)),
+    rows: [...rows].sort((a, b) => SLOTS.indexOf(a.slot) - SLOTS.indexOf(b.slot)),
+  }))
+  .sort((a, b) => a.name.localeCompare(b.name, 'zh-Hans'));
+const rank = (r: number) => (r <= 4 ? '下位' : r <= 8 ? '上位' : '大师级');
+---
+
+<SiteLayout
+  title="防具幻化"
+  current="encyclopedia"
+  description="怪物猎人：世界 冰原 防具幻化（外观装备）一览：各系列的部位、稀有度与生产素材"
+  wide
+>
+  <nav class="s-crumbs" aria-label="位置">
+    <a href="/world/encyclopedia/">百科</a>
+    <span>防具幻化</span>
+  </nav>
+  <div class="s-head">
+    <h1>
+      防具幻化{' '}
+      <span class="b-label">
+        {all.length} 件 · {series.length} 个系列
+      </span>
+    </h1>
+    <p>外观装备（幻化服装）：穿上只改变外观，没有防御力与技能。多数由票券加怪物素材生产。</p>
+  </div>
+  <FilterBox label="按系列名或素材筛选" placeholder="按系列名或素材筛选" />
+
+  <div class="la-grid">
+    {series.map((s) => (
+      <section
+        class="la-set"
+        data-filter-row
+        data-text={[s.name, ...s.rows.map((r) => r.name['zh-Hans'])].join(' ').toLowerCase()}
+      >
+        <header>
+          <h2>{s.name}</h2>
+          <small>
+            R{s.rarity} · {rank(s.rarity)}
+          </small>
+        </header>
+        <ul class="la-pieces">
+          {s.rows.map((r) => (
+            <li>
+              <div class="la-piece">
+                <img src={equipIconUrl(r.slot, r.rarity)} alt="" width="34" height="34" loading="lazy" />
+                <div>
+                  <strong>{r.name['zh-Hans']}</strong>
+                  <small>
+                    {SLOT_NAMES[r.slot]}
+                    {r.cost > 0 && ` · ${r.cost.toLocaleString('zh-Hans')}z`}
+                  </small>
+                </div>
+              </div>
+              {r.materials.length > 0 ? (
+                <Materials materials={r.materials} />
+              ) : (
+                <p class="la-none">没有生产素材（活动赠品）</p>
+              )}
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))}
+  </div>
+
+  <p class="s-note">
+    数据来源：<code>common/equip/armor.am_dat</code> 中 <code>type == 2</code>{' '}
+    的行（与正式防具同表，防御力与技能字段都是 0），生产素材来自 <code>armor.eq_crt</code>（
+    <code>equip_index</code> 即防具行的 <code>index</code>，3029 行全部对得上）。
+    幻化装备不显示镶嵌槽与技能，因为没有；「部位」取自名字末尾的 头部 / 身体 / 腕部 / 腰部 /
+    脚部，与中间的两件套（如「【墨镜】服装」）不同。
+  </p>
+</SiteLayout>
+
+<style>
+  .la-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 420px), 1fr));
+    gap: var(--space-3);
+    align-items: start;
+  }
+
+  .la-set {
+    border-radius: var(--radius);
+    background:
+      radial-gradient(120% 90% at 100% 0%, color-mix(in oklab, #d9a441 12%, transparent), transparent 55%),
+      var(--c-surface);
+    box-shadow: inset 0 0 0 1px var(--c-line);
+  }
+
+  .la-set > header {
+    display: flex;
+    gap: var(--space-2);
+    align-items: baseline;
+    justify-content: space-between;
+    padding: var(--space-3) var(--space-4) var(--space-2);
+    border-bottom: 1px solid var(--c-line);
+  }
+
+  .la-set h2 {
+    margin: 0;
+    font-size: var(--text-md);
+  }
+
+  .la-set header small {
+    color: var(--c-text-3);
+    font-family: var(--font-num);
+    font-size: var(--text-xs);
+  }
+
+  .la-pieces {
+    display: grid;
+    gap: var(--space-2);
+    margin: 0;
+    padding: var(--space-3) var(--space-4) var(--space-4);
+    list-style: none;
+  }
+
+  .la-pieces > li {
+    display: grid;
+    gap: 6px;
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-sm);
+    background: color-mix(in oklab, var(--c-bg) 55%, transparent);
+  }
+
+  .la-piece {
+    display: flex;
+    gap: var(--space-2);
+    align-items: center;
+  }
+
+  .la-piece div {
+    display: grid;
+    min-width: 0;
+  }
+
+  .la-piece strong {
+    font-size: var(--text-sm);
+  }
+
+  .la-piece small {
+    color: var(--c-text-3);
+    font-size: var(--text-xs);
+  }
+
+  .la-none {
+    margin: 0;
+    color: var(--c-text-3);
+    font-size: var(--text-xs);
+  }
+</style>

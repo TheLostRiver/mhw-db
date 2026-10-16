@@ -27,10 +27,13 @@ from mhdb.build.world_facilities import (
     build_steamworks,
 )
 from mhdb.build.world_gear import (
+    build_armor_craft,
     build_kinsects,
+    build_layered_armor,
     build_layered_weapons,
     build_melodies,
     build_pendants,
+    build_weapon_recipes,
     horn_notes,
 )
 from mhdb.build.world_mechanics import build_mechanics
@@ -222,8 +225,8 @@ def _skills(r: dict) -> list[dict]:
     return [{"id": r[f"skill_{k}"], "level": r[f"skill_{k}_level"]} for k in (1, 2, 3) if r[f"skill_{k}"]]
 
 
-def build_armor(s: Source) -> tuple[list[dict], list[dict]]:
-    """返回 (防具, 护石)。防具只取 type 0（type 2 为幻化服装，1 / 3 含占位条目，待确认）。"""
+def build_armor(s: Source, craft: dict[int, list[dict]]) -> tuple[list[dict], list[dict]]:
+    """返回 (防具, 护石)。防具只取 type 0（type 2 为幻化服装，见 build_layered_armor）。"""
     rel = "common/equip/armor.am_dat"
     names = s.text("common/text/steam/armor")
     series = s.text("common/text/steam/armor_series")
@@ -244,7 +247,14 @@ def build_armor(s: Source) -> tuple[list[dict], list[dict]]:
             "_src": src(rel, row),
         }
         if r["equip_slot"] == 5:
-            charms.append({**common, "group": r["set_group"], "iconColor": r["icon_color"]})
+            charms.append(
+                {
+                    **common,
+                    "group": r["set_group"],
+                    "iconColor": r["icon_color"],
+                    "materials": craft.get(r["index"], []),
+                }
+            )
             continue
         set_skill = (
             {"id": r["set_skill"], "points": r["set_skill_level"]}
@@ -276,6 +286,7 @@ def build_armor(s: Source) -> tuple[list[dict], list[dict]]:
                 "gender": r["gender"],
                 "group": r["set_group"],
                 "cost": r["cost"],
+                "materials": craft.get(r["index"], []),
             }
         )
     return armor, charms
@@ -359,8 +370,9 @@ def build_weapons(s: Source) -> dict[str, list[dict]]:
         "coating": s.table("common/equip/bottle_table.bbtbl", S.BOW_COATING),
         "notes": horn_notes(s),
     }
+    recipes = build_weapon_recipes(s)
     out: dict[str, list[dict]] = {}
-    for file, key, text, ranged in S.WEAPON_TYPES:
+    for slot, (file, key, text, ranged) in enumerate(S.WEAPON_TYPES):
         rel = f"common/equip/{file}.wp_dat_g" if ranged else f"common/equip/{file}.wp_dat"
         names = s.text(f"common/text/steam/{text}")
         rows = []
@@ -407,6 +419,8 @@ def build_weapons(s: Source) -> dict[str, list[dict]]:
                     "specialAmmo": r["special_ammo"],
                     "parts": [r["muzzle"], r["barrel"], r["magazine"], r["scope"]],
                 }
+            if rec := recipes.get((slot, r["index"])):
+                w.update(rec)
             if special := _special(key, r, tables):
                 w["special"] = special
             if r["tree_id"] == AWAKENED_TREE:
@@ -444,7 +458,8 @@ def build(raw: Path, out: Path, log=print) -> dict:
     combinations = build_combinations(s, item_map)
     skills = build_skills(s)
     decorations = build_decorations(s, item_map)
-    armor, charms = build_armor(s)
+    armor_craft = build_armor_craft(s)
+    armor, charms = build_armor(s, armor_craft)
     mantles = build_mantles(s, item_map)
     weapons = build_weapons(s)
     custom = build_weapon_custom(s)
@@ -454,6 +469,7 @@ def build(raw: Path, out: Path, log=print) -> dict:
     melodies = build_melodies(s)
     pendants = build_pendants(s)
     layered_weapons = build_layered_weapons(s)
+    layered_armor = build_layered_armor(s, armor_craft)
     quests = build_quests(s, monsters, log)
     monster_rewards = build_monster_rewards(s)
     palico_gear = build_palico_gear(s)
@@ -489,6 +505,7 @@ def build(raw: Path, out: Path, log=print) -> dict:
     write_records(out / "melodies.json", "melodies", melodies["melodies"])
     write_records(out / "pendants.json", "pendants", pendants)
     write_json(out / "weapon-layered.json", layered_weapons)
+    write_records(out / "armor-layered.json", "layered", layered_armor)
     for key in ("melder", "shop", "deliveries", "bounties", "argosy"):
         write_records(out / "facilities" / f"{key}.json", key, facilities[key])
     write_json(out / "quests.json", quests)
@@ -542,6 +559,7 @@ def build(raw: Path, out: Path, log=print) -> dict:
         "melodies": len(melodies["melodies"]),
         "pendants": len(pendants),
         "layeredWeapons": sum(len(v) for v in layered_weapons.values()),
+        "layeredArmor": len(layered_armor),
         "quests": len(quests["quests"]),
         "palicoGear": len(palico_gear),
         "melder": len(facilities["melder"]),

@@ -181,6 +181,37 @@ describe('引用完整', () => {
       expect(itemIds.has(m.itemId as number), `衣装 ${m.id}`).toBe(true);
   });
 
+  it('防具、护石、幻化服装的生产素材都存在', () => {
+    for (const file of ['armor.json', 'charms.json', 'armor-layered.json']) {
+      const list = rows[file] ?? [];
+      expect(list.some((r) => ((r.materials ?? []) as unknown[]).length > 0), `${file} 应有带素材的记录`).toBe(
+        true,
+      );
+      for (const r of list)
+        for (const m of (r.materials ?? []) as { item: number }[])
+          expect(itemIds.has(m.item), `${file} ${r.id} 的素材 ${m.item}`).toBe(true);
+    }
+  });
+
+  it('武器的生产 / 强化素材与下一级都存在', () => {
+    for (const [file] of Object.entries(FILES)) {
+      if (!file.startsWith('weapons/')) continue;
+      const list = rows[file] ?? [];
+      const ids = new Set(list.map((w) => w.id));
+      for (const w of list) {
+        const mats = [
+          ...((w.materials ?? []) as { item: number }[]),
+          ...(((w.upgrade as { materials?: { item: number }[] } | undefined)?.materials ?? []) as {
+            item: number;
+          }[]),
+        ];
+        for (const m of mats) expect(itemIds.has(m.item), `${file} ${w.id} 的素材 ${m.item}`).toBe(true);
+        const to = (w.upgrade as { to?: number[] } | undefined)?.to ?? [];
+        for (const id of to) expect(ids.has(id), `${file} ${w.id} 的下一级 ${id}`).toBe(true);
+      }
+    }
+  });
+
   it('猎虫、挂饰、幻化武器的素材都存在，猎虫的上一级存在', () => {
     const mats = (list: unknown) => ((list ?? []) as { item: number }[]).map((m) => m.item);
     for (const file of ['kinsects.json', 'pendants.json'])
