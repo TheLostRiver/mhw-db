@@ -424,3 +424,12 @@ uv run mhdb nodes     # 大地图标记（采集点等）→ data/world/map-node
 
 未确认：`armor.eq_crt` 的 `unlock_story` / `unlock_item` 与武器 `eq_crt` 的同类字段含义未逐一核对，页面不显示；武器的 `item_rank` 与配方的关系未确认（只在 `eq_cus` 里见过 0/1）。
 
+### 3.13 投射器弹与祭典日程
+
+| 输出 | 来源 | 结论与核对 |
+|---|---|---|
+| 投射器弹页（站点直接组合） | 物品 859–869（野外弹）、60 / 61 / 84 / 193–199 / 115（调和与补给）、677 / 678（环境生物）；地图节点里 `category = slinger` 的种类；`moves.json` 里 `hm/common/shell/collision/object.col` 名称含 スリ / ナイフ / 肥やし 的条目 | 物品与说明、携带上限、调和来自已有数据；拾取点数量即地图页的节点数。发射参数**不与物品逐一对应**（例如物品「投射器黏着弹」日文是「着撃弾」，参数表里是「打撃弾」，按效果看像是同一种，但未在游戏内核对）。`common/text/slinger` 是旧的调试文本（多数为 Invalid Message），不用。怪物掉落的投射器弹疑似在 `dtt_drp`，结构未解 |
+| `schedule.json` | `common/network/scheduleMap.ysm`：u32 魔数、u16、u32 条数（53），每条 4 个 u32 | 53 条 = 一年 53 周。第 1 个是祭典编号（0 平时），第 3 个是轮换编号（平时 1→2→3 循环，祭典周 = 编号 + 3，构建时校验），第 2 个恒为 1，第 4 个含义未确认。祭典编号 1–5 = 开花 / 纳凉 / 丰收 / 闪耀 / 感谢之宴：由所在周推出（1 在第 11–20 周、2 在 23–32、3 在 39–48、4 在 51–8、5 在 3–4 与 35–36），并与 `steam/panel_tutorial_cat` 的 SEV_H（花）/ N（夏）/ A（秋）/ F（冬）/ 1（一周年）及英文名 Spring Blossom / Summer Twilight / Autumn Harvest / Winter Star / Appreciation 一致。只有星辰祭（本体，含秋季）；月辰祭四个祭典（PANEL_01–04）没有日程表。PC 版实际的举办日期由线上公告决定；周与公历日期的对应未确认 |
+
+更正：蒸气机关页此前把 `steamRewardListAutumn` 标成「惊魂夜祭」，游戏文本里没有这个名称，已改为「秋季（文件名 Autumn）」；其余四张改用月辰祭的祭典名（盛放 / 热情 / 万福 / 大感谢之宴）。
+

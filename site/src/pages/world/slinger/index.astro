@@ -1,0 +1,329 @@
+---
+import SiteLayout from '../../../layouts/SiteLayout.astro';
+import GameText from '../../../components/site/GameText.astro';
+import { itemById, loadCombinations, loadMapNodes, loadMaps, loadMoves } from '../../../data/world/load';
+import { itemIconUrl } from '../../../lib/world/encyclopedia';
+import { stageSlug } from '../../../lib/world/maps';
+import { DAMAGE_TYPE_LABEL, fmt, moveName, moveNotes } from '../../../lib/world/moves';
+
+// 投射器装填物：野外拾取的弹（859–869）、调和 / 补给的弹与飞刀、捕获用网子、两种可当弹用的环境生物
+const GROUPS = [
+  {
+    title: '野外拾取',
+    note: '地图上的采集点、植物与怪物掉落',
+    ids: [859, 860, 861, 862, 868, 863, 869, 864, 865, 866, 867],
+  },
+  {
+    title: '调和与补给',
+    note: '调和而成或任务补给',
+    ids: [60, 61, 84, 193, 194, 195, 196, 197, 198, 199, 115],
+  },
+  { title: '环境生物', note: '捕获后可当作投射器弹使用', ids: [677, 678] },
+] as const;
+const combos = loadCombinations();
+const recipesOf = (id: number) => combos.filter((c) => c.result === id);
+
+// 地图上的投射器弹拾取点：地图节点里 category = slinger 的种类
+const maps = new Map(loadMaps().map((m) => [m.id, m]));
+const stages = loadMapNodes()
+  .map((st) => {
+    const stage = maps.get(st.id);
+    const kinds = st.kinds
+      .filter((k) => k.category === 'slinger' && k.total > 0)
+      .map((k) => ({
+        name: k.name?.['zh-Hans'] ?? (k.item ? itemById(k.item)?.name['zh-Hans'] : undefined) ?? k.key,
+        item: k.item,
+        total: k.total,
+      }));
+    // 同名的种类（如两种石块点）合并
+    const merged = new Map<string, { name: string; item: number | null; total: number }>();
+    for (const k of kinds) {
+      const prev = merged.get(k.name);
+      merged.set(k.name, prev ? { ...prev, total: prev.total + k.total } : k);
+    }
+    return stage ? { stage, kinds: [...merged.values()].sort((a, b) => b.total - a.total) } : null;
+  })
+  .filter((x) => x !== null);
+
+// 发射参数：通用弹体里投射器、飞刀、粪便弹的条目（保留数据原名，不与物品逐一对应）
+const shots = loadMoves().filter(
+  (m) =>
+    m.weapon === 'common' &&
+    m.file === 'hm/common/shell/collision/object.col' &&
+    /スリ|ナイフ|肥やし/.test(m.ja),
+);
+---
+
+<SiteLayout
+  title="投射器弹"
+  current="encyclopedia"
+  description="怪物猎人：世界 冰原 投射器弹：装填物一览、各地图的拾取点数量与发射参数（动作值、眩晕、减气）"
+  wide
+>
+  <nav class="s-crumbs" aria-label="位置">
+    <a href="/world/encyclopedia/">百科</a>
+    <span>投射器弹</span>
+  </nav>
+  <div class="s-head">
+    <h1>投射器弹</h1>
+    <p>能装进投射器的东西、在哪张地图能捡到，以及发射出去的伤害参数。</p>
+  </div>
+  <nav class="s-tabs" aria-label="本页">
+    <a href="#ammo">装填物</a>
+    <a href="#maps">地图拾取点</a>
+    <a href="#shots">发射参数 {shots.length}</a>
+  </nav>
+
+  <section class="s-section sl-sec" id="ammo">
+    <h2>装填物</h2>
+    {GROUPS.map((g) => (
+      <>
+        <h3 class="sl-sub">
+          {g.title} <small>{g.note}</small>
+        </h3>
+        <ul class="sl-ammo">
+          {g.ids.map((id) => {
+            const item = itemById(id);
+            if (!item) return null;
+            const recipes = recipesOf(id);
+            return (
+              <li id={`ammo-${id}`}>
+                <img src={itemIconUrl(item)} alt="" width="40" height="40" loading="lazy" />
+                <div>
+                  <strong>{item.name['zh-Hans']}</strong>
+                  <small class="sl-en">{item.name.en}</small>
+                  <p>
+                    <GameText text={item.desc['zh-Hans'] ?? ''} />
+                  </p>
+                  <span class="sl-meta">
+                    携带上限 {item.carry}
+                    {recipes.map((c) => (
+                      <span>
+                        · 调和：
+                        {c.materials.map((m) => itemById(m)?.name['zh-Hans']).join(' + ')} → ×{c.quantity}
+                      </span>
+                    ))}
+                  </span>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      </>
+    ))}
+  </section>
+
+  <section class="s-section sl-sec" id="maps">
+    <h2>地图拾取点</h2>
+    <p class="sl-lead">
+      各地图上可以直接拾取的投射器弹点数（地图节点里「投射器弹」一类）。具体位置见地图页。
+    </p>
+    <div class="sl-maps">
+      {stages.map(({ stage, kinds }) => (
+        <a class="sl-map" href={`/world/maps/${stageSlug(stage)}/`}>
+          <strong>{stage.name['zh-Hans']}</strong>
+          <ul>
+            {kinds.map((k) => {
+              const item = k.item ? itemById(k.item) : undefined;
+              return (
+                <li>
+                  {item ? (
+                    <img src={itemIconUrl(item)} alt="" width="20" height="20" loading="lazy" />
+                  ) : (
+                    <span class="sl-dot" aria-hidden="true" />
+                  )}
+                  <span>{k.name}</span>
+                  <b>{k.total}</b>
+                </li>
+              );
+            })}
+          </ul>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <section class="s-section sl-sec" id="shots">
+    <h2>发射参数</h2>
+    <p class="sl-lead">
+      取自猎人通用弹体的攻击参数，名称是数据里的日文开发名与本站译名。「强化射击」是钩爪抓住怪物时向怪物发射的版本。
+      这些条目与上面物品的一一对应关系未逐条在游戏内核对。
+    </p>
+    <div class="s-table-wrap">
+      <table class="s-table">
+        <thead>
+          <tr>
+            <th class="s-left">条目</th>
+            <th title="伤害类型">类型</th>
+            <th title="动作值（×0.01）">动作值</th>
+            <th title="眩晕值">眩晕</th>
+            <th title="减气值">减气</th>
+            <th title="属性补正">属性补正</th>
+            <th title="异常补正">异常补正</th>
+            <th class="s-left">备注</th>
+          </tr>
+        </thead>
+        <tbody>
+          {shots.map((m) => (
+            <tr>
+              <td class="s-left">
+                <span class="sl-name">{moveName(m)}</span>
+                <small class="sl-ja">{m.ja}</small>
+              </td>
+              <td>{DAMAGE_TYPE_LABEL[m.type]}</td>
+              <td class:list={['s-num', { 's-dim': !m.mv }]}>{fmt(m.mv)}</td>
+              <td class:list={['s-num', { 's-dim': !m.stun }]}>{fmt(m.stun)}</td>
+              <td class:list={['s-num', { 's-dim': !m.exhaust }]}>{fmt(m.exhaust)}</td>
+              <td class:list={['s-num', { 's-dim': !m.ele }]}>{fmt(m.ele)}</td>
+              <td class:list={['s-num', { 's-dim': !m.status }]}>{fmt(m.status)}</td>
+              <td class="s-left sl-notes">{moveNotes(m).join('；') || <span class="s-dim">—</span>}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <p class="s-note">
+    数据来源：物品与说明 <code>common/item/itemData.itm</code>、调和 <code>itemMake.imk</code>、地图拾取点
+    <code>stage/st*/common/set/*_pop_map.sobj</code>（见地图页）、发射参数{' '}
+    <code>hm/common/shell/collision/object.col</code>。 哪只怪物掉落哪种投射器弹的数据（疑似{' '}
+    <code>dtt_drp</code>）还没解出来，未列出。
+  </p>
+</SiteLayout>
+
+<style>
+  .sl-sec {
+    scroll-margin-top: 72px;
+  }
+
+  .sl-sub {
+    margin: var(--space-4) 0 var(--space-2);
+    font-size: var(--text-md);
+  }
+
+  .sl-sub small {
+    margin-left: var(--space-2);
+    color: var(--c-text-3);
+    font-size: var(--text-xs);
+    font-weight: 400;
+  }
+
+  .sl-lead {
+    margin: 0 0 var(--space-3);
+    color: var(--c-text-2);
+    font-size: var(--text-sm);
+  }
+
+  .sl-ammo {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .sl-ammo > li {
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr);
+    gap: var(--space-3);
+    align-items: start;
+    padding: var(--space-3);
+    border-radius: var(--radius);
+    background:
+      radial-gradient(90% 120% at 0% 0%, color-mix(in oklab, #7fb8d9 12%, transparent), transparent 60%),
+      var(--c-surface);
+    box-shadow: inset 0 0 0 1px var(--c-line);
+    scroll-margin-top: 72px;
+  }
+
+  .sl-ammo > li:target {
+    box-shadow: inset 0 0 0 2px var(--c-accent);
+  }
+
+  .sl-ammo div {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  .sl-ammo p {
+    margin: 2px 0;
+    color: var(--c-text-2);
+    font-size: var(--text-sm);
+  }
+
+  .sl-en,
+  .sl-ja {
+    color: var(--c-text-3);
+    font-size: var(--text-xs);
+  }
+
+  .sl-meta {
+    color: var(--c-text-3);
+    font-size: var(--text-xs);
+  }
+
+  .sl-maps {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 230px), 1fr));
+    gap: var(--space-2);
+  }
+
+  .sl-map {
+    display: grid;
+    align-content: start;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius);
+    background: var(--c-surface);
+    box-shadow: inset 0 0 0 1px var(--c-line);
+    color: inherit;
+    text-decoration: none;
+    transition: box-shadow var(--dur-fast, 0.15s) ease;
+  }
+
+  .sl-map:hover,
+  .sl-map:focus-visible {
+    box-shadow: inset 0 0 0 1px var(--c-accent);
+  }
+
+  .sl-map ul {
+    display: grid;
+    gap: 4px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .sl-map li {
+    display: grid;
+    grid-template-columns: 20px minmax(0, 1fr) auto;
+    gap: var(--space-2);
+    align-items: center;
+    font-size: var(--text-sm);
+  }
+
+  .sl-map b {
+    font-family: var(--font-num);
+    font-weight: 500;
+  }
+
+  .sl-dot {
+    justify-self: center;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--c-text-3);
+  }
+
+  .sl-name {
+    display: block;
+  }
+
+  .sl-notes {
+    color: var(--c-text-2);
+    font-size: var(--text-xs);
+  }
+</style>

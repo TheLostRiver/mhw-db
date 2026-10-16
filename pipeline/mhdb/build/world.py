@@ -41,7 +41,7 @@ from mhdb.build.world_monsters import build_monsters
 from mhdb.build.world_moves import build_moves
 from mhdb.build.world_palico import build_canteen, build_palico, build_palico_gear
 from mhdb.build.world_quests import build_monster_rewards, build_quests
-from mhdb.build.world_records import build_dlc, build_endemic, build_medals, build_npcs
+from mhdb.build.world_records import build_dlc, build_endemic, build_medals, build_npcs, build_schedule
 from mhdb.formats import crypto
 from mhdb.games.world import exe as EXE
 from mhdb.games.world import specs as S
@@ -519,6 +519,7 @@ def build(raw: Path, out: Path, log=print) -> dict:
             "dlc": build_dlc(s),
         },
     )
+    write_json(out / "schedule.json", build_schedule(s))
     write_records(out / "monster-rewards.json", "rewards", monster_rewards)
     write_records(out / "palico-gear.json", "gear", palico_gear)
     write_json(out / "palico.json", palico)

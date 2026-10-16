@@ -7,11 +7,12 @@ import { loadSteamworks } from '../../../data/world/load';
 const { rewards, fuel } = loadSteamworks();
 const TABLES = [
   { key: 'base', title: '平时' },
-  { key: 'spring', title: '盛放祭' },
-  { key: 'summer', title: '热情祭' },
-  { key: 'autumn', title: '惊魂夜祭' },
-  { key: 'winter', title: '万福祭' },
-  { key: 'memorial', title: '大感谢祭' },
+  // 文件名 Spring / Summer / Autumn / Winter / Memorial；名称取月辰祭的祭典名，秋季在文本里没有对应的月辰祭
+  { key: 'spring', title: '盛放之宴' },
+  { key: 'summer', title: '热情之宴' },
+  { key: 'autumn', title: '秋季（文件名 Autumn）' },
+  { key: 'winter', title: '万福之宴' },
+  { key: 'memorial', title: '大感谢之宴' },
 ] as const;
 // 档位按物品组成与 Fextralife 的 Steamworks 奖励档位对照归纳
 const TIERS: Record<number, { title: string; note?: string }> = {

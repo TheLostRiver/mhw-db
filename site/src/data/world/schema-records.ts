@@ -33,3 +33,28 @@ export const Records = z
   })
   .strict();
 export type Records = z.infer<typeof Records>;
+
+/** 祭典日程（schedule.json，见 world_records.build_schedule 与 docs/DATA.md 3.11） */
+const Season = z.enum(['spring', 'summer', 'autumn', 'winter', 'memorial']);
+export const Schedule = z
+  .object({
+    weeks: z
+      .array(
+        z
+          .object({
+            week: z.number().int().min(1).max(53),
+            /** 0 平时，1–5 = star[].id */
+            festival: z.number().int().min(0).max(5),
+            /** 轮换编号：平时 1–3 循环，祭典 = 祭典编号 + 3（含义未确认） */
+            rotation: z.number().int().min(1).max(8),
+            unk: z.number().int(),
+          })
+          .strict(),
+      )
+      .length(53),
+    star: z.array(z.object({ id: z.number().int().min(1).max(5), season: Season, name: Text }).strict()).length(5),
+    moon: z.array(z.object({ season: Season, name: Text }).strict()).length(4),
+    _src: z.object({ file: z.string(), names: z.string() }).strict(),
+  })
+  .strict();
+export type Schedule = z.infer<typeof Schedule>;

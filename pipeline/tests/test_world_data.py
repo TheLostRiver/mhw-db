@@ -399,3 +399,28 @@ def test_records() -> None:
     medals = {m["id"]: m for m in d["medals"]}
     assert medals[49]["condition"]["zh-Hans"].startswith("猎人等级达到100")
     assert medals[50]["iceborne"] and not medals[49]["iceborne"]
+
+
+def test_festival_schedule() -> None:
+    d = json.loads((WORLD / "schedule.json").read_text(encoding="utf-8"))
+    assert len(d["weeks"]) == 53
+    names = {f["id"]: f["name"]["en"] for f in d["star"]}
+    # 祭典编号与季节：由所在周推出，英文名对得上
+    assert names == {
+        1: "Spring Blossom Fest",
+        2: "Summer Twilight Fest",
+        3: "Autumn Harvest Fest",
+        4: "Winter Star Fest",
+        5: "Appreciation Fest",
+    }
+    weeks_of = {i: [w["week"] for w in d["weeks"] if w["festival"] == i] for i in names}
+    assert all(11 <= w <= 20 for w in weeks_of[1])  # 春：3–5 月
+    assert all(23 <= w <= 32 for w in weeks_of[2])  # 夏：6–8 月
+    assert all(39 <= w <= 48 for w in weeks_of[3])  # 秋：9–11 月
+    assert all(w <= 8 or w >= 51 for w in weeks_of[4])  # 冬：12–2 月
+    assert [f["name"]["zh-Hans"] for f in d["moon"]] == [
+        "月辰祭【万福之宴】",
+        "月辰祭【大感谢之宴】",
+        "月辰祭【盛放之宴】",
+        "月辰祭【热情之宴】",
+    ]

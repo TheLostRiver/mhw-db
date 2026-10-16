@@ -1,0 +1,416 @@
+{
+  "weeks": [
+    {
+      "week": 1,
+      "festival": 4,
+      "rotation": 7,
+      "unk": 1
+    },
+    {
+      "week": 2,
+      "festival": 4,
+      "rotation": 7,
+      "unk": 1
+    },
+    {
+      "week": 3,
+      "festival": 5,
+      "rotation": 8,
+      "unk": 2
+    },
+    {
+      "week": 4,
+      "festival": 5,
+      "rotation": 8,
+      "unk": 2
+    },
+    {
+      "week": 5,
+      "festival": 0,
+      "rotation": 1,
+      "unk": 0
+    },
+    {
+      "week": 6,
+      "festival": 0,
+      "rotation": 2,
+      "unk": 0
+    },
+    {
+      "week": 7,
+      "festival": 4,
+      "rotation": 7,
+      "unk": 1
+    },
+    {
+      "week": 8,
+      "festival": 4,
+      "rotation": 7,
+      "unk": 1
+    },
+    {
+      "week": 9,
+      "festival": 0,
+      "rotation": 3,
+      "unk": 0
+    },
+    {
+      "week": 10,
+      "festival": 0,
+      "rotation": 1,
+      "unk": 0
+    },
+    {
+      "week": 11,
+      "festival": 1,
+      "rotation": 4,
+      "unk": 3
+    },
+    {
+      "week": 12,
+      "festival": 1,
+      "rotation": 4,
+      "unk": 3
+    },
+    {
+      "week": 13,
+      "festival": 0,
+      "rotation": 2,
+      "unk": 0
+    },
+    {
+      "week": 14,
+      "festival": 0,
+      "rotation": 3,
+      "unk": 0
+    },
+    {
+      "week": 15,
+      "festival": 1,
+      "rotation": 4,
+      "unk": 3
+    },
+    {
+      "week": 16,
+      "festival": 1,
+      "rotation": 4,
+      "unk": 3
+    },
+    {
+      "week": 17,
+      "festival": 0,
+      "rotation": 1,
+      "unk": 0
+    },
+    {
+      "week": 18,
+      "festival": 0,
+      "rotation": 2,
+      "unk": 0
+    },
+    {
+      "week": 19,
+      "festival": 1,
+      "rotation": 4,
+      "unk": 3
+    },
+    {
+      "week": 20,
+      "festival": 1,
+      "rotation": 4,
+      "unk": 3
+    },
+    {
+      "week": 21,
+      "festival": 0,
+      "rotation": 3,
+      "unk": 0
+    },
+    {
+      "week": 22,
+      "festival": 0,
+      "rotation": 1,
+      "unk": 0
+    },
+    {
+      "week": 23,
+      "festival": 2,
+      "rotation": 5,
+      "unk": 4
+    },
+    {
+      "week": 24,
+      "festival": 2,
+      "rotation": 5,
+      "unk": 4
+    },
+    {
+      "week": 25,
+      "festival": 0,
+      "rotation": 2,
+      "unk": 0
+    },
+    {
+      "week": 26,
+      "festival": 0,
+      "rotation": 3,
+      "unk": 0
+    },
+    {
+      "week": 27,
+      "festival": 2,
+      "rotation": 5,
+      "unk": 4
+    },
+    {
+      "week": 28,
+      "festival": 2,
+      "rotation": 5,
+      "unk": 4
+    },
+    {
+      "week": 29,
+      "festival": 0,
+      "rotation": 1,
+      "unk": 0
+    },
+    {
+      "week": 30,
+      "festival": 0,
+      "rotation": 2,
+      "unk": 0
+    },
+    {
+      "week": 31,
+      "festival": 2,
+      "rotation": 5,
+      "unk": 4
+    },
+    {
+      "week": 32,
+      "festival": 2,
+      "rotation": 5,
+      "unk": 4
+    },
+    {
+      "week": 33,
+      "festival": 0,
+      "rotation": 3,
+      "unk": 0
+    },
+    {
+      "week": 34,
+      "festival": 0,
+      "rotation": 1,
+      "unk": 0
+    },
+    {
+      "week": 35,
+      "festival": 5,
+      "rotation": 8,
+      "unk": 2
+    },
+    {
+      "week": 36,
+      "festival": 5,
+      "rotation": 8,
+      "unk": 2
+    },
+    {
+      "week": 37,
+      "festival": 0,
+      "rotation": 2,
+      "unk": 0
+    },
+    {
+      "week": 38,
+      "festival": 0,
+      "rotation": 3,
+      "unk": 0
+    },
+    {
+      "week": 39,
+      "festival": 3,
+      "rotation": 6,
+      "unk": 5
+    },
+    {
+      "week": 40,
+      "festival": 3,
+      "rotation": 6,
+      "unk": 5
+    },
+    {
+      "week": 41,
+      "festival": 0,
+      "rotation": 1,
+      "unk": 0
+    },
+    {
+      "week": 42,
+      "festival": 0,
+      "rotation": 2,
+      "unk": 0
+    },
+    {
+      "week": 43,
+      "festival": 3,
+      "rotation": 6,
+      "unk": 5
+    },
+    {
+      "week": 44,
+      "festival": 3,
+      "rotation": 6,
+      "unk": 5
+    },
+    {
+      "week": 45,
+      "festival": 0,
+      "rotation": 3,
+      "unk": 0
+    },
+    {
+      "week": 46,
+      "festival": 0,
+      "rotation": 1,
+      "unk": 0
+    },
+    {
+      "week": 47,
+      "festival": 3,
+      "rotation": 6,
+      "unk": 5
+    },
+    {
+      "week": 48,
+      "festival": 3,
+      "rotation": 6,
+      "unk": 5
+    },
+    {
+      "week": 49,
+      "festival": 0,
+      "rotation": 2,
+      "unk": 0
+    },
+    {
+      "week": 50,
+      "festival": 0,
+      "rotation": 3,
+      "unk": 0
+    },
+    {
+      "week": 51,
+      "festival": 4,
+      "rotation": 7,
+      "unk": 1
+    },
+    {
+      "week": 52,
+      "festival": 4,
+      "rotation": 7,
+      "unk": 1
+    },
+    {
+      "week": 53,
+      "festival": 4,
+      "rotation": 7,
+      "unk": 1
+    }
+  ],
+  "star": [
+    {
+      "id": 1,
+      "season": "spring",
+      "name": {
+        "zh-Hans": "星辰祭【开花之宴】",
+        "zh-Hant": "星辰祭【開花之宴】",
+        "ja": "アステラ祭【開花の宴】",
+        "en": "Spring Blossom Fest"
+      }
+    },
+    {
+      "id": 2,
+      "season": "summer",
+      "name": {
+        "zh-Hans": "星辰祭【纳凉之宴】",
+        "zh-Hant": "星辰祭【納涼之宴】",
+        "ja": "アステラ祭【納涼の宴】",
+        "en": "Summer Twilight Fest"
+      }
+    },
+    {
+      "id": 3,
+      "season": "autumn",
+      "name": {
+        "zh-Hans": "星辰祭【丰收之宴】",
+        "zh-Hant": "星辰祭【豐收之宴】",
+        "ja": "アステラ祭【豊穣の宴】",
+        "en": "Autumn Harvest Fest"
+      }
+    },
+    {
+      "id": 4,
+      "season": "winter",
+      "name": {
+        "zh-Hans": "星辰祭【闪耀之宴】",
+        "zh-Hant": "星辰祭【閃耀之宴】",
+        "ja": "アステラ祭【煌めきの宴】",
+        "en": "Winter Star Fest"
+      }
+    },
+    {
+      "id": 5,
+      "season": "memorial",
+      "name": {
+        "zh-Hans": "星辰祭【感谢之宴】",
+        "zh-Hant": "星辰祭【感謝之宴】",
+        "ja": "アステラ祭【感謝の宴】",
+        "en": "Appreciation Fest"
+      }
+    }
+  ],
+  "moon": [
+    {
+      "season": "winter",
+      "name": {
+        "zh-Hans": "月辰祭【万福之宴】",
+        "zh-Hant": "月辰祭【萬福之宴】",
+        "ja": "セリエナ祭【万福の宴】",
+        "en": "Holiday Joy Fest"
+      }
+    },
+    {
+      "season": "memorial",
+      "name": {
+        "zh-Hans": "月辰祭【大感谢之宴】",
+        "zh-Hant": "月辰祭【大感謝之宴】",
+        "ja": "セリエナ祭【大感謝の宴】",
+        "en": "Grand Appreciation Fest"
+      }
+    },
+    {
+      "season": "spring",
+      "name": {
+        "zh-Hans": "月辰祭【盛放之宴】",
+        "zh-Hant": "月辰祭【盛放之宴】",
+        "ja": "セリエナ祭【満開の宴】",
+        "en": "Full Bloom Fest"
+      }
+    },
+    {
+      "season": "summer",
+      "name": {
+        "zh-Hans": "月辰祭【热情之宴】",
+        "zh-Hant": "月辰祭【熱情之宴】",
+        "ja": "セリエナ祭【情熱の宴】",
+        "en": "Sizzling Spice Fest"
+      }
+    }
+  ],
+  "_src": {
+    "file": "common/network/scheduleMap.ysm",
+    "names": "common/text/steam/panel_tutorial_cat"
+  }
+}

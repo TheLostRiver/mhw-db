@@ -4,6 +4,7 @@
 """
 
 import re
+import struct
 
 from mhdb.build.common import Source, src, tr
 from mhdb.games.world import specs as S
@@ -99,3 +100,52 @@ def build_dlc(s: Source) -> list[dict]:
         if m and name and "HARDUMMY" not in name["zh-Hans"]:
             out.append({"id": int(m.group(1)), "name": name})
     return out
+
+
+SCHEDULE_REL = "common/network/scheduleMap.ysm"
+# 星辰祭：scheduleMap 的祭典编号 1–5 ↔ panel_tutorial_cat 的 SEV_H（花 / 春）、N（夏）、A（秋）、F（冬）、1（一周年）
+STAR_FESTIVALS = [(1, "spring", "SEV_H"), (2, "summer", "SEV_N"), (3, "autumn", "SEV_A"), (4, "winter", "SEV_F"), (5, "memorial", "SEV_1")]  # fmt: skip
+# 月辰祭（冰原）：PANEL_01–04，与 topicMessage 的 S_Event_winter / 2ndAni / spring / summer 同序
+MOON_FESTIVALS = [
+    ("winter", "PANEL_01"),
+    ("memorial", "PANEL_02"),
+    ("spring", "PANEL_03"),
+    ("summer", "PANEL_04"),
+]
+
+
+def build_schedule(s: Source) -> dict:
+    """scheduleMap.ysm：u32 魔数、u16、u32 条数，每条 4 个 u32 = 一年的一周（53 周）。
+
+    第 1 个是祭典编号（0 平时），第 3 个是轮换编号（平时 1–3 循环，祭典 = 编号 + 3），第 2、4 个含义未确认。
+    祭典编号与季节的对应由所在周推出（1 在 3–5 月、2 在 6–8 月、3 在 9–11 月、4 在 12–2 月），并与
+    panel_tutorial_cat 的 SEV_H/N/A/F/1 及蒸气机关的 Spring/Summer/Autumn/Winter/Memorial 奖励表一致。
+    """
+    data = s.path(SCHEDULE_REL).read_bytes()
+    magic, _, n = struct.unpack_from("<IHI", data, 0)
+    if magic != 0x18091001 or 10 + 16 * n != len(data):
+        raise ValueError(f"{SCHEDULE_REL} 头部或长度不符")
+    rows = [struct.unpack_from("<4I", data, 10 + 16 * i) for i in range(n)]
+    if n != 53:
+        raise ValueError(f"{SCHEDULE_REL} 应为 53 周，实际 {n}")
+    weeks = []
+    for i, (fes, one, rot, unk) in enumerate(rows):
+        if one != 1 or not 0 <= fes <= 5:
+            raise ValueError(f"{SCHEDULE_REL} 第 {i + 1} 周的取值超出已知范围：{rows[i]}")
+        if (fes and rot != fes + 3) or (not fes and rot not in (1, 2, 3)):
+            raise ValueError(f"{SCHEDULE_REL} 第 {i + 1} 周的轮换编号 {rot} 与祭典 {fes} 不符")
+        weeks.append({"week": i + 1, "festival": fes, "rotation": rot, "unk": unk})
+    texts = s.text("common/text/steam/panel_tutorial_cat")
+
+    def name(prefix: str) -> dict:
+        t = _by_key(texts, f"{prefix}_CAT_TEXT")
+        if not t:
+            raise ValueError(f"panel_tutorial_cat 缺少 {prefix}_CAT_TEXT")
+        return t
+
+    return {
+        "weeks": weeks,
+        "star": [{"id": i, "season": season, "name": name(k)} for i, season, k in STAR_FESTIVALS],
+        "moon": [{"season": season, "name": name(k)} for season, k in MOON_FESTIVALS],
+        "_src": {"file": SCHEDULE_REL, "names": "common/text/steam/panel_tutorial_cat"},
+    }
