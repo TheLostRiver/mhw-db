@@ -17,7 +17,6 @@
         688.0,
         1606.0
       ],
-      "thumb": "st101/thumb",
       "patches": [
         {
           "letter": "A",
@@ -421,14 +420,16 @@
         "radar": "ui/hud/tex/rtex/st101/ + ui/hud/hud_radar.gui Area_line101",
         "table": "MonsterHunterWorld.exe 纸片表（构建 15539686）",
         "name": "common/text/other_names #0",
-        "backdrop": "ui/map/tex/maptex/st101/m_st101_back_NN_BML_NOMIP.tex + ui/map/map.gui a_map01"
+        "backdrop": "ui/map/tex/maptex/st101/m_st101_back_NN_BML_NOMIP.tex + ui/map/map.gui a_map01",
+        "cover": "背景插画 + 1 层纸片（同上，按地图页的位置合成）"
       },
       "backdrop": [
         -1374.9,
         -522.9,
         731.1,
         1551.1
-      ]
+      ],
+      "cover": "st101/cover"
     },
     {
       "id": 102,
@@ -447,7 +448,6 @@
         1054.0,
         803.0
       ],
-      "thumb": "st102/thumb",
       "patches": [
         {
           "letter": "A",
@@ -850,14 +850,16 @@
         "radar": "ui/hud/tex/rtex/st102/ + ui/hud/hud_radar.gui Area_line102",
         "table": "MonsterHunterWorld.exe 纸片表（构建 15539686）",
         "name": "common/text/other_names #1",
-        "backdrop": "ui/map/tex/maptex/st102/m_st102_back_NN_BML_NOMIP.tex + ui/map/map.gui a_map01"
+        "backdrop": "ui/map/tex/maptex/st102/m_st102_back_NN_BML_NOMIP.tex + ui/map/map.gui a_map01",
+        "cover": "背景插画 + 1 层纸片（同上，按地图页的位置合成）"
       },
       "backdrop": [
         -955.3,
         -1141.1,
         987.7,
         778.9
-      ]
+      ],
+      "cover": "st102/cover"
     },
     {
       "id": 103,
@@ -876,7 +878,6 @@
         835.0,
         1163.0
       ],
-      "thumb": "st103/thumb",
       "patches": [
         {
           "letter": "A",
@@ -1234,14 +1235,16 @@
         "radar": "ui/hud/tex/rtex/st103/ + ui/hud/hud_radar.gui Area_line103",
         "table": "MonsterHunterWorld.exe 纸片表（构建 15539686）",
         "name": "common/text/other_names #2",
-        "backdrop": "ui/map/tex/maptex/st103/m_st103_back_NN_BML_NOMIP.tex + ui/map/map.gui a_map01"
+        "backdrop": "ui/map/tex/maptex/st103/m_st103_back_NN_BML_NOMIP.tex + ui/map/map.gui a_map01",
+        "cover": "背景插画 + 1 层纸片（同上，按地图页的位置合成）"
       },
       "backdrop": [
         -1102.7,
         -900.9,
         869.3,
         1064.1
-      ]
+      ],
+      "cover": "st103/cover"
     },
     {
       "id": 104,
@@ -1260,7 +1263,6 @@
         675.0,
         687.0
       ],
-      "thumb": "st104/thumb",
       "patches": [
         {
           "letter": "A",
@@ -1638,14 +1640,16 @@
         "radar": "ui/hud/tex/rtex/st104/ + ui/hud/hud_radar.gui Area_line104",
         "table": "MonsterHunterWorld.exe 纸片表（构建 15539686）",
         "name": "common/text/other_names #3",
-        "backdrop": "ui/map/tex/maptex/st104/m_st104_back_NN_BML_NOMIP.tex + ui/map/map.gui a_map01"
+        "backdrop": "ui/map/tex/maptex/st104/m_st104_back_NN_BML_NOMIP.tex + ui/map/map.gui a_map01",
+        "cover": "背景插画 + 1 层纸片（同上，按地图页的位置合成）"
       },
       "backdrop": [
         -1008.2,
         -873.7,
         770.8,
         877.3
-      ]
+      ],
+      "cover": "st104/cover"
     },
     {
       "id": 105,
@@ -1664,7 +1668,6 @@
         787.0,
         1354.0
       ],
-      "thumb": "st105/thumb",
       "patches": [
         {
           "letter": "A",
@@ -2040,14 +2043,16 @@
         "radar": "ui/hud/tex/rtex/st105/ + ui/hud/hud_radar.gui Area_line105",
         "table": "MonsterHunterWorld.exe 纸片表（构建 15539686）",
         "name": "common/text/other_names #4",
-        "backdrop": "ui/map/tex/maptex/st105/m_st105_back_NN_BML_NOMIP.tex + ui/map/map.gui a_map01"
+        "backdrop": "ui/map/tex/maptex/st105/m_st105_back_NN_BML_NOMIP.tex + ui/map/map.gui a_map01",
+        "cover": "背景插画 + 1 层纸片（同上，按地图页的位置合成）"
       },
       "backdrop": [
         -1419.0,
         -920.1,
         872.0,
         1336.9
-      ]
+      ],
+      "cover": "st105/cover"
     },
     {
       "id": 108,
@@ -2066,7 +2071,6 @@
         845.8,
         1044.8
       ],
-      "thumb": "st108/thumb",
       "patches": [
         {
           "letter": "A",
@@ -2466,14 +2470,16 @@
         "radar": "ui/hud/tex/rtex/st108/ + ui/hud/hud_radar.gui Area_line108",
         "table": "MonsterHunterWorld.exe 纸片表（构建 15539686）",
         "name": "common/text/other_names #58",
-        "backdrop": "ui/map/tex/maptex/st108/m_st108_back_NN_BML_NOMIP.tex + ui/map/map.gui a_map01"
+        "backdrop": "ui/map/tex/maptex/st108/m_st108_back_NN_BML_NOMIP.tex + ui/map/map.gui a_map01",
+        "cover": "背景插画 + 1 层纸片（同上，按地图页的位置合成）"
       },
       "backdrop": [
         -1117.9,
         -1197.3,
         1108.1,
         989.7
-      ]
+      ],
+      "cover": "st108/cover"
     }
   ]
 }

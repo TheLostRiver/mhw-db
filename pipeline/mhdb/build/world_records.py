@@ -13,7 +13,9 @@ STAGES = {101, 102, 103, 104, 105, 108, 109}
 
 
 def build_endemic(s: Source, items: dict[int, dict]) -> list[dict]:
-    """em_animal_note 第 i 条 ↔ ec_info 第 i 条（按键名排序，NOTE_ECnnn_vv_DESC），item 是捕获后的物品。"""
+    """em_animal_note 第 i 条 ↔ ec_info 第 i 条（按键名排序，NOTE_ECnnn_vv_DESC），item 是捕获后的物品。
+    icon 是 ui/common/tex/cmn_creature00 的格子号（64px 网格，狩猎笔记的环境生物列表用它），第 i 格即第 i 条，
+    86 格逐一按图形核对过（兔、始祖鸟、闪蝶、壁虎……后加的金鳞蝙蝠、金箔鲎也在各自的行号上）。"""
     rel = "common/note/em_animal_note.emai"
     notes = s.table(rel, S.ANIMAL_NOTE)
     info = s.text("common/text/ec_info")
@@ -32,6 +34,7 @@ def build_endemic(s: Source, items: dict[int, dict]) -> list[dict]:
             {
                 "id": f"ec{m.group(1)}_{m.group(2)}",
                 "item": r["item"],
+                "icon": row,
                 "name": item["name"],
                 "desc": tr(info, i) or {},
                 "stages": stages,

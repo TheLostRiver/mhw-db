@@ -1,7 +1,7 @@
 ---
 import SiteLayout from '../../../layouts/SiteLayout.astro';
 import MapViewer from '../../../islands/map/MapViewer';
-import { loadItems, loadMapNodes, loadMaps } from '../../../data/world/load';
+import { loadItems, loadMapNodes, loadMaps, loadRecords } from '../../../data/world/load';
 import type { MapNodeStage, MapStage } from '../../../data/world/schema';
 import { stageSlug } from '../../../lib/world/maps';
 import { stageEmblemUrl, type MapItems } from '../../../lib/world/mapNodes';
@@ -9,6 +9,8 @@ import { stageEmblemUrl, type MapItems } from '../../../lib/world/mapNodes';
 export function getStaticPaths() {
   const nodes = new Map(loadMapNodes().map((s) => [s.id, s]));
   const items = loadItems();
+  // 环境生物（含钓到的鱼）用狩猎笔记的专属图标，物品图标只有四种通用图形
+  const creature = new Map(loadRecords().endemic.map((e) => [e.item, e.icon]));
   return loadMaps().map((stage) => {
     const st = nodes.get(stage.id) ?? null;
     // 只把这张图用到的物品（固定物品、抽选表里的物品、钓点的鱼）交给地图岛
@@ -20,7 +22,10 @@ export function getStaticPaths() {
     const subset: MapItems = Object.fromEntries(
       items
         .filter((i) => used.has(i.id))
-        .map((i) => [i.id, { name: i.name['zh-Hans'], icon: i.icon.id, color: i.icon.color }]),
+        .map((i) => [
+          i.id,
+          { name: i.name['zh-Hans'], icon: i.icon.id, color: i.icon.color, creature: creature.get(i.id) },
+        ]),
     );
     return { params: { slug: stageSlug(stage) }, props: { stage, nodes: st, items: subset } };
   });

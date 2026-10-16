@@ -1,7 +1,7 @@
 ---
 import SiteLayout from '../../../layouts/SiteLayout.astro';
 import { loadMapNodes, loadMaps } from '../../../data/world/load';
-import { MAP_GROUPS, stageSlug, thumbUrl } from '../../../lib/world/maps';
+import { MAP_GROUPS, coverUrl, stageSlug } from '../../../lib/world/maps';
 import { stageEmblemUrl } from '../../../lib/world/mapNodes';
 
 const stages = loadMaps();
@@ -36,8 +36,8 @@ const groups = (Object.keys(MAP_GROUPS) as (keyof typeof MAP_GROUPS)[])
         {g.items.map((s) => (
           <li>
             <a class="map-card" href={`/world/maps/${stageSlug(s)}/`}>
-              <div class="map-card__thumb">
-                {s.thumb && <img src={thumbUrl(s.thumb)} alt="" loading="lazy" decoding="async" />}
+              <div class="map-card__cover">
+                <img src={coverUrl(s.cover)} alt="" loading="lazy" decoding="async" />
               </div>
               <div class="map-card__body">
                 <span
@@ -129,16 +129,16 @@ const groups = (Object.keys(MAP_GROUPS) as (keyof typeof MAP_GROUPS)[])
     outline-offset: 2px;
   }
 
-  /* 缩略图放在皮革底纹上，和游戏的世界地图一样 */
-  .map-card__thumb {
-    aspect-ratio: 16 / 9;
+  /* 整张地图（近似正方形）放在皮革底纹上，和游戏的地图窗口一样；完整显示、不裁切 */
+  .map-card__cover {
+    aspect-ratio: 4 / 3;
     overflow: hidden;
-    padding: var(--space-3);
+    padding: var(--space-2);
     background: #2a1e12 url('/assets/game/world/maps/parchment.webp') center / 256px;
     box-shadow: inset 0 0 40px rgb(20 12 4 / 0.7);
   }
 
-  .map-card__thumb img {
+  .map-card__cover img {
     width: 100%;
     height: 100%;
     object-fit: contain;
@@ -146,7 +146,7 @@ const groups = (Object.keys(MAP_GROUPS) as (keyof typeof MAP_GROUPS)[])
     transition: transform var(--dur-slow) var(--ease-out);
   }
 
-  .map-card:hover .map-card__thumb img {
+  .map-card:hover .map-card__cover img {
     transform: scale(1.04);
   }
 
@@ -189,12 +189,12 @@ const groups = (Object.keys(MAP_GROUPS) as (keyof typeof MAP_GROUPS)[])
 
   @media (prefers-reduced-motion: reduce) {
     .map-card,
-    .map-card__thumb img {
+    .map-card__cover img {
       transition: none;
     }
 
     .map-card:hover,
-    .map-card:hover .map-card__thumb img {
+    .map-card:hover .map-card__cover img {
       transform: none;
     }
   }

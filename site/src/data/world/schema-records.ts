@@ -13,6 +13,8 @@ export const Records = z
             id: z.string().regex(/^ec\d{3}_\d{2}$/),
             /** 捕获后得到的物品 */
             item: z.number().int().positive(),
+            /** 狩猎笔记的环境生物图标：cmn_creature00 的格子号（= 笔记行号） */
+            icon: z.number().int().nonnegative(),
             name: Text,
             desc: OptText,
             stages: z.array(z.number().int()),

@@ -28,7 +28,7 @@ export const patchUrl = (stageId: number, letter: string, half: boolean): string
 export const backdropUrl = (stageId: number, half: boolean): string =>
   `${ASSETS}/st${stageId}/back${half ? '-half' : ''}.webp`;
 
-export const thumbUrl = (thumb: string): string => `${ASSETS}/${thumb}.webp`;
+export const coverUrl = (cover: string): string => `${ASSETS}/${cover}.webp`;
 
 export const PARCHMENT_URL = `${ASSETS}/parchment.webp`;
 

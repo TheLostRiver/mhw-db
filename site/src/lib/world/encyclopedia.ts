@@ -68,6 +68,8 @@ export const KINSECT_BONUS_LABEL = [
 ] as const;
 
 export const itemIconUrl = (i: Pick<Item, 'icon'>) => `${BASE}/item/${i.icon.id}-${i.icon.color}.webp`;
+/** 环境生物的专属图标（狩猎笔记 cmn_creature00 的格子号，见 records.json 的 endemic[].icon） */
+export const endemicIconUrl = (icon: number) => `${BASE}/endemic/${icon}.webp`;
 export const equipIconUrl = (slot: string, rarity: number) => `${BASE}/equip/${slot}-${rarity}.webp`;
 export const socketIconUrl = (level: number) => `${BASE}/socket/${level}.webp`;
 export const decoIconUrl = (size: number, color: number) => `${BASE}/deco/${size}-${color}.webp`;

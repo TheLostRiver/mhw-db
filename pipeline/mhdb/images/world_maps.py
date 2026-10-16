@@ -504,6 +504,31 @@ def backdrop(
     return img, bounds
 
 
+COVER_SIZE = 720  # 封面长边（像素；卡片里约 240 像素高，够 3 倍屏）
+
+
+def cover(raw: Path, st: dict, back: Image.Image | None) -> Image.Image:
+    """地图列表的封面：背景插画上铺 1 层的全部纸片（地图页默认显示的楼层，叠放顺序与地图页一致），
+    缩到长边 COVER_SIZE。back 是 backdrop() 返回的整幅插画（按地图像素缩放过）。"""
+    atlas = Image.fromarray(_rgba(raw, f"ui/map/tex/maptex/st{st['id']}/m_st{st['id']}_patch_ID.tex"))
+    layers: list[tuple[Image.Image, float, float]] = []
+    if back is not None:
+        layers.append((back, st["backdrop"][0], st["backdrop"][1]))
+    for p in sorted((p for p in st["patches"] if p["layer"] == 0), key=lambda p: p["letter"]):
+        x, y, w, h = p["rect"]
+        layers.append((atlas.crop((x, y, x + w, y + h)), p["mapX"], p["mapY"]))
+    x0 = min(x for _, x, _ in layers)
+    y0 = min(y for _, _, y in layers)
+    at = [(img, round(x - x0), round(y - y0)) for img, x, y in layers]
+    w = max(x + img.width for img, x, _ in at)
+    h = max(y + img.height for img, _, y in at)
+    canvas = Image.new("RGBA", (w, h))
+    for img, x, y in at:
+        canvas.alpha_composite(img, (x, y))
+    canvas.thumbnail((COVER_SIZE, COVER_SIZE), Image.LANCZOS)
+    return canvas
+
+
 def _save_webp(img: Image.Image, path: Path, quality: int = 86) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     img.save(path, "WEBP", quality=quality, method=6)
@@ -544,16 +569,6 @@ def build(raw: Path, data_out: Path, img_out: Path, only: list[int] | None = Non
             ys.append(p["mapY"])
             xe.append(p["mapX"] + w)
             ye.append(p["mapY"] + h)
-        # 世界地图上的整块缩略图（map.gui 的 patch_stXXX：贴图与矩形都在布局里）
-        thumb = None
-        anim = map_gui.animations.get(f"patch_st{stage}")
-        if anim:
-            tex = next(o for o in anim.objects if o.name == "tex_patch").init
-            box = tuple(int(v) for v in tex["mTextureRect"])
-            path = map_gui.textures[tex["Texture"]].path.replace("\\", "/")
-            img = Image.fromarray(_rgba(raw, f"{path}.tex")).crop(box)
-            _save_webp(img, img_out / f"st{stage}/thumb.webp")
-            thumb = f"st{stage}/thumb"
         stages.append(
             dict(
                 id=stage,
@@ -562,7 +577,6 @@ def build(raw: Path, data_out: Path, img_out: Path, only: list[int] | None = Non
                 scale=scale,
                 layers=max(p["layer"] for p in reg["patches"]) + 1,
                 bounds=[min(xs), min(ys), max(xe), max(ye)],
-                thumb=thumb,
                 patches=reg["patches"],
                 _src=dict(
                     patches=f"ui/map/tex/maptex/st{stage}/m_st{stage}_patch_ID.tex",
@@ -572,10 +586,12 @@ def build(raw: Path, data_out: Path, img_out: Path, only: list[int] | None = Non
                 ),
             )
         )
-    # 纸片底下的整幅插画（沿用的关卡也重做，不必重新配准）
+    # 纸片底下的整幅插画与列表封面（沿用的关卡也重做，不必重新配准）
     for st in stages:
+        st.pop("thumb", None)  # 旧版的世界地图缩略图，已换成封面
         back = backdrop(raw, map_gui, st["id"], st["scale"])
         st["backdrop"] = None
+        img = None
         if back:
             img, st["backdrop"] = back
             _save_webp(img, img_out / f"st{st['id']}/back.webp", 80)
@@ -587,6 +603,9 @@ def build(raw: Path, data_out: Path, img_out: Path, only: list[int] | None = Non
             st["_src"]["backdrop"] = (
                 f"ui/map/tex/maptex/st{st['id']}/m_st{st['id']}_back_NN_BML_NOMIP.tex + ui/map/map.gui a_map01"
             )
+        _save_webp(cover(raw, st, img), img_out / f"st{st['id']}/cover.webp", 82)
+        st["cover"] = f"st{st['id']}/cover"
+        st["_src"]["cover"] = "背景插画 + 1 层纸片（同上，按地图页的位置合成）"
     # 地图底下的皮革纹理（map.gui 的 mapBack）
     back = Image.fromarray(_rgba(raw, "ui/map/tex/maptex/map_back_BML_NOMIP.tex")).convert("RGB")
     _save_webp(back, img_out / "parchment.webp", 82)

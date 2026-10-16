@@ -258,6 +258,10 @@ uv run mhdb nodes     # 大地图标记（采集点等）→ data/world/map-node
 
 - **环境生物**（86）：`em_animal_note.emai` 第 i 条 ↔ `ec_info` 第 i 条（按键名排序，NOTE_ECnnn_vv_DESC），名称取捕获后的物品名，
   栖息地图取 `stage_0–5`。稀有标志、出现条件等字段含义未确认，未显示。
+  图标（2026-10-16）：`ui/common/tex/cmn_creature00_ID.tex`（512×1024，64px 网格，`cmn_creatureM00` 是同布局的剪影），
+  `ui/note/monster_guide.gui` 的 `creature_list` 用它（64×64 一格，格子在运行时选）。第 i 格就是笔记第 i 条：86 格逐一按图形核对，
+  包括后来插在表尾的金鳞蝙蝠（57）、金箔鲎 / 纯金鲎（58–59）、7 种毛吉（79–85）。捕获后的物品图标只有小动物 92、鸟 93、虫 94、鱼 95
+  四种通用图形（绕行兔、仙人掌、孽鬼都是 92 的蜥蜴形），所以环境生物页与地图上的环境生物、钓点的鱼都改用这套图标。
 - **勋章**（100）：`cm_medal` 的 `MEDAL_nnn`（冰原第一个写作 `MEDAL050`，无下划线）；条件优先取 `_doc_re`（改写版），其次 `_doc` / `_doc1`。图标与数值条件未找到。
 - **NPC**（122）：`chr_names` 的 `Nnnn_NPC_NAME`，没有介绍文本。
 - **追加内容**（396）：`steam/dlc_package_header` 的 `Package####_id`；名称为 HARDUMMY 的（PC 版被抹掉的平台独占内容）跳过。
@@ -287,7 +291,7 @@ uv run mhdb nodes     # 大地图标记（采集点等）→ data/world/map-node
 | 雷达俯视图 | `ui/hud/tex/rtex/stXXX/r_stXXX_fNN_MM_ID.tex` | `NN` 为雷达层，`MM` 为 2×2 瓦片（左上、右上、左下、右下）；每块 512 像素在 `hud_radar.gui` 里画成 820 单位，原点在中心 |
 | 区域边线 | `ui/hud/hud_radar.gui` 的 `Area_lineNNN` | `null_areaK` 的位置 + `tex_lineK` 的贴图矩形（`r_stXXX_area_ID`），按 `coladj_line_fNN` 分层 |
 | 纸片表 | exe（构建 15539686），见 `mhdb/games/world/exe.py` 的 `MAP_PATCHES` | 函数 0x1418A65C0 按关卡号返回 17 行（对应 `map.gui` 的 `patch_A…Q`）：层、雷达层、区域号；层为 −1 的纸片不显示 |
-| 世界地图缩略图 | `ui/map/map.gui` 的 `patch_stXXX` → `map_all_patch*_ID.tex` | 贴图与矩形都在布局里，原样裁切 |
+| 列表封面 | 背景插画 + 1 层的全部纸片 | 按地图页的位置与叠放顺序合成，长边 720 像素。（原先用世界地图上的板块 `map.gui` 的 `patch_stXXX` → `map_all_patch*_ID.tex`，那只是世界地图上撕下的一角，不是整张区域地图，已停用） |
 | 地名 | `common/text/other_names_*.gmd` | st101–105 = #0–4，st108 = #58（永霜冻土）；按地图画面逐一对过 |
 | 底纹 | `ui/map/tex/maptex/map_back_BML_NOMIP.tex`（BC1） | 地图窗口的皮革纹理 |
 | 背景插画 | `ui/map/tex/maptex/stXXX/m_stXXX_back_NN_BML_NOMIP.tex`（每格 1024²）+ `map.gui` 的 `a_map01` | `tex_map_00…15` 排成 4×4（每格 2048 布局单位，`null_map` 在 −4096 使整张居中），运行时换成本图的 `back_NN`；古代树森林只有 9 格、大蚁冢荒地 12 格，缺的格子为空 |

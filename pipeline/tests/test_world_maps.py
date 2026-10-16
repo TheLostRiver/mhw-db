@@ -64,3 +64,33 @@ def test_backdrop_covers_radar_extent() -> None:
         assert abs(img.width - (x1 - x0)) <= 1 and abs(img.height - (y1 - y0)) <= 1
         a = np.asarray(img.getchannel("A"))
         assert a[0, 0] == 0 and a[-1, -1] == 0 and a[a.shape[0] // 2, a.shape[1] // 2] == 255
+
+
+@pytest.mark.skipif(
+    not (DATA_RAW / "world/ui/common/tex/cmn_creature00_ID.tex").is_file(), reason="需要先运行 mhdb extract"
+)
+def test_creature_atlas_has_one_cell_per_note() -> None:
+    """环境生物图集里有图的格子正好是前 86 格，与 em_animal_note 的 86 条一一对应。"""
+    from mhdb.images.atlas import grid_cell
+    from mhdb.images.world_icons import CREATURE_ATLAS, _atlas
+
+    atlas = _atlas(DATA_RAW / "world", CREATURE_ATLAS)
+    cells = (atlas.width // 64) * (atlas.height // 64)
+    filled = [i for i in range(cells) if grid_cell(atlas, i).getchannel("A").getbbox()]
+    assert filled == list(range(86))
+
+
+@pytest.mark.skipif(
+    not MAPS.is_file() or not (DATA_RAW / "world/ui/map/map.gui").is_file(), reason="需要先运行 mhdb maps"
+)
+def test_cover_is_whole_map() -> None:
+    """封面 = 背景插画 + 1 层纸片：长边 COVER_SIZE，范围包住插画与全部 1 层纸片（中心不透明，四角透明）。"""
+    from mhdb.formats.gui import parse
+    from mhdb.images.world_maps import COVER_SIZE, backdrop, cover
+
+    gui = parse((DATA_RAW / "world/ui/map/map.gui").read_bytes())
+    st = next(s for s in json.loads(MAPS.read_text("utf-8"))["stages"] if s["id"] == 101)
+    img = cover(DATA_RAW / "world", st, backdrop(DATA_RAW / "world", gui, 101, st["scale"])[0])
+    assert max(img.size) == COVER_SIZE and min(img.size) > COVER_SIZE * 0.9
+    a = np.asarray(img.getchannel("A"))
+    assert a[a.shape[0] // 2, a.shape[1] // 2] == 255 and a[0, 0] == 0 and a[-1, -1] == 0

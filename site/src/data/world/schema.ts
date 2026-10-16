@@ -649,9 +649,10 @@ export const MapStage = z
     scale: z.number().positive(),
     layers: Int.min(1),
     bounds: z.tuple([z.number(), z.number(), z.number(), z.number()]),
-    thumb: z.string().nullable(),
     /** 纸片底下整幅插画在地图坐标里的 [x0, y0, x1, y1]（图片 stXXX/back.webp） */
     backdrop: z.tuple([z.number(), z.number(), z.number(), z.number()]).nullable(),
+    /** 列表封面：背景插画上铺 1 层的全部纸片（图片 stXXX/cover.webp） */
+    cover: z.string(),
     patches: z.array(MapPatch).min(1),
     _src: z.record(z.string(), z.string()),
   })

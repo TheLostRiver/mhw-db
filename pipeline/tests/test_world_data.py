@@ -396,6 +396,8 @@ def test_records() -> None:
     d = json.loads((WORLD / "records.json").read_text(encoding="utf-8"))
     rabbit = next(e for e in d["endemic"] if e["name"]["zh-Hans"] == "绕行兔")
     assert 101 in rabbit["stages"]
+    # 环境生物图标：cmn_creature00 的第 i 格 = 笔记第 i 条（86 格按图形核对过）
+    assert [e["icon"] for e in d["endemic"]] == [e["_src"]["row"] for e in d["endemic"]] == list(range(86))
     medals = {m["id"]: m for m in d["medals"]}
     assert medals[49]["condition"]["zh-Hans"].startswith("猎人等级达到100")
     assert medals[50]["iceborne"] and not medals[49]["iceborne"]

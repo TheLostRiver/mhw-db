@@ -1,8 +1,8 @@
 ---
 import SiteLayout from '../../../layouts/SiteLayout.astro';
 import FilterBox from '../../../components/site/FilterBox.astro';
-import { itemById, loadMaps, loadRecords } from '../../../data/world/load';
-import { itemIconUrl } from '../../../lib/world/encyclopedia';
+import { loadMaps, loadRecords } from '../../../data/world/load';
+import { endemicIconUrl } from '../../../lib/world/encyclopedia';
 
 const { endemic } = loadRecords();
 const stageNames = new Map<number, string>(loadMaps().map((s) => [s.id, s.name['zh-Hans']]));
@@ -29,47 +29,45 @@ const lines = (t?: string) => (t ?? '').split('\n');
   <FilterBox label="按名称、地图或笔记筛选" placeholder="按名称、地图或笔记筛选" />
 
   <ul class="en-grid">
-    {endemic.map((e) => {
-      const item = itemById(e.item);
-      return (
-        <li
-          class="en-card"
-          data-filter-row
-          data-text={[
-            e.name['zh-Hans'],
-            e.name.en,
-            ...e.stages.map((s) => stageNames.get(s)),
-            e.desc['zh-Hans'],
-          ]
-            .filter(Boolean)
-            .join(' ')
-            .toLowerCase()}
-        >
-          <header>
-            {item && <img src={itemIconUrl(item)} alt="" width="36" height="36" loading="lazy" />}
-            <div>
-              <strong>{e.name['zh-Hans']}</strong>
-              {e.name.en && <small>{e.name.en}</small>}
-            </div>
-          </header>
-          <p class="en-desc">
-            {lines(e.desc['zh-Hans']).map((l) => (
-              <span>{l}</span>
-            ))}
-          </p>
-          <ul class="en-stages">
-            {e.stages.map((s) => (
-              <li>{stageNames.get(s) ?? s}</li>
-            ))}
-          </ul>
-        </li>
-      );
-    })}
+    {endemic.map((e) => (
+      <li
+        class="en-card"
+        data-filter-row
+        data-text={[
+          e.name['zh-Hans'],
+          e.name.en,
+          ...e.stages.map((s) => stageNames.get(s)),
+          e.desc['zh-Hans'],
+        ]
+          .filter(Boolean)
+          .join(' ')
+          .toLowerCase()}
+      >
+        <header>
+          <img src={endemicIconUrl(e.icon)} alt="" width="64" height="64" loading="lazy" />
+          <div>
+            <strong>{e.name['zh-Hans']}</strong>
+            {e.name.en && <small>{e.name.en}</small>}
+          </div>
+        </header>
+        <p class="en-desc">
+          {lines(e.desc['zh-Hans']).map((l) => (
+            <span>{l}</span>
+          ))}
+        </p>
+        <ul class="en-stages">
+          {e.stages.map((s) => (
+            <li>{stageNames.get(s) ?? s}</li>
+          ))}
+        </ul>
+      </li>
+    ))}
   </ul>
 
   <p class="s-note">
     数据来源：<code>common/note/em_animal_note.emai</code>（捕获后的物品、出现的地图）与调查笔记文本{' '}
-    <code>ec_info</code>（第 i 条与第 i 条对应）。 稀有度、出现的时间与天气等字段含义未确认，未显示。
+    <code>ec_info</code>（第 i 条与第 i 条对应）；图标取自狩猎笔记的环境生物图集 <code>cmn_creature00</code>
+    （第 i 格对应第 i 条）。 稀有度、出现的时间与天气等字段含义未确认，未显示。
   </p>
 </SiteLayout>
 
@@ -99,6 +97,18 @@ const lines = (t?: string) => (t ?? '').split('\n');
     display: flex;
     align-items: center;
     gap: var(--space-3);
+  }
+
+  /* 图标底下垫一圈淡光，深色主题里墨色的轮廓（始祖鸟、攀鲈）也看得清 */
+  .en-card header img {
+    flex: none;
+    width: 56px;
+    height: 56px;
+    background: radial-gradient(
+      closest-side,
+      color-mix(in oklab, var(--c-text) 9%, transparent),
+      transparent
+    );
   }
 
   .en-card header div {

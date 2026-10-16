@@ -5,6 +5,7 @@
                衣装 112、烟筒 113；武器 160–173；物品按 itemData 的图标编号与颜色全部输出（item/）
   cmn_status00 64px 网格：攻击、会心、属性等状态图标（彩色，原样输出）
   cmn_action00 64px 网格：大地图上交互环境生物、环境利用的图标（彩色，原样输出）
+  cmn_creature00 64px 网格：狩猎笔记里每种环境生物的图标，格子号见 records.json 的 endemic[].icon（彩色，原样输出）
   common00     非网格：镶嵌槽框与宝石，按坐标裁切
   equip_egc    非网格：自定义强化的格数六边形
   status00 / menu00 / itemMenu00 / common00  菜单界面零件（UI_SPRITES），按坐标裁切
@@ -126,6 +127,7 @@ STAGE_EMBLEM = {101: 0, 102: 1, 103: 2, 104: 3, 105: 4, 108: 5}
 
 
 ACTION_ATLAS = "ui/common/tex/cmn_action00_ID.tex"
+CREATURE_ATLAS = "ui/common/tex/cmn_creature00_ID.tex"
 
 
 def action_cells(raw: Path) -> list[int]:
@@ -272,6 +274,14 @@ def build(raw: Path, data: Path, out: Path, log=print) -> int:
     action = _atlas(raw, ACTION_ATLAS)
     for i in action_cells(raw):
         save(grid_cell(action, i), f"action/{i}.webp")
+
+    # 环境生物：狩猎笔记的环境生物图标（物品图标只有小动物、鸟、虫、鱼四种通用图形）
+    creature = _atlas(raw, CREATURE_ATLAS)
+    for e in load("records.json")["endemic"]:
+        cell = grid_cell(creature, e["icon"])
+        if not cell.getchannel("A").getbbox():
+            raise ValueError(f"环境生物 {e['id']} 的图标格 {e['icon']} 是空的，图集可能变了")
+        save(cell, f"endemic/{e['icon']}.webp")
 
     # 怪物图标：狩猎笔记的 ui/note/tex/micon/emXXX[_YY]_ID.tex（512px），缩到 192px、有损压缩
     for tex in sorted((raw / "ui/note/tex/micon").glob("em*_ID.tex")):

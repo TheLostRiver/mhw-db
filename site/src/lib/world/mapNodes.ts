@@ -9,6 +9,8 @@ export interface MapItem {
   name: string;
   icon: number;
   color: number;
+  /** 环境生物（捕获后的物品、钓到的鱼）：狩猎笔记的环境生物图标格子号，有就用它 */
+  creature?: number | undefined;
 }
 export type MapItems = Record<number, MapItem>;
 
@@ -57,8 +59,10 @@ export const stageEmblemUrl = (stageId: number): string => `/assets/game/world/u
 
 export const RANK_LABEL: Record<Rank, string> = { low: '下位', high: '上位', master: '大师' };
 
-export const itemIconUrl = (it: Pick<MapItem, 'icon' | 'color'>): string =>
-  `/assets/game/world/item/${it.icon}-${it.color}.webp`;
+export const itemIconUrl = (it: Pick<MapItem, 'icon' | 'color' | 'creature'>): string =>
+  it.creature !== undefined
+    ? `/assets/game/world/endemic/${it.creature}.webp`
+    : `/assets/game/world/item/${it.icon}-${it.color}.webp`;
 
 export interface LotRow {
   item: number;
