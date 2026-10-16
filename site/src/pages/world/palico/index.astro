@@ -1,0 +1,439 @@
+---
+import SiteLayout from '../../../layouts/SiteLayout.astro';
+import FilterBox from '../../../components/site/FilterBox.astro';
+import Materials from '../../../components/site/Materials.astro';
+import { itemById, loadPalico, loadPalicoGear } from '../../../data/world/load';
+import type { PalicoGearItem } from '../../../data/world/schema-palico';
+import { ELEMENT_NAMES } from '../../../lib/world/encyclopedia';
+
+const gear = loadPalicoGear();
+const { gadgets, level } = loadPalico();
+const RANKS = [
+  { key: 'low', title: '下位' },
+  { key: 'high', title: '上位' },
+  { key: 'master', title: '大师' },
+] as const;
+// 系列：按武器的排序归组，同一系列的武器 + 头 + 身放在一张卡片里
+const bySeries = new Map<number, PalicoGearItem[]>();
+for (const g of [...gear].sort((a, b) => a.order - b.order))
+  bySeries.set(g.series.id, [...(bySeries.get(g.series.id) ?? []), g]);
+const rankOf = (list: PalicoGearItem[]) => list.find((g) => g.rank)?.rank ?? 'low';
+const RES = ['火', '水', '冰', '雷', '龙'];
+const ELDERSEAL = ['', '小', '中', '大'];
+// 属性的显示值 = 原值 × 10，异常为原值（推断，与社区资料一致）
+const STATUS = new Set(['poison', 'paralysis', 'sleep', 'blast']);
+const elementText = (e: { type: string; value: number }) =>
+  `${ELEMENT_NAMES[e.type] ?? e.type} ${STATUS.has(e.type) ? e.value : e.value * 10}`;
+const KIND = { weapon: '武器', head: '头', body: '身' } as const;
+const text = (list: PalicoGearItem[]) =>
+  [
+    list[0]!.series.name['zh-Hans'],
+    ...list.map((g) => g.name['zh-Hans']),
+    ...list.flatMap((g) => g.materials.map((m) => itemById(m.item)?.name['zh-Hans'] ?? '')),
+  ]
+    .join(' ')
+    .toLowerCase();
+const maxStat = Math.max(...level.map((l) => Math.max(l.attack, l.defense, l.health)));
+const curve = (key: 'attack' | 'defense' | 'health') =>
+  level.map((l, i) => `${(i / (level.length - 1)) * 100},${100 - (l[key] / maxStat) * 100}`).join(' ');
+---
+
+<SiteLayout
+  title="随从"
+  current="encyclopedia"
+  description="怪物猎人：世界 冰原 随从艾露猫：随从装备、随从道具与等级成长"
+  wide
+>
+  <nav class="s-crumbs" aria-label="位置">
+    <a href="/world/encyclopedia/">百科</a>
+    <span>随从</span>
+  </nav>
+  <div class="s-head">
+    <h1>
+      随从艾露猫{' '}
+      <span class="b-label">
+        {gear.length} 件装备 · {gadgets.length} 种随从道具
+      </span>
+    </h1>
+    <p>随从的武器与防具（按系列）、随从道具与招式，以及随从的等级成长。</p>
+  </div>
+  <nav class="s-tabs" aria-label="本页">
+    <a href="#gear">随从装备</a>
+    <a href="#gadgets">随从道具</a>
+    <a href="#level">等级成长</a>
+  </nav>
+
+  <section class="s-section pl-anchor" id="gear">
+    <h2>随从装备</h2>
+    <FilterBox label="按装备名、系列或素材筛选" placeholder="按装备名、系列或素材筛选" />
+    {RANKS.map((r) => {
+      const list = [...bySeries.values()].filter((s) => rankOf(s) === r.key);
+      return (
+        <div data-filter-section>
+          <h3 class="pl-rank">
+            {r.title} <small class="s-dim">{list.length} 个系列</small>
+          </h3>
+          <ul class="pl-series">
+            {list.map((items) => (
+              <li data-filter-row data-text={text(items)}>
+                <h4>{items[0]!.series.name['zh-Hans']}</h4>
+                <table class="pl-table">
+                  <tbody>
+                    {items.map((g) => (
+                      <tr>
+                        <th>{KIND[g.kind]}</th>
+                        <td class="pl-name">
+                          {g.name['zh-Hans']}
+                          <small>
+                            稀有度 {g.rarity} · {g.cost} 点
+                          </small>
+                        </td>
+                        <td class="pl-stats">
+                          {g.kind === 'weapon' ? (
+                            <>
+                              <span>
+                                {g.attackType === 'sever' ? '斩' : '打'} 近 {g.melee} / 远 {g.ranged}
+                              </span>
+                              {g.element && (
+                                <span class={`pl-el pl-el--${g.element.type}`}>{elementText(g.element)}</span>
+                              )}
+                              {g.affinity !== 0 && (
+                                <span>会心 {g.affinity > 0 ? `+${g.affinity}` : g.affinity}%</span>
+                              )}
+                              {g.defense > 0 && <span>防御 +{g.defense}</span>}
+                              {g.elderseal > 0 && <span>龙封力 {ELDERSEAL[g.elderseal]}</span>}
+                            </>
+                          ) : (
+                            <>
+                              <span>防御 {g.defense}</span>
+                              {g.resist.some((v) => v !== 0) && (
+                                <span class="pl-res">
+                                  {g.resist.map((v, i) =>
+                                    v ? (
+                                      <em class={v > 0 ? 'up' : 'down'}>
+                                        {RES[i]}
+                                        {v > 0 ? `+${v}` : v}
+                                      </em>
+                                    ) : null,
+                                  )}
+                                </span>
+                              )}
+                              {g.fullSet && <span>整套</span>}
+                            </>
+                          )}
+                        </td>
+                        <td class="pl-mats">
+                          <Materials materials={g.materials} compact />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </li>
+            ))}
+          </ul>
+        </div>
+      );
+    })}
+  </section>
+
+  <section class="s-section pl-anchor" id="gadgets">
+    <h2>随从道具</h2>
+    <ul class="s-cards">
+      {gadgets.map((g) => (
+        <li>
+          <strong>{g.name['zh-Hans']}</strong>
+          <small>{(g.desc['zh-Hans'] ?? '').replace(/\r?\n/g, '')}</small>
+          <ol class="pl-moves">
+            {g.moves.map((m, i) => (
+              <li>
+                <b>{m.name['zh-Hans']}</b>
+                {g.exp.length > 0 && (
+                  <small>
+                    熟练度 Lv{i * 5 + 1}–{i * 5 + 5}
+                  </small>
+                )}
+                {m.order['zh-Hans'] && <small>口哨：{m.order['zh-Hans']}</small>}
+              </li>
+            ))}
+          </ol>
+          {g.exp.length > 0 && (
+            <details>
+              <summary>升级所需经验</summary>
+              <p class="pl-exp">{g.exp.map((x, i) => `Lv${i + 2} ${x}`).join(' · ')}</p>
+            </details>
+          )}
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <section class="s-section pl-anchor" id="level">
+    <h2>
+      等级成长 <small class="s-dim">Lv1–{level.length}</small>
+    </h2>
+    <div class="pl-curve">
+      <svg
+        viewBox="0 0 100 100"
+        preserveAspectRatio="none"
+        role="img"
+        aria-label="攻击、防御、体力随等级的变化"
+      >
+        <polyline class="pl-c pl-c--attack" points={curve('attack')} />
+        <polyline class="pl-c pl-c--defense" points={curve('defense')} />
+        <polyline class="pl-c pl-c--health" points={curve('health')} />
+      </svg>
+      <ul class="pl-legend">
+        <li class="pl-c--attack">
+          攻击 {level[0]!.attack} → {level.at(-1)!.attack}
+        </li>
+        <li class="pl-c--defense">
+          防御 {level[0]!.defense} → {level.at(-1)!.defense}
+        </li>
+        <li class="pl-c--health">
+          体力 {level[0]!.health} → {level.at(-1)!.health}
+        </li>
+      </ul>
+    </div>
+    <details>
+      <summary>逐级数值</summary>
+      <div class="s-table-wrap">
+        <table class="s-table">
+          <thead>
+            <tr>
+              <th>等级</th>
+              <th>升级经验</th>
+              <th>攻击</th>
+              <th>防御</th>
+              <th>体力</th>
+            </tr>
+          </thead>
+          <tbody>
+            {level.map((l) => (
+              <tr>
+                <td class="s-num">{l.level}</td>
+                <td class="s-num">{l.exp || '—'}</td>
+                <td class="s-num">{l.attack}</td>
+                <td class="s-num">{l.defense}</td>
+                <td class="s-num">{l.health}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </details>
+  </section>
+
+  <p class="s-note">
+    数据来源：<code>common/equip/otomoWeapon.owp_dat</code>、<code>otomoArmor.oam_dat</code>、
+    <code>ot_equip.eq_crt</code>（随从装备与素材）、
+    <code>common/otomo/toolLevelTbl.ot_tlv</code>（道具熟练度）、<code>ot000_level.ot_lv</code>
+    （等级成长）与文本。 装备的稀有度、攻击、防御、耐性、调查点数已与 Fextralife / Kiranico
+    抽查核对；属性显示值「属性 ×10、异常为原值」为推断（战纹猫大锤阿尔法的龙属性各站说法不一）。
+    道具招式的熟练度段（1–5、6–10、11–15）取自社区资料；等级表的字段名参照 poedb，未在游戏内核对。
+  </p>
+</SiteLayout>
+
+<style>
+  .s-section h2 small,
+  .pl-rank small {
+    font-size: var(--text-sm);
+    font-weight: 400;
+  }
+
+  .pl-anchor {
+    scroll-margin-top: 72px;
+  }
+
+  .pl-rank {
+    margin: var(--space-5) 0 var(--space-2);
+    font-size: var(--text-md);
+  }
+
+  .pl-series {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 560px), 1fr));
+    gap: var(--space-3);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .pl-series > li {
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius);
+    background: var(--c-surface);
+    box-shadow: inset 0 0 0 1px var(--c-line);
+  }
+
+  .pl-series h4 {
+    margin: 0 0 var(--space-2);
+    font-size: var(--text-md);
+  }
+
+  .pl-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--text-sm);
+  }
+
+  .pl-table th,
+  .pl-table td {
+    padding: 4px 6px 4px 0;
+    border-top: 1px solid var(--c-line);
+    text-align: left;
+    vertical-align: top;
+  }
+
+  .pl-table th {
+    width: 2.5em;
+    color: var(--c-text-3);
+    font-weight: 500;
+  }
+
+  .pl-name small {
+    display: block;
+    color: var(--c-text-3);
+    font-size: var(--text-xs);
+  }
+
+  .pl-stats {
+    color: var(--c-text-2);
+  }
+
+  .pl-stats span {
+    display: block;
+  }
+
+  .pl-res em {
+    margin-right: 6px;
+    font-style: normal;
+  }
+
+  .pl-res .up {
+    color: var(--c-accent);
+  }
+
+  .pl-res .down {
+    color: var(--c-danger);
+  }
+
+  .pl-el--fire {
+    color: var(--el-fire);
+  }
+
+  .pl-el--water {
+    color: var(--el-water);
+  }
+
+  .pl-el--ice {
+    color: var(--el-ice);
+  }
+
+  .pl-el--thunder {
+    color: var(--el-thunder);
+  }
+
+  .pl-el--dragon {
+    color: var(--el-dragon);
+  }
+
+  .pl-el--poison {
+    color: var(--st-poison);
+  }
+
+  .pl-el--paralysis {
+    color: var(--st-para);
+  }
+
+  .pl-el--sleep {
+    color: var(--st-sleep);
+  }
+
+  .pl-el--blast {
+    color: var(--st-blast);
+  }
+
+  .pl-mats {
+    width: 30%;
+  }
+
+  .pl-moves {
+    display: grid;
+    gap: 4px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .pl-moves li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 2px var(--space-2);
+  }
+
+  .pl-exp {
+    margin: 4px 0 0;
+    color: var(--c-text-2);
+    font-family: var(--font-num);
+    font-size: var(--text-xs);
+  }
+
+  .pl-curve {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: var(--space-5);
+    align-items: center;
+    max-width: 52rem;
+    margin-bottom: var(--space-3);
+  }
+
+  .pl-curve svg {
+    width: 100%;
+    height: 160px;
+    border-bottom: 1px solid var(--c-line-strong);
+    border-left: 1px solid var(--c-line-strong);
+  }
+
+  .pl-c {
+    fill: none;
+    stroke-width: 2;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .pl-c--attack {
+    stroke: #e0654f;
+    color: #e0654f;
+  }
+
+  .pl-c--defense {
+    stroke: #4fa3d6;
+    color: #4fa3d6;
+  }
+
+  .pl-c--health {
+    stroke: #5cc98f;
+    color: #5cc98f;
+  }
+
+  .pl-legend {
+    display: grid;
+    gap: 4px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-family: var(--font-num);
+    font-size: var(--text-sm);
+  }
+
+  @media (max-width: 700px) {
+    .pl-curve {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .pl-mats {
+      width: auto;
+    }
+  }
+</style>

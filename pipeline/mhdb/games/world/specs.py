@@ -294,3 +294,28 @@ PLANT = spec(
     "category:I unk_1:I start:B item:I time:I time_catalyst:I unk_2:I amount:I amount_s:I amount_l:I",
 )
 FERTILIZER = spec("plant_fertilizer.plfe", "fert:I price:I duration:I effect:I grade:I unk:I")
+
+# ---------- 随从与食堂（字段含义与核对见 docs/DATA.md 3.8） ----------
+
+# 随从防具：slot 0 头 1 身；rarity 显示 = 值 + 1；耐性顺序火水冰雷龙；cost 为调查点数；order = 0 为无效行；
+# full_set = 1 为整套布偶装；variant、model、unk、set_group 未确认
+PALICO_ARMOR = spec(
+    "otomoArmor.oam_dat",
+    "index:I set_id:H slot:B full_set:B defense:I rarity:B order:H model:I cost:I variant:I "
+    "res_fire:b res_water:b res_ice:b res_thunder:b res_dragon:b unk_1:I set_group:H name_index:H desc_index:H",
+)
+# 随从武器（整文件加密）：attack_type 0 斩 1 打；element 0 无 1 火 2 水 3 冰 4 雷 5 龙 6 毒 7 麻痹 8 睡眠 9 爆破，
+# 属性的显示值 = 原值 × 10、异常为原值（推断，社区资料一致）；elderseal 3 = 大
+PALICO_WEAPON = spec(
+    "otomoWeapon.owp_dat",
+    "index:I set_id:H element:B attack_type:H melee:H ranged:H element_value:H affinity:h defense:H "
+    "elderseal:B rarity:B order:H model:I cost:I unk_1:B id:H name_index:H desc_index:H",
+)
+# 随从道具熟练度：每行一种道具，Lv2…Lv15 所需经验（是否为累计值未确认）
+GADGET_LEVELS = spec("toolLevelTbl.ot_tlv", " ".join(f"lv{k}:H" for k in range(2, 15)) + " lv15:I")
+# 随从等级：字段名参照 poedb（经验、攻击、防御、体力、防御率），未在游戏内核对
+PALICO_LEVEL = spec("ot000_level.ot_lv", "level:B exp:I atk:H def:H hp:H guard:B")
+# 猫饭技能：group -1 = 日替技能，0–8 = 食材系（0 勇敢 … 8 开拓者）；tier 为组内档位 1–3
+CANTEEN_SKILL = spec("cat_skill.cat_skill", "unk_1:I unk_2:I group:i tier:I")
+# 猫饭食材：category 0 肉 1 鱼 2 蔬菜 3 酒；group 同上；unlock_* 与 color 未确认
+INGREDIENT = spec("food.rfd", "category:I group:I unlock_type:I unlock_flag:I color:I")

@@ -1,0 +1,186 @@
+---
+import SiteLayout from '../../../layouts/SiteLayout.astro';
+import { loadCanteen } from '../../../data/world/load';
+
+const { skills, ingredients } = loadCanteen();
+// 食材系名取自食材说明里的「容易发动[勇敢]系」，114 条逐一对上
+const GROUPS = ['勇敢', '忍耐', '热血', '智囊', '烟火师', '眼力', '运气', '旅行准备', '开拓者'];
+const CATEGORIES = [
+  { key: 'meat', title: '肉' },
+  { key: 'fish', title: '鱼' },
+  { key: 'veg', title: '蔬菜' },
+  { key: 'drink', title: '酒' },
+] as const;
+const lines = (t?: string) => (t ?? '').replace(/\n/g, '');
+// 说明的第一句是「X类食材，容易发动[Y]系……」，页面上已有分组，只保留后面的描写
+const flavor = (t?: string) => {
+  const s = (t ?? '').split('\n');
+  return s.length > 2 ? s.slice(2).join('') : lines(t);
+};
+const daily = skills.filter((s) => s.group < 0);
+---
+
+<SiteLayout
+  title="食堂"
+  current="encyclopedia"
+  description="怪物猎人：世界 冰原 食堂：猫饭技能（按食材系与档位）与各类食材"
+  wide
+>
+  <nav class="s-crumbs" aria-label="位置">
+    <a href="/world/encyclopedia/">百科</a>
+    <span>食堂</span>
+  </nav>
+  <div class="s-head">
+    <h1>
+      食堂{' '}
+      <span class="b-label">
+        {skills.length} 个猫饭技能 · {ingredients.length} 种食材
+      </span>
+    </h1>
+    <p>
+      选用同一系的食材越多，越容易发动该系的高档技能。下表按食材系排列三档技能与对应的食材；
+      另有不由食材决定的日替技能。
+    </p>
+  </div>
+
+  <section class="s-section">
+    <h2>食材系与技能</h2>
+    <div class="ct-grid">
+      {GROUPS.map((g, i) => {
+        const tiered = skills.filter((s) => s.group === i).sort((a, b) => a.tier - b.tier);
+        return (
+          <article class="ct-group" style={`--i: ${i}`}>
+            <header>
+              <h3>{g}系</h3>
+            </header>
+            <ol class="ct-skills">
+              {tiered.map((s) => (
+                <li>
+                  <span class="ct-tier">{'★'.repeat(s.tier)}</span>
+                  <div>
+                    <strong>{s.name['zh-Hans']}</strong>
+                    <small>{lines(s.desc['zh-Hans'])}</small>
+                  </div>
+                </li>
+              ))}
+            </ol>
+            <details>
+              <summary>{ingredients.filter((f) => f.group === i).length} 种食材</summary>
+              {CATEGORIES.map((c) => {
+                const list = ingredients.filter((f) => f.group === i && f.category === c.key);
+                return list.length ? (
+                  <p class="ct-food">
+                    <b>{c.title}</b>
+                    {list.map((f) => (
+                      <span title={flavor(f.desc['zh-Hans'])}>{f.name['zh-Hans']}</span>
+                    ))}
+                  </p>
+                ) : null;
+              })}
+            </details>
+          </article>
+        );
+      })}
+    </div>
+  </section>
+
+  <section class="s-section">
+    <h2>
+      日替技能 <small class="s-dim">{daily.length} 个</small>
+    </h2>
+    <ul class="s-cards">
+      {daily.map((s) => (
+        <li>
+          <strong>{s.name['zh-Hans']}</strong>
+          <small>{lines(s.desc['zh-Hans'])}</small>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <p class="s-note">
+    数据来源：<code>common/equip/cat_skill.cat_skill</code>（技能的食材系与档位）、
+    <code>common/facility/food.rfd</code>（食材的分类与系）与文本。
+    九个食材系的技能分组与社区资料一致；档位按数据的 1–3
+    排列。发动概率、档位门槛（需要几种同系食材）、每日推荐与食材的攻击 / 防御加成 不在这两张表里，未收录。
+  </p>
+</SiteLayout>
+
+<style>
+  .s-section h2 small {
+    font-size: var(--text-sm);
+    font-weight: 400;
+  }
+
+  .ct-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+    gap: var(--space-3);
+  }
+
+  .ct-group {
+    --hue: oklch(0.72 0.12 calc(var(--i) * 40));
+    display: grid;
+    align-content: start;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-4);
+    border-top: 3px solid var(--hue);
+    border-radius: var(--radius);
+    background: var(--c-surface);
+    box-shadow: inset 0 0 0 1px var(--c-line);
+  }
+
+  .ct-group h3 {
+    margin: 0;
+    color: var(--hue);
+    font-size: var(--text-lg);
+  }
+
+  .ct-skills {
+    display: grid;
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .ct-skills li {
+    display: grid;
+    grid-template-columns: 3.2em minmax(0, 1fr);
+    gap: var(--space-2);
+  }
+
+  .ct-skills div {
+    display: grid;
+  }
+
+  .ct-skills small {
+    color: var(--c-text-2);
+    font-size: var(--text-xs);
+  }
+
+  .ct-tier {
+    color: var(--hue);
+    font-size: var(--text-xs);
+    letter-spacing: -0.1em;
+  }
+
+  .ct-group summary {
+    color: var(--c-text-2);
+    font-size: var(--text-sm);
+    cursor: pointer;
+  }
+
+  .ct-food {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px var(--space-2);
+    margin: 6px 0 0;
+    font-size: var(--text-sm);
+  }
+
+  .ct-food b {
+    color: var(--c-text-3);
+    font-weight: 500;
+  }
+</style>

@@ -210,6 +210,14 @@ uv run mhdb nodes     # 大地图标记（采集点等）→ data/world/map-node
 | `argosy.json`（235） | `goods / material / value(_rare).trdr` | 6 组（个数, 权重）= 6 个进度阶段（边界未确认）；后期个数与 Fextralife 一致。价格不在表里 |
 | `botany.json` | `common/plant/plant_item.plit`、`plant_fertilizer.plfe` | 任务数、三档收获量、肥料价格与持续与 GameWith / Fextralife 一致；肥料名、说明、效果名在 `cm_facility` 第 720 / 729 / 710 + 编号条。`start`（一开始可种）为推断，用活性剂后的任务数未确认 |
 
+### 3.8 随从与食堂（`mhdb/build/world_palico.py`）
+
+| 输出 | 来源 | 结论与核对 |
+|---|---|---|
+| `palico-gear.json`（447） | `otomoWeapon.owp_dat`（加密）、`otomoArmor.oam_dat`、`ot_equip.eq_crt`（`category` 0 武器 1 头 2 身，`equip_index` = 行号） | 名称 `steam/ot_weapon` / `ot_armor` 直接用 `name_index`（不 ×2），系列 `steam/ot_series` 按 `set_id`。稀有度 +1；耐性顺序火水冰雷龙；`cost` 调查点数；武器 `attack_type` 0 斩 1 打，近战 / 远程攻击。核对：橡子猫铲 2 / 2、20 点；飞雷龙猫头巾 防 8、水 −3 雷 +3，α 36、α+ 82（Fextralife / Game8）。**属性显示值**按「属性 ×10、异常原值」推断（战纹猫大锤阿尔法的龙属性各站说法不一，待游戏内核对）。`order = 0`、`cost = 0`、HARDUMMY（PS4 独占联动）跳过 |
+| `palico.json` | `vfont/ot_tool`（按 key 取）、`common/otomo/toolLevelTbl.ot_tlv`、`ot000_level.ot_lv` | 6 种随从道具 + 救援狼烟，各 3 个招式与口哨名；熟练度 Lv2–15 的经验（是否累计未确认）。招式的熟练度段 1–5 / 6–10 / 11–15 取自社区资料；招式效果表在 `/otomo/common/data/`，未解包。等级表字段名参照 poedb，未核对 |
+| `canteen.json` | `cat_skill.cat_skill`（`group` −1 日替、0–8 食材系；`tier` 1–3）、`common/facility/food.rfd`（`category` 0 肉 1 鱼 2 菜 3 酒） | 技能名 `vfont/catSkill` 第 `2×行号` 条，食材 `vfont/food` 同；食材的系与说明里「容易发动[X]系」114 条逐一一致，九系的技能分组与社区资料一致。发动概率、档位门槛、每日推荐、食材的攻防加成不在表里 |
+
 **未做**：`swop*`（兽人族以物易物，语义不清）、`treasure*.trsr`（宝物情报）、限时奖金 `l_mission_sp.lms`、饰品炼金概率（`deco_grade_lot.dglt` / `deco_lot.diot`）。
 
 ## 4. 界面图标（游戏 UI 贴图）

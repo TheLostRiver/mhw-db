@@ -259,3 +259,16 @@ def by_name_key(rows: list[dict], key: str, zh: str) -> dict:
     hits = [r for r in rows if r[key].get("zh-Hans") == zh]
     assert hits, f"找不到 {zh}"
     return hits[0]
+
+
+def test_palico_and_canteen_match_public_data() -> None:
+    gear = load("palico-gear.json", "gear")
+    # 橡子猫铲：斩、近 2 / 远 2、20 点、铁矿石；飞雷龙猫头巾：稀有度 2、防御 8、水 -3 雷 +3（Fextralife / Game8）
+    shovel = by_name(gear, "橡子猫铲")
+    assert (shovel["attackType"], shovel["melee"], shovel["ranged"], shovel["cost"]) == ("sever", 2, 2, 20)
+    hood = by_name(gear, "飞雷龙猫头巾")
+    assert (hood["rarity"], hood["defense"], hood["resist"]) == (2, 8, [0, -3, 0, 3, 0])
+    assert by_name(gear, "精英·飞雷龙猫头巾阿尔法")["defense"] == 82
+    canteen = json.loads((WORLD / "canteen.json").read_text(encoding="utf-8"))
+    brave = sorted((s["tier"], s["name"]["zh-Hans"]) for s in canteen["skills"] if s["group"] == 0)
+    assert brave == [(1, "猫的研磨术"), (2, "猫的骑乘好手"), (3, "猫的击晕术")]

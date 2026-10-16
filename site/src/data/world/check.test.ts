@@ -20,6 +20,7 @@ import {
   WeaponCustom,
 } from './schema';
 import { FACILITY_FILES } from './schema-facilities';
+import { PALICO_FILES } from './schema-palico';
 
 const ROOT = new URL('../../../../data/world/', import.meta.url);
 const read = (rel: string): unknown => JSON.parse(readFileSync(fileURLToPath(new URL(rel, ROOT)), 'utf-8'));
@@ -56,8 +57,8 @@ describe('结构', () => {
   }
 });
 
-describe('据点设施', () => {
-  for (const [file, schema] of Object.entries(FACILITY_FILES)) {
+describe('据点设施与随从', () => {
+  for (const [file, schema] of Object.entries({ ...FACILITY_FILES, ...PALICO_FILES })) {
     it(file, () => {
       schema.parse(read(file));
     });
@@ -80,7 +81,7 @@ describe('据点设施', () => {
         } else if (k !== '_src') walk(x, `${path}.${k}`);
       }
     };
-    for (const file of Object.keys(FACILITY_FILES)) walk(read(file), file);
+    for (const file of [...Object.keys(FACILITY_FILES), ...Object.keys(PALICO_FILES)]) walk(read(file), file);
     expect(missing).toEqual([]);
   });
 });

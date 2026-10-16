@@ -1,0 +1,919 @@
+{
+  "gadgets": [
+    {
+      "id": 0,
+      "name": {
+        "zh-Hans": "蜜虫吸引香",
+        "zh-Hant": "蜜蟲吸引香",
+        "ja": "ミツムシ寄せのお香",
+        "en": "Vigorwasp Spray"
+      },
+      "desc": {
+        "zh-Hans": "使用回复蜜虫的蜜汁使玩家\n回复体力的随从道具。\n回复量会随着熟练度上升而增加。",
+        "zh-Hant": "使用回復蜜蟲的蜜汁使玩家\n回復體力的隨從道具。\n回復量會隨著熟練度上升而增加。",
+        "ja": "回復ミツムシのミツでプレイヤーの\n体力を回復するオトモ道具。\n熟練度の上昇に伴い回復量が増す。",
+        "en": "A gadget that uses Vigorwasp honey\nto recover the hunter's health. The\namount healed grows with proficiency."
+      },
+      "moves": [
+        {
+          "name": {
+            "zh-Hans": "蜜虫传递",
+            "zh-Hant": "蜜蟲傳遞",
+            "ja": "ミツムシお届け",
+            "en": "Vigorwasp Delivery"
+          },
+          "order": {
+            "zh-Hans": "蜜虫传递口哨",
+            "zh-Hant": "蜜蟲傳遞口哨",
+            "ja": "ミツムシお届けの指笛",
+            "en": "Vigorwasp Delivery"
+          }
+        },
+        {
+          "name": {
+            "zh-Hans": "蜜虫设置",
+            "zh-Hant": "蜜蟲設置",
+            "ja": "ミツムシ設置",
+            "en": "Vigorwasp Station"
+          },
+          "order": {
+            "zh-Hans": "蜜虫设置口哨",
+            "zh-Hant": "蜜蟲設置口哨",
+            "ja": "ミツムシ設置の指笛",
+            "en": "Vigorwasp Station"
+          }
+        },
+        {
+          "name": {
+            "zh-Hans": "蜜虫大毅力",
+            "zh-Hant": "蜜蟲大毅力",
+            "ja": "ミツムシど根性",
+            "en": "Vigorwasp Revival"
+          },
+          "order": {
+            "zh-Hans": "蜜虫大毅力口哨",
+            "zh-Hant": "蜜蟲大毅力口哨",
+            "ja": "ミツムシど根性の指笛",
+            "en": "Vigorwasp Revival"
+          }
+        }
+      ],
+      "exp": [
+        60,
+        120,
+        180,
+        240,
+        300,
+        400,
+        500,
+        600,
+        700,
+        750,
+        800,
+        850,
+        900,
+        1000
+      ],
+      "_src": {
+        "file": "common/otomo/toolLevelTbl.ot_tlv",
+        "row": 0
+      }
+    },
+    {
+      "id": 1,
+      "name": {
+        "zh-Hans": "止步虫笼",
+        "zh-Hant": "止步蟲籠",
+        "ja": "あしどめの虫かご",
+        "en": "Flashfly Cage"
+      },
+      "desc": {
+        "zh-Hans": "使用森林虫笼族制作的虫笼，\n阻止怪物移动的随从道具。\n拦阻效果会随虫笼内的虫而变化，\n效果时间会随着熟练度上升而增加。",
+        "zh-Hant": "使用森林蟲籠族製作的蟲籠，\n阻止魔物移動的隨從道具。\n攔阻效果會隨蟲籠內的蟲而變化，\n效果時間會\n隨著熟練度上升而增加。",
+        "ja": "森の虫かご族が作った虫かごを\n使い、モンスターを足止めする\nオトモ道具。虫かご内の虫により\n足止め効果が変化、熟練度の上昇に\n伴い効果時間が増す。",
+        "en": "A Bugtrapper insect cage used to\nstop monsters in their tracks. Its\neffectiveness varies with the type\nof insect inside, and the duration\nincreases with Proficiency."
+      },
+      "moves": [
+        {
+          "name": {
+            "zh-Hans": "闪光虫笼",
+            "zh-Hant": "閃光蟲籠",
+            "ja": "閃光虫かご",
+            "en": "Flashfly Cage"
+          },
+          "order": {
+            "zh-Hans": "闪光虫笼口哨",
+            "zh-Hant": "閃光蟲籠口哨",
+            "ja": "閃光虫かごの指笛",
+            "en": "Flashfly Cage"
+          }
+        },
+        {
+          "name": {
+            "zh-Hans": "麻痹虫笼",
+            "zh-Hant": "麻痺蟲籠",
+            "ja": "痺れ虫かご",
+            "en": "Thunderbug Cage"
+          },
+          "order": {
+            "zh-Hans": "麻痹虫笼口哨",
+            "zh-Hant": "麻痺蟲籠口哨",
+            "ja": "痺れ虫かごの指笛",
+            "en": "Thunderbug Cage"
+          }
+        },
+        {
+          "name": {
+            "zh-Hans": "地雷虫笼",
+            "zh-Hant": "地雷蟲籠",
+            "ja": "地雷虫かご",
+            "en": "Boombug Cage"
+          },
+          "order": {
+            "zh-Hans": "地雷虫笼口哨",
+            "zh-Hant": "地雷蟲籠口哨",
+            "ja": "地雷虫かごの指笛",
+            "en": "Boombug Cage"
+          }
+        }
+      ],
+      "exp": [
+        60,
+        120,
+        180,
+        240,
+        260,
+        280,
+        300,
+        320,
+        340,
+        380,
+        420,
+        460,
+        500,
+        540
+      ],
+      "_src": {
+        "file": "common/otomo/toolLevelTbl.ot_tlv",
+        "row": 1
+      }
+    },
+    {
+      "id": 2,
+      "name": {
+        "zh-Hans": "守护大盾",
+        "zh-Hant": "守護大盾",
+        "ja": "まもりの大盾",
+        "en": "Shieldspire"
+      },
+      "desc": {
+        "zh-Hans": "使用荒地守护族制作的巨型盾牌\n保护自身的随从道具。\n挥盾挑衅的行动可吸引怪物注意，\n从而成为对方攻击目标。防御几率会随着\n熟练度上升而增加。",
+        "zh-Hant": "使用荒地守護族製作的巨大盾牌\n保護自身的隨從道具。\n揮盾挑釁的行動可吸引魔物注意，\n而成為攻擊目標。防禦機率會隨著\n熟練度上升而增加。",
+        "ja": "荒地のまもり族が作った巨大な盾で\n身を守るオトモ道具。盾を使った\n挑発行動でモンスターの注意を引き\nオトリになる。熟練度の上昇に伴い\nガード確率が増す。",
+        "en": "A massive Protector shield used to\ndefend against attacks. It can also\nbe used to provoke monsters, drawing\ntheir attention. Guard effectiveness\nincreases with Proficiency."
+      },
+      "moves": [
+        {
+          "name": {
+            "zh-Hans": "大盾挑衅",
+            "zh-Hant": "大盾挑釁",
+            "ja": "大盾挑発",
+            "en": "Shieldspire Taunt"
+          },
+          "order": {
+            "zh-Hans": "大盾挑衅口哨",
+            "zh-Hant": "大盾挑釁口哨",
+            "ja": "大盾挑発の指笛",
+            "en": "Shieldspire Taunt"
+          }
+        },
+        {
+          "name": {
+            "zh-Hans": "大盾强锤",
+            "zh-Hant": "大盾強鎚",
+            "ja": "大盾バッシュ",
+            "en": "Shieldspire Bash"
+          },
+          "order": {
+            "zh-Hans": "大盾强锤口哨",
+            "zh-Hant": "大盾強鎚口哨",
+            "ja": "大盾バッシュの指笛",
+            "en": "Shieldspire Bash"
+          }
+        },
+        {
+          "name": {
+            "zh-Hans": "大盾稻草人",
+            "zh-Hant": "大盾稻草人",
+            "ja": "大盾カカシ",
+            "en": "Shieldspire Stooge"
+          },
+          "order": {
+            "zh-Hans": "大盾稻草人口哨",
+            "zh-Hant": "大盾稻草人口哨",
+            "ja": "大盾カカシの指笛",
+            "en": "Shieldspire Stooge"
+          }
+        }
+      ],
+      "exp": [
+        60,
+        120,
+        180,
+        240,
+        260,
+        280,
+        300,
+        320,
+        340,
+        380,
+        420,
+        460,
+        500,
+        540
+      ],
+      "_src": {
+        "file": "common/otomo/toolLevelTbl.ot_tlv",
+        "row": 2
+      }
+    },
+    {
+      "id": 3,
+      "name": {
+        "zh-Hans": "激励乐器",
+        "zh-Hant": "激勵樂器",
+        "ja": "はげましの楽器",
+        "en": "Coral Orchestra"
+      },
+      "desc": {
+        "zh-Hans": "弹奏台地演奏族制作的乐器，\n附加各种效果的随从道具。\n附加攻击和防御力等强化效果\n与状态耐性。演奏效果会随着\n熟练度上升而增加。",
+        "zh-Hant": "彈奏台地演奏族製作的樂器，\n附加各種效果的隨從道具。\n附加攻擊和防禦力等強化效果\n與狀態耐性。演奏效果會隨著\n熟練度上升而增加。",
+        "ja": "台地のかなで族が作った楽器で\n様々な効果を付加するオトモ道具。\n攻撃や防御力等の強化効果や\n状態耐性を付加する。熟練度の\n上昇に伴い演奏効果が増える。",
+        "en": "An instrument of Trouper make,\nable to yield a variety of effects.\nIts melodies boost attack, defense,\nor status resistances. Those effects\nincrease with Proficiency."
+      },
+      "moves": [
+        {
+          "name": {
+            "zh-Hans": "激励法国号",
+            "zh-Hant": "激勵法國號",
+            "ja": "はげましホルン",
+            "en": "Coral Cheerhorn"
+          },
+          "order": {
+            "zh-Hans": "激励法国号口哨",
+            "zh-Hant": "激勵法國號口哨",
+            "ja": "はげましホルンの指笛",
+            "en": "Coral Cheerhorn"
+          }
+        },
+        {
+          "name": {
+            "zh-Hans": "激励邦哥鼓",
+            "zh-Hant": "激勵邦哥鼓",
+            "ja": "はげましボンゴ",
+            "en": "Coral Cheerbongo"
+          },
+          "order": {
+            "zh-Hans": "激励邦哥鼓口哨",
+            "zh-Hant": "激勵邦哥鼓口哨",
+            "ja": "はげましボンゴの指笛",
+            "en": "Coral Cheerbongo"
+          }
+        },
+        {
+          "name": {
+            "zh-Hans": "爆音铜锣",
+            "zh-Hant": "爆音銅鑼",
+            "ja": "ばくおんゴング",
+            "en": "Coral Sonicgong"
+          },
+          "order": {
+            "zh-Hans": "爆音铜锣口哨",
+            "zh-Hant": "爆音銅鑼口哨",
+            "ja": "ばくおんゴングの指笛",
+            "en": "Coral Sonicgong"
+          }
+        }
+      ],
+      "exp": [
+        80,
+        140,
+        200,
+        240,
+        280,
+        320,
+        360,
+        400,
+        440,
+        480,
+        520,
+        560,
+        600,
+        640
+      ],
+      "_src": {
+        "file": "common/otomo/toolLevelTbl.ot_tlv",
+        "row": 3
+      }
+    },
+    {
+      "id": 4,
+      "name": {
+        "zh-Hans": "掠夺刀",
+        "zh-Hant": "掠奪刀",
+        "ja": "ぶんどり刀",
+        "en": "Plunderblade"
+      },
+      "desc": {
+        "zh-Hans": "使用山谷掠夺族制作的道具，\n从攻击的怪物身上夺取道具的\n随从道具。随着熟练度上升，\n可夺取的道具数量也会增加。",
+        "zh-Hant": "使用山谷掠奪族製作的道具，\n從攻擊的魔物身上奪取道具的\n隨從道具。\n隨著熟練度上升，\n可奪取的道具數量也會增加。",
+        "ja": "谷のぶんどり族が作った道具を\n使い、攻撃したモンスターから\nアイテムをぶんどるオトモ道具。\n熟練度の上昇に伴いアイテムの\n入手数が増す。",
+        "en": "An invention of the Plunderers that\nsnatches items from monsters when\nattacking. The quantity of stolen\nitems increases with Proficiency."
+      },
+      "moves": [
+        {
+          "name": {
+            "zh-Hans": "掠夺刀突击",
+            "zh-Hant": "掠奪刀突擊",
+            "ja": "ぶんどり突撃",
+            "en": "Plunderblade"
+          },
+          "order": {
+            "zh-Hans": "掠夺刀突击口哨",
+            "zh-Hant": "掠奪刀突擊口哨",
+            "ja": "ぶんどり突撃の指笛",
+            "en": "Plunderblade"
+          }
+        },
+        {
+          "name": {
+            "zh-Hans": "掉落投掷",
+            "zh-Hant": "掉落投擲",
+            "ja": "落っことし投擲",
+            "en": "Palarang"
+          },
+          "order": {
+            "zh-Hans": "掉落投掷口哨",
+            "zh-Hant": "掉落投擲口哨",
+            "ja": "落っことし投擲の指笛",
+            "en": "Palarang"
+          }
+        },
+        {
+          "name": {
+            "zh-Hans": "盗掠连击",
+            "zh-Hant": "盜掠連擊",
+            "ja": "追い剥ぎ連撃",
+            "en": "Mount & Plunder"
+          },
+          "order": {
+            "zh-Hans": "盗掠连击口哨",
+            "zh-Hant": "盜掠連擊口哨",
+            "ja": "追い剥ぎ連撃の指笛",
+            "en": "Mount & Plunder"
+          }
+        }
+      ],
+      "exp": [
+        60,
+        120,
+        180,
+        240,
+        300,
+        320,
+        340,
+        360,
+        380,
+        440,
+        500,
+        560,
+        620,
+        680
+      ],
+      "_src": {
+        "file": "common/otomo/toolLevelTbl.ot_tlv",
+        "row": 4
+      }
+    },
+    {
+      "id": 5,
+      "name": {
+        "zh-Hans": "奇面族的壶爆弹",
+        "zh-Hant": "奇面族的壺爆彈",
+        "ja": "ガジャブーの壺爆弾",
+        "en": "Meowlotov Cocktail"
+      },
+      "desc": {
+        "zh-Hans": "投掷奇面族制作的壶爆弹，\n以此造成伤害的随从道具。\n搭配随从投射器\n即可连续炮击。\n威力会随着熟练度上升而增加。",
+        "zh-Hant": "投擲奇面族製作的壺爆彈，\n以此造成傷害的隨從道具。\n搭配隨從投射器\n即可連續砲擊。\n威力會隨著熟練度上升而增加。",
+        "ja": "ガジャブーが作った壺爆弾を\n投擲し、ダメージを与える\nオトモ道具。オトモスリンガーと\n組合せ、連続砲撃を行う。\n熟練度の上昇に伴い威力が増す。",
+        "en": "Throws a Gajalaka-style bomb that deals\ndamage. Combines with the Palico\nslinger to allow for sustained fire.\nBlast strength increases with\nProficiency."
+      },
+      "moves": [
+        {
+          "name": {
+            "zh-Hans": "壶爆弹投掷",
+            "zh-Hant": "壺爆彈投擲",
+            "ja": "壺爆弾投擲",
+            "en": "Meowlotov Assault"
+          },
+          "order": {
+            "zh-Hans": "壶爆弹投掷口哨",
+            "zh-Hant": "壺爆彈投擲口哨",
+            "ja": "壺爆弾投擲の指笛",
+            "en": "Meowlotov Assault"
+          }
+        },
+        {
+          "name": {
+            "zh-Hans": "火炎车",
+            "zh-Hant": "火炎車",
+            "ja": "火炎車",
+            "en": "Rath-of-Meow"
+          },
+          "order": {
+            "zh-Hans": "火炎车口哨",
+            "zh-Hant": "火炎車口哨",
+            "ja": "火炎車の指笛",
+            "en": "Rath-of-Meow"
+          }
+        },
+        {
+          "name": {
+            "zh-Hans": "喷火壶爆弹",
+            "zh-Hant": "噴火壺爆彈",
+            "ja": "噴火壷爆弾",
+            "en": "Meowcano"
+          },
+          "order": {
+            "zh-Hans": "喷火壶爆弹口哨",
+            "zh-Hant": "噴火壺爆彈口哨",
+            "ja": "噴火壷爆弾の指笛",
+            "en": "Meowcano"
+          }
+        }
+      ],
+      "exp": [
+        80,
+        160,
+        240,
+        320,
+        340,
+        360,
+        380,
+        400,
+        420,
+        460,
+        500,
+        540,
+        580,
+        620
+      ],
+      "_src": {
+        "file": "common/otomo/toolLevelTbl.ot_tlv",
+        "row": 5
+      }
+    },
+    {
+      "id": 6,
+      "name": {
+        "zh-Hans": "救援狼烟",
+        "zh-Hant": "救援狼煙",
+        "ja": "救援のろし",
+        "en": "Tailraider Signal"
+      },
+      "desc": {
+        "zh-Hans": "使用兽缠族制作的随从道具\n来升起狼烟，呼叫随从们。\n获知的兽人族或随从怪物\n会赶来救援，与猎人一同行动。\n随从只有在猎人指示之下才会\n使用道具。",
+        "zh-Hant": "使用獸纏族製作的隨從道具\n來升起狼煙，呼叫隨從們。\n獲知的獸人族或隨從魔物\n會趕來救援，與獵人一同行動。\n隨從只有在獵人指示之下才會\n使用道具。",
+        "ja": "ボワボワが作ったオトモ道具で、\nのろしをあげてオトモダチを呼ぶ。\n知らせを受けた獣人族やオトモダチ\nモンスターが救援に駆けつけ、\n行動を共にしてくれる。ハンターの\n指示でのみ、オトモが道具を使用。",
+        "en": "This Palico Gadget made by the\nBoaboa lets you call Tailraiders\nby lighting a beacon. Any Lynians\nor Tailraider monsters nearby will\ncome to your aid. Your Palico\nwill only use it at your orders."
+      },
+      "moves": [
+        {
+          "name": {
+            "zh-Hans": "救援狼烟",
+            "zh-Hant": "救援狼煙",
+            "ja": "救援のろし",
+            "en": "Tailraider Signal"
+          },
+          "order": {
+            "zh-Hans": "救援狼烟口哨",
+            "zh-Hant": "救援狼煙口哨",
+            "ja": "救援のろしの指笛",
+            "en": "Tailraider Signal"
+          }
+        }
+      ],
+      "exp": [],
+      "_src": {
+        "file": "common/text/vfont/ot_tool",
+        "row": 6
+      }
+    }
+  ],
+  "level": [
+    {
+      "level": 1,
+      "exp": 50,
+      "attack": 25,
+      "defense": 60,
+      "health": 100,
+      "guard": 60
+    },
+    {
+      "level": 2,
+      "exp": 100,
+      "attack": 35,
+      "defense": 75,
+      "health": 100,
+      "guard": 60
+    },
+    {
+      "level": 3,
+      "exp": 200,
+      "attack": 45,
+      "defense": 90,
+      "health": 100,
+      "guard": 60
+    },
+    {
+      "level": 4,
+      "exp": 300,
+      "attack": 55,
+      "defense": 105,
+      "health": 100,
+      "guard": 60
+    },
+    {
+      "level": 5,
+      "exp": 400,
+      "attack": 65,
+      "defense": 120,
+      "health": 100,
+      "guard": 60
+    },
+    {
+      "level": 6,
+      "exp": 600,
+      "attack": 75,
+      "defense": 130,
+      "health": 150,
+      "guard": 60
+    },
+    {
+      "level": 7,
+      "exp": 900,
+      "attack": 85,
+      "defense": 140,
+      "health": 150,
+      "guard": 60
+    },
+    {
+      "level": 8,
+      "exp": 1000,
+      "attack": 95,
+      "defense": 150,
+      "health": 150,
+      "guard": 60
+    },
+    {
+      "level": 9,
+      "exp": 1200,
+      "attack": 105,
+      "defense": 160,
+      "health": 150,
+      "guard": 60
+    },
+    {
+      "level": 10,
+      "exp": 1400,
+      "attack": 115,
+      "defense": 170,
+      "health": 150,
+      "guard": 60
+    },
+    {
+      "level": 11,
+      "exp": 1700,
+      "attack": 123,
+      "defense": 178,
+      "health": 200,
+      "guard": 60
+    },
+    {
+      "level": 12,
+      "exp": 2000,
+      "attack": 131,
+      "defense": 186,
+      "health": 200,
+      "guard": 60
+    },
+    {
+      "level": 13,
+      "exp": 2600,
+      "attack": 139,
+      "defense": 194,
+      "health": 200,
+      "guard": 60
+    },
+    {
+      "level": 14,
+      "exp": 3000,
+      "attack": 147,
+      "defense": 202,
+      "health": 200,
+      "guard": 60
+    },
+    {
+      "level": 15,
+      "exp": 3500,
+      "attack": 155,
+      "defense": 210,
+      "health": 200,
+      "guard": 60
+    },
+    {
+      "level": 16,
+      "exp": 4000,
+      "attack": 163,
+      "defense": 215,
+      "health": 250,
+      "guard": 60
+    },
+    {
+      "level": 17,
+      "exp": 4500,
+      "attack": 171,
+      "defense": 220,
+      "health": 250,
+      "guard": 60
+    },
+    {
+      "level": 18,
+      "exp": 5500,
+      "attack": 179,
+      "defense": 225,
+      "health": 250,
+      "guard": 60
+    },
+    {
+      "level": 19,
+      "exp": 6500,
+      "attack": 187,
+      "defense": 230,
+      "health": 250,
+      "guard": 60
+    },
+    {
+      "level": 20,
+      "exp": 6900,
+      "attack": 195,
+      "defense": 235,
+      "health": 250,
+      "guard": 60
+    },
+    {
+      "level": 21,
+      "exp": 7200,
+      "attack": 200,
+      "defense": 240,
+      "health": 300,
+      "guard": 60
+    },
+    {
+      "level": 22,
+      "exp": 7400,
+      "attack": 205,
+      "defense": 245,
+      "health": 300,
+      "guard": 60
+    },
+    {
+      "level": 23,
+      "exp": 7600,
+      "attack": 210,
+      "defense": 250,
+      "health": 300,
+      "guard": 60
+    },
+    {
+      "level": 24,
+      "exp": 7700,
+      "attack": 215,
+      "defense": 255,
+      "health": 300,
+      "guard": 60
+    },
+    {
+      "level": 25,
+      "exp": 7800,
+      "attack": 220,
+      "defense": 260,
+      "health": 300,
+      "guard": 60
+    },
+    {
+      "level": 26,
+      "exp": 7850,
+      "attack": 225,
+      "defense": 263,
+      "health": 350,
+      "guard": 60
+    },
+    {
+      "level": 27,
+      "exp": 7900,
+      "attack": 230,
+      "defense": 266,
+      "health": 350,
+      "guard": 60
+    },
+    {
+      "level": 28,
+      "exp": 7950,
+      "attack": 235,
+      "defense": 269,
+      "health": 350,
+      "guard": 60
+    },
+    {
+      "level": 29,
+      "exp": 8000,
+      "attack": 240,
+      "defense": 272,
+      "health": 350,
+      "guard": 60
+    },
+    {
+      "level": 30,
+      "exp": 8050,
+      "attack": 245,
+      "defense": 275,
+      "health": 350,
+      "guard": 60
+    },
+    {
+      "level": 31,
+      "exp": 8200,
+      "attack": 250,
+      "defense": 278,
+      "health": 400,
+      "guard": 60
+    },
+    {
+      "level": 32,
+      "exp": 8350,
+      "attack": 255,
+      "defense": 281,
+      "health": 400,
+      "guard": 60
+    },
+    {
+      "level": 33,
+      "exp": 8500,
+      "attack": 260,
+      "defense": 284,
+      "health": 400,
+      "guard": 60
+    },
+    {
+      "level": 34,
+      "exp": 8650,
+      "attack": 265,
+      "defense": 287,
+      "health": 400,
+      "guard": 60
+    },
+    {
+      "level": 35,
+      "exp": 8800,
+      "attack": 270,
+      "defense": 290,
+      "health": 400,
+      "guard": 60
+    },
+    {
+      "level": 36,
+      "exp": 8900,
+      "attack": 275,
+      "defense": 293,
+      "health": 450,
+      "guard": 60
+    },
+    {
+      "level": 37,
+      "exp": 9000,
+      "attack": 280,
+      "defense": 296,
+      "health": 450,
+      "guard": 60
+    },
+    {
+      "level": 38,
+      "exp": 9100,
+      "attack": 285,
+      "defense": 299,
+      "health": 450,
+      "guard": 60
+    },
+    {
+      "level": 39,
+      "exp": 9200,
+      "attack": 290,
+      "defense": 302,
+      "health": 450,
+      "guard": 60
+    },
+    {
+      "level": 40,
+      "exp": 9300,
+      "attack": 295,
+      "defense": 305,
+      "health": 450,
+      "guard": 60
+    },
+    {
+      "level": 41,
+      "exp": 9350,
+      "attack": 300,
+      "defense": 308,
+      "health": 500,
+      "guard": 60
+    },
+    {
+      "level": 42,
+      "exp": 9400,
+      "attack": 305,
+      "defense": 311,
+      "health": 500,
+      "guard": 60
+    },
+    {
+      "level": 43,
+      "exp": 9450,
+      "attack": 310,
+      "defense": 314,
+      "health": 500,
+      "guard": 60
+    },
+    {
+      "level": 44,
+      "exp": 9500,
+      "attack": 315,
+      "defense": 317,
+      "health": 500,
+      "guard": 60
+    },
+    {
+      "level": 45,
+      "exp": 9550,
+      "attack": 320,
+      "defense": 320,
+      "health": 500,
+      "guard": 60
+    },
+    {
+      "level": 46,
+      "exp": 9600,
+      "attack": 325,
+      "defense": 323,
+      "health": 550,
+      "guard": 60
+    },
+    {
+      "level": 47,
+      "exp": 9650,
+      "attack": 330,
+      "defense": 326,
+      "health": 550,
+      "guard": 60
+    },
+    {
+      "level": 48,
+      "exp": 9700,
+      "attack": 335,
+      "defense": 329,
+      "health": 550,
+      "guard": 60
+    },
+    {
+      "level": 49,
+      "exp": 9750,
+      "attack": 340,
+      "defense": 332,
+      "health": 550,
+      "guard": 60
+    },
+    {
+      "level": 50,
+      "exp": 0,
+      "attack": 345,
+      "defense": 335,
+      "health": 550,
+      "guard": 60
+    }
+  ],
+  "_src": {
+    "level": "common/otomo/ot000_level.ot_lv"
+  }
+}

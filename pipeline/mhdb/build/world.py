@@ -35,6 +35,7 @@ from mhdb.build.world_gear import (
 )
 from mhdb.build.world_monsters import build_monsters
 from mhdb.build.world_moves import build_moves
+from mhdb.build.world_palico import build_canteen, build_palico, build_palico_gear
 from mhdb.formats import crypto
 from mhdb.games.world import exe as EXE
 from mhdb.games.world import specs as S
@@ -450,6 +451,9 @@ def build(raw: Path, out: Path, log=print) -> dict:
     melodies = build_melodies(s)
     pendants = build_pendants(s)
     layered_weapons = build_layered_weapons(s)
+    palico_gear = build_palico_gear(s)
+    palico = build_palico(s)
+    canteen = build_canteen(s)
     facilities = {
         "melder": build_melder(s),
         "shop": build_shop(s),
@@ -482,6 +486,9 @@ def build(raw: Path, out: Path, log=print) -> dict:
     write_json(out / "weapon-layered.json", layered_weapons)
     for key in ("melder", "shop", "deliveries", "bounties", "argosy"):
         write_records(out / "facilities" / f"{key}.json", key, facilities[key])
+    write_records(out / "palico-gear.json", "gear", palico_gear)
+    write_json(out / "palico.json", palico)
+    write_json(out / "canteen.json", canteen)
     for key in ("steamworks", "expeditions", "botany"):
         write_json(out / "facilities" / f"{key}.json", facilities[key])
     write_json(
@@ -518,6 +525,7 @@ def build(raw: Path, out: Path, log=print) -> dict:
         "melodies": len(melodies["melodies"]),
         "pendants": len(pendants),
         "layeredWeapons": sum(len(v) for v in layered_weapons.values()),
+        "palicoGear": len(palico_gear),
         "melder": len(facilities["melder"]),
         "deliveries": len(facilities["deliveries"]),
         "bounties": len(facilities["bounties"]),

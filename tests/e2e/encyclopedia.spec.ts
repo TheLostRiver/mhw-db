@@ -43,6 +43,8 @@ const PAGES = [
   ['/world/expeditions/', '随从探险队'],
   ['/world/argosy/', '交易船'],
   ['/world/botany/', '植生研究所'],
+  ['/world/palico/', '随从艾露猫'],
+  ['/world/canteen/', '食堂'],
 ] as const;
 
 for (const [path, heading] of PAGES) {

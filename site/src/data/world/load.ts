@@ -37,6 +37,7 @@ import type {
   ShopItem,
   Steamworks,
 } from './schema-facilities';
+import type { Canteen, Palico, PalicoGearItem } from './schema-palico';
 
 const ROOT = new URL('../../../../data/world/', import.meta.url);
 // 按修改时间缓存：开发服务器常驻时，重新运行 mhdb parse 后能读到新数据
@@ -81,6 +82,9 @@ export const loadKinsects = () => read<{ kinsects: Kinsect[] }>('kinsects.json')
 export const loadMelodies = () => read<{ melodies: Melody[] }>('melodies.json').melodies;
 export const loadPendants = () => read<{ pendants: Pendant[] }>('pendants.json').pendants;
 export const loadLayeredWeapons = () => read<Partial<Record<WeaponType, LayeredWeapon[]>>>('weapon-layered.json');
+export const loadPalicoGear = () => read<{ gear: PalicoGearItem[] }>('palico-gear.json').gear;
+export const loadPalico = () => read<Palico>('palico.json');
+export const loadCanteen = () => read<Canteen>('canteen.json');
 export const loadMelder = () => read<{ melder: MelderTarget[] }>('facilities/melder.json').melder;
 export const loadShop = () => read<{ shop: ShopItem[] }>('facilities/shop.json').shop;
 export const loadDeliveries = () => read<{ deliveries: Delivery[] }>('facilities/deliveries.json').deliveries;

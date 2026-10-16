@@ -51,6 +51,15 @@ def tr(texts: dict[str, gmd.Gmd], index: int, *, markup: bool = False) -> Text |
     return out if "zh-Hans" in out else None
 
 
+def key_index(texts: dict[str, gmd.Gmd], key: str) -> int | None:
+    """按 key 名取文本序号（各语言的 key 顺序一致，用简中查）。"""
+    g = texts["zh-Hans"]
+    for i, k in g.keys.items():
+        if k == key:
+            return i
+    return None
+
+
 def src(file: str, row: int) -> dict:
     return {"file": file, "row": row}
 

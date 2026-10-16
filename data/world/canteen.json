@@ -1,0 +1,3576 @@
+{
+  "skills": [
+    {
+      "id": 0,
+      "name": {
+        "zh-Hans": "猫的研磨术",
+        "zh-Hant": "貓的研磨術",
+        "ja": "ネコの研磨術",
+        "en": "Felyne Polisher"
+      },
+      "desc": {
+        "zh-Hans": "容易缩短研磨所需时间。",
+        "zh-Hant": "容易縮短研磨所需時間。",
+        "ja": "研ぎ時間が短くなりやすい。",
+        "en": "Often speeds up sharpening time."
+      },
+      "group": 0,
+      "tier": 1,
+      "_src": {
+        "file": "common/equip/cat_skill.cat_skill",
+        "row": 0
+      }
+    },
+    {
+      "id": 1,
+      "name": {
+        "zh-Hans": "猫的骑乘好手",
+        "zh-Hant": "貓的騎乘好手",
+        "ja": "ネコの乗り上手",
+        "en": "Felyne Rider"
+      },
+      "desc": {
+        "zh-Hans": "更容易骑乘怪物。",
+        "zh-Hant": "更容易騎乘魔物。",
+        "ja": "モンスターに乗りやすくなる。",
+        "en": "Makes it easier to mount monsters."
+      },
+      "group": 0,
+      "tier": 2,
+      "_src": {
+        "file": "common/equip/cat_skill.cat_skill",
+        "row": 1
+      }
+    },
+    {
+      "id": 2,
+      "name": {
+        "zh-Hans": "猫的火场怪力",
+        "zh-Hant": "貓的火場怪力",
+        "ja": "ネコの火事場力",
+        "en": "Felyne Heroics"
+      },
+      "desc": {
+        "zh-Hans": "残留微薄的体力时，\n攻击力大幅上升。",
+        "zh-Hant": "殘留微薄的體力時，\n攻擊力大幅上升。",
+        "ja": "残り体力がわずかの時に攻撃力が\n大きく上がる。",
+        "en": "Greatly increases attack when\nhealth is dangerously low."
+      },
+      "group": 2,
+      "tier": 3,
+      "_src": {
+        "file": "common/equip/cat_skill.cat_skill",
+        "row": 2
+      }
+    },
+    {
+      "id": 3,
+      "name": {
+        "zh-Hans": "猫的解体术【大】",
+        "zh-Hant": "貓的解體術【大】",
+        "ja": "ネコの解体術【大】",
+        "en": "Felyne Carver (Hi)"
+      },
+      "desc": {
+        "zh-Hans": "剥取次数有时会增加。",
+        "zh-Hant": "剝取次數有時會增加。",
+        "ja": "剥ぎ取り回数が増える場合がある。",
+        "en": "Often increases the number\nof times you can carve."
+      },
+      "group": 5,
+      "tier": 3,
+      "_src": {
+        "file": "common/equip/cat_skill.cat_skill",
+        "row": 3
+      }
+    },
+    {
+      "id": 4,
+      "name": {
+        "zh-Hans": "猫的解体术【小】",
+        "zh-Hant": "貓的解體術【小】",
+        "ja": "ネコの解体術【小】",
+        "en": "Felyne Carver (Lo)"
+      },
+      "desc": {
+        "zh-Hans": "剥取次数\n很少会增加。",
+        "zh-Hant": "剝取次數\n很少會增加。",
+        "ja": "剥ぎ取り回数が増える場合が、\nまれにある。",
+        "en": "Sometimes increases the number\nof times you can carve."
+      },
+      "group": -1,
+      "tier": 0,
+      "_src": {
+        "file": "common/equip/cat_skill.cat_skill",
+        "row": 4
+      }
+    },
+    {
+      "id": 5,
+      "name": {
+        "zh-Hans": "猫的医疗术",
+        "zh-Hant": "貓的醫療術",
+        "ja": "ネコの医療術",
+        "en": "Felyne Medic"
+      },
+      "desc": {
+        "zh-Hans": "体力回复量大幅提升。",
+        "zh-Hant": "體力回復量大幅提升。",
+        "ja": "体力回復量が大きくなる。",
+        "en": "Increases health recovery from\nitems."
+      },
+      "group": 3,
+      "tier": 2,
+      "_src": {
+        "file": "common/equip/cat_skill.cat_skill",
+        "row": 5
+      }
+    },
+    {
+      "id": 6,
+      "name": {
+        "zh-Hans": "猫的体术",
+        "zh-Hant": "貓的體術",
+        "ja": "ネコの体術",
+        "en": "Felyne Black Belt"
+      },
+      "desc": {
+        "zh-Hans": "进行回避等等固定消耗耐力的\n行动时，所需的耐力消耗量减少。",
+        "zh-Hant": "進行迴避等等固定消耗耐力的\n行動時，所需的耐力消耗量減少。",
+        "ja": "回避などの固定でスタミナを消費する\n行動のスタミナ消費量が軽減される。",
+        "en": "Reduces stamina depletion\nwhen evading, blocking, or\ndoing certain other actions."
+      },
+      "group": 2,
+      "tier": 2,
+      "_src": {
+        "file": "common/equip/cat_skill.cat_skill",
+        "row": 6
+      }
+    },
+    {
+      "id": 7,
+      "name": {
+        "zh-Hans": "猫的火药术",
+        "zh-Hant": "貓的火藥術",
+        "ja": "ネコの火薬術",
+        "en": "Felyne Pyro"
+      },
+      "desc": {
+        "zh-Hans": "大桶爆弹可强化为\n大桶爆弹·大。",
+        "zh-Hant": "大爆彈桶可強化為\n大爆彈桶Ｇ。",
+        "ja": "大タル爆弾が大タル爆弾Ｇに\n強化される。",
+        "en": "Upgrades Large Barrel Bombs to\nMega Barrel Bombs."
+      },
+      "group": 4,
+      "tier": 3,
+      "_src": {
+        "file": "common/equip/cat_skill.cat_skill",
+        "row": 7
+      }
+    },
+    {
+      "id": 8,
+      "name": {
+        "zh-Hans": "猫的特殊攻击术",
+        "zh-Hant": "貓的特殊攻擊術",
+        "ja": "ネコの特殊攻撃術",
+        "en": "Felyne Specialist"
+      },
+      "desc": {
+        "zh-Hans": "状态异常攻击的性能增强。",
+        "zh-Hant": "狀態異常攻擊的性能增強。",
+        "ja": "状態異常攻撃が強くなる。",
+        "en": "Increases the potency of\nabnormal status attacks."
+      },
+      "group": 3,
+      "tier": 3,
+      "_src": {
+        "file": "common/equip/cat_skill.cat_skill",
+        "row": 8
+      }
+    },
+    {
+      "id": 9,
+      "name": {
+        "zh-Hans": "猫的防御术【大】",
+        "zh-Hant": "貓的防禦術【大】",
+        "ja": "ネコの防御術【大】",
+        "en": "Felyne Defender (Hi)"
+      },
+      "desc": {
+        "zh-Hans": "高几率减少玩家\n遭受的伤害。",
+        "zh-Hant": "減少玩家\n遭受高機率的傷害。",
+        "ja": "プレイヤーが受けるダメージを\n高確率で減少させる。",
+        "en": "Often decreases damage taken."
+      },
+      "group": -1,
+      "tier": 0,
+      "_src": {
+        "file": "common/equip/cat_skill.cat_skill",
+        "row": 9
+      }
+    },
+    {
+      "id": 10,
+      "name": {
+        "zh-Hans": "猫的防御术【小】",
+        "zh-Hant": "貓的防禦術【小】",
+        "ja": "ネコの防御術【小】",
+        "en": "Felyne Defender (Lo)"
+      },
+      "desc": {
+        "zh-Hans": "低几率减少玩家\n遭受的伤害。",
+        "zh-Hant": "低機率減少玩家\n遭受的傷害。",
+        "ja": "プレイヤーが受けるダメージを\n低確率で減少させる。",
+        "en": "Sometimes decreases damage\ntaken."
+      },
+      "group": -1,
+      "tier": 0,
+      "_src": {
+        "file": "common/equip/cat_skill.cat_skill",
+        "row": 10
+      }
+    },
+    {
+      "id": 11,
+      "name": {
+        "zh-Hans": "猫的收获祭",
+        "zh-Hant": "貓的收穫祭",
+        "ja": "ネコの収穫祭",
+        "en": "Felyne Harvester"
+      },
+      "desc": {
+        "zh-Hans": "缩短采集点重新出现\n的时间。",
+        "zh-Hant": "縮短採集點重新出現\n的時間。",
+        "ja": "採取ポイントの再出現時間が\n短縮される。",
+        "en": "Reduces the time between\ngathering point respawns."
+      },
+      "group": 6,
+      "tier": 1,
+      "_src": {
+        "file": "common/equip/cat_skill.cat_skill",
+        "row": 11
+      }
+    },
+    {
+      "id": 12,
+      "name": {
+        "zh-Hans": "猫的射击术",
+        "zh-Hant": "貓的射擊術",
+        "ja": "ネコの射撃術",
+        "en": "Felyne Sharpshooter"
+      },
+      "desc": {
+        "zh-Hans": "增加通常弹、通常箭造成的伤害。",
+        "zh-Hant": "增加通常彈、通常箭造成的傷害。",
+        "ja": "通常弾、通常矢のダメージが増加する。",
+        "en": "Increases the power of\nnormal shots (Normal S)\nand normal arrows."
+      },
+      "group": 4,
+      "tier": 1,
+      "_src": {
+        "file": "common/equip/cat_skill.cat_skill",
+        "row": 12
+      }
+    },
+    {
+      "id": 13,
+      "name": {
+        "zh-Hans": "招财猫的幸运",
+        "zh-Hant": "招財貓的幸運",
+        "ja": "招きネコの幸運",
+        "en": "Lucky Cat"
+      },
+      "desc": {
+        "zh-Hans": "以任务报酬所取得的道具数量\n容易变多。",
+        "zh-Hant": "以任務報酬所取得的道具數量\n容易變多。",
+        "ja": "クエスト報酬でもらえるアイテムの\n数が多くなりやすい。",
+        "en": "Sometimes increases the number\nof reward items received at the\nend of a quest."
+      },
+      "group": 6,
+      "tier": 3,
+      "_src": {
+        "file": "common/equip/cat_skill.cat_skill",
+        "row": 13
+      }
+    },
+    {
+      "id": 14,
+      "name": {
+        "zh-Hans": "猫的弹武好手",
+        "zh-Hant": "貓的彈武好手",
+        "ja": "ネコのはじかれ上手",
+        "en": "Felyne Deflector"
+      },
+      "desc": {
+        "zh-Hans": "攻击遭弹开时，\n锐利度的消耗降低。",
+        "zh-Hant": "攻擊遭彈開時，\n銳利度的消耗降低。",
+        "ja": "攻撃を弾かれた際の斬れ味の消耗が\n小さくなる。",
+        "en": "Helps your weapon retain\nsharpness when attacks\nare deflected."
+      },
+      "group": -1,
+      "tier": 0,
+      "_src": {
+        "file": "common/equip/cat_skill.cat_skill",
+        "row": 14
+      }
+    },
+    {
+      "id": 15,
+      "name": {
+        "zh-Hans": "猫的逃走术",
+        "zh-Hant": "貓的逃走術",
+        "ja": "ネコの逃走術",
+        "en": "Felyne Escape Artist"
+      },
+      "desc": {
+        "zh-Hans": "逃离大型怪物时的\n耐力消耗量减少。",
+        "zh-Hant": "逃離大型魔物時的\n耐力消耗量減少。",
+        "ja": "大型モンスターから逃走する\n際のスタミナ消費量が減少する。",
+        "en": "Decreases stamina depletion when\nfleeing from large monsters."
+      },
+      "group": -1,
+      "tier": 0,
+      "_src": {
+        "file": "common/equip/cat_skill.cat_skill",
+        "row": 15
+      }
+    },
+    {
+      "id": 16,
+      "name": {
+        "zh-Hans": "猫的宅配术",
+        "zh-Hant": "貓的宅配術",
+        "ja": "ネコの宅配術",
+        "en": "Felyne Sprinter"
+      },
+      "desc": {
+        "zh-Hans": "搬运中使用冲刺时的\n耐力消耗量减少。",
+        "zh-Hant": "搬運中使用衝刺時的\n耐力消耗量減少。",
+        "ja": "運搬中にダッシュした際のスタミナ消費\nが減る。",
+        "en": "Dashing depletes less stamina\nwhen transporting an item."
+      },
+      "group": -1,
+      "tier": 0,
+      "_src": {
+        "file": "common/equip/cat_skill.cat_skill",
+        "row": 16
+      }
+    },
+    {
+      "id": 17,
+      "name": {
+        "zh-Hans": "猫的搬运铁人",
+        "zh-Hant": "貓的搬運鐵人",
+        "ja": "ネコの運搬の鉄人",
+        "en": "Felynebacker"
+      },
+      "desc": {
+        "zh-Hans": "搬运中即使遭受攻击\n也不会硬直。",
+        "zh-Hant": "搬運中即使遭受攻擊\n也不會後仰。",
+        "ja": "運搬中は攻撃を受けても\nのけぞらなくなる。",
+        "en": "Prevents being knocked back\nwhen transporting an item."
+      },
+      "group": -1,
+      "tier": 0,
+      "_src": {
+        "file": "common/equip/cat_skill.cat_skill",
+        "row": 17
+      }
+    },
+    {
+      "id": 18,
+      "name": {
+        "zh-Hans": "猫的弱小招来！",
+        "zh-Hant": "貓的弱小招來！",
+        "ja": "ネコの弱いの来い！",
+        "en": "Felyne Weakener"
+      },
+      "desc": {
+        "zh-Hans": "任务中出现的大型怪物\n容易变得比较弱。",
+        "zh-Hant": "任務中出現的大型魔物\n容易變得比較弱。",
+        "ja": "クエストに出現する大型モンスターが\n弱くなりやすい。",
+        "en": "Large monsters encountered on\nquests have an increased chance\nof being weaker than normal."
+      },
+      "group": -1,
+      "tier": 0,
+      "_src": {
+        "file": "common/equip/cat_skill.cat_skill",
+        "row": 18
+      }
+    },
+    {
+      "id": 19,
+      "name": {
+        "zh-Hans": "猫的换算术",
+        "zh-Hant": "貓的換算術",
+        "ja": "ネコの換算術",
+        "en": "Felyne Exchanger"
+      },
+      "desc": {
+        "zh-Hans": "结算时，\n取得的调查点数增加。",
+        "zh-Hant": "結算時，\n取得的調查點數增加。",
+        "ja": "リザルト時に取得する調査ポイントが\n増加する。",
+        "en": "Increases the number of\nresearch points you receive\nat the end of a quest."
+      },
+      "group": 5,
+      "tier": 2,
+      "_src": {
+        "file": "common/equip/cat_skill.cat_skill",
+        "row": 19
+      }
+    },
+    {
+      "id": 20,
+      "name": {
+        "zh-Hans": "猫的起身术【大】",
+        "zh-Hant": "貓的起身術【大】",
+        "ja": "ネコの起上り術【大】",
+        "en": "Felyne Riser (Hi)"
+      },
+      "desc": {
+        "zh-Hans": "大幅延长倒地后爬起的\n无敌时间。",
+        "zh-Hant": "大幅延長倒地後爬起的\n無敵時間。",
+        "ja": "起き上がり時の無敵時間が\nかなり長くなる。",
+        "en": "Greatly extends the\ninvulnerability period\nwhen getting up."
+      },
+      "group": 2,
+      "tier": 1,
+      "_src": {
+        "file": "common/equip/cat_skill.cat_skill",
+        "row": 20
+      }
+    },
+    {
+      "id": 21,
+      "name": {
+        "zh-Hans": "猫的起身术【小】",
+        "zh-Hant": "貓的起身術【小】",
+        "ja": "ネコの起上り術【小】",
+        "en": "Felyne Riser (Lo)"
+      },
+      "desc": {
+        "zh-Hans": "延长从倒地后爬起时的\n无敌时间。",
+        "zh-Hant": "延長從倒地後爬起時的\n無敵時間。",
+        "ja": "起き上がり時の無敵時間が\n長くなる。",
+        "en": "Extends the invulnerability\nperiod when getting up."
+      },
+      "group": -1,
+      "tier": 0,
+      "_src": {
+        "file": "common/equip/cat_skill.cat_skill",
+        "row": 21
+      }
+    },
+    {
+      "id": 22,
+      "name": {
+        "zh-Hans": "猫的粗暴射击",
+        "zh-Hant": "貓的粗暴射擊",
+        "ja": "ネコの暴れ撃ち",
+        "en": "Felyne Temper"
+      },
+      "desc": {
+        "zh-Hans": "弹药造成的伤害提升，\n但射击时弹道偏移增加。",
+        "zh-Hant": "彈藥造成的傷害提升，\n但射擊時彈道偏移增加。",
+        "ja": "弾のダメージがアップするが、\n射撃時のブレが増加する。",
+        "en": "Increases bowgun damage, but\nalso increases deviation."
+      },
+      "group": -1,
+      "tier": 0,
+      "_src": {
+        "file": "common/equip/cat_skill.cat_skill",
+        "row": 22
+      }
+    },
+    {
+      "id": 23,
+      "name": {
+        "zh-Hans": "猫的攀爬藤蔓达人",
+        "zh-Hant": "貓的攀爬藤蔓達人",
+        "ja": "ネコのツタ登り達人",
+        "en": "Felyne Cliffhanger"
+      },
+      "desc": {
+        "zh-Hans": "抓在墙壁或藤蔓上时进行回避行动\n所需的耐力消耗量减少。",
+        "zh-Hant": "迴避被牆壁藤蔓纏住\n的行動所需的耐力消耗量減少。",
+        "ja": "壁やツタにつかまり中の回避行動で\n消費するスタミナ量が減る。",
+        "en": "Decreases stamina depletion\nwhen evading on walls or ivy."
+      },
+      "group": -1,
+      "tier": 0,
+      "_src": {
+        "file": "common/equip/cat_skill.cat_skill",
+        "row": 23
+      }
+    },
+    {
+      "id": 24,
+      "name": {
+        "zh-Hans": "猫的紧抓不放铁人",
+        "zh-Hant": "貓的緊抓不放鐵人",
+        "ja": "ネコのはりつき鉄人",
+        "en": "Felyne Gripper"
+      },
+      "desc": {
+        "zh-Hans": "攀附在壁面或藤蔓时，\n即使遭受攻击，\n在一定程度以内可以忍受。",
+        "zh-Hant": "攀附在壁面或藤蔓時，\n即使遭受攻擊，\n在一定程度以內可以忍受。",
+        "ja": "壁やツタにつかまり中に\n攻撃を受けてもある程度耐える。",
+        "en": "Prevents some attacks from\nknocking you off of walls or ivy."
+      },
+      "group": -1,
+      "tier": 0,
+      "_src": {
+        "file": "common/equip/cat_skill.cat_skill",
+        "row": 24
+      }
+    },
+    {
+      "id": 25,
+      "name": {
+        "zh-Hans": "猫的解体铁人",
+        "zh-Hant": "貓的解體鐵人",
+        "ja": "ネコの解体の鉄人",
+        "en": "Felyne Iron Carver"
+      },
+      "desc": {
+        "zh-Hans": "剥取中即使遭受攻击，\n也不会硬直。",
+        "zh-Hant": "剝取中即使遭受攻擊，\n也不會後仰。",
+        "ja": "剥ぎ取り中に攻撃を受けても\nのけぞらなくなる。",
+        "en": "Prevents knockbacks while\ncarving."
+      },
+      "group": 5,
+      "tier": 1,
+      "_src": {
+        "file": "common/equip/cat_skill.cat_skill",
+        "row": 25
+      }
+    },
+    {
+      "id": 26,
+      "name": {
+        "zh-Hans": "猫的着地术",
+        "zh-Hant": "貓的著地術",
+        "ja": "ネコの着地術",
+        "en": "Felyne Lander"
+      },
+      "desc": {
+        "zh-Hans": "从高处跳跃落地时，\n不需要双手撑地缓冲。",
+        "zh-Hant": "從高處跳躍落地時，\n不需要雙手撐地緩衝。",
+        "ja": "高いところから飛び降りても、\n地面に手をつかなくなる。",
+        "en": "Prevents stumbling when jumping\ndown from high places."
+      },
+      "group": -1,
+      "tier": 0,
+      "_src": {
+        "file": "common/equip/cat_skill.cat_skill",
+        "row": 26
+      }
+    },
+    {
+      "id": 27,
+      "name": {
+        "zh-Hans": "猫的蛮干术",
+        "zh-Hant": "貓的蠻幹術",
+        "ja": "ネコのゴリ押し術",
+        "en": "Felyne Bulldozer"
+      },
+      "desc": {
+        "zh-Hans": "攻击被弹开时，\n再次攻击的攻击力会上升。",
+        "zh-Hant": "攻擊被彈開時，\n再次攻擊的攻擊力會上升。",
+        "ja": "攻撃が弾かれて、すぐの攻撃は\n攻撃力が上昇していく。",
+        "en": "Increases attack power\nwhen you strike right after\nan attack is deflected."
+      },
+      "group": -1,
+      "tier": 0,
+      "_src": {
+        "file": "common/equip/cat_skill.cat_skill",
+        "row": 27
+      }
+    },
+    {
+      "id": 28,
+      "name": {
+        "zh-Hans": "猫的赠品术",
+        "zh-Hant": "貓的贈品術",
+        "ja": "ネコのおまけ術",
+        "en": "Felyne Foodie"
+      },
+      "desc": {
+        "zh-Hans": "力尽倒下，料理效果也不会消失。",
+        "zh-Hant": "力竭倒下，料理效果也不會消失。",
+        "ja": "力尽きても、食事効果が消えない。",
+        "en": "Food effects remain active\neven after you faint in battle."
+      },
+      "group": -1,
+      "tier": 0,
+      "_src": {
+        "file": "common/equip/cat_skill.cat_skill",
+        "row": 28
+      }
+    },
+    {
+      "id": 29,
+      "name": {
+        "zh-Hans": "猫的击晕术",
+        "zh-Hant": "貓的KO術",
+        "ja": "ネコのＫＯ術",
+        "en": "Felyne Slugger"
+      },
+      "desc": {
+        "zh-Hans": "更容易让怪物\n陷入昏厥状态。",
+        "zh-Hant": "更容易讓魔物\n陷入昏厥狀態。",
+        "ja": "モンスターを気絶状態に\nしやすくなる。",
+        "en": "Makes it easier to stun monsters."
+      },
+      "group": 0,
+      "tier": 3,
+      "_src": {
+        "file": "common/equip/cat_skill.cat_skill",
+        "row": 29
+      }
+    },
+    {
+      "id": 30,
+      "name": {
+        "zh-Hans": "招财猫的财运",
+        "zh-Hant": "招財貓的財運",
+        "ja": "招きネコの金運",
+        "en": "Felyne Fat Cat"
+      },
+      "desc": {
+        "zh-Hans": "任务完成时，\n报酬金额增加。",
+        "zh-Hant": "任務完成時，\n報酬金額增加。",
+        "ja": "クエストクリア時の報酬金が\n多くなる。",
+        "en": "Increases the amount of zenny\nyou receive at the end of a\nquest."
+      },
+      "group": 6,
+      "tier": 2,
+      "_src": {
+        "file": "common/equip/cat_skill.cat_skill",
+        "row": 30
+      }
+    },
+    {
+      "id": 31,
+      "name": {
+        "zh-Hans": "猫的炮击术",
+        "zh-Hant": "貓的砲擊術",
+        "ja": "ネコの砲撃術",
+        "en": "Felyne Bombardier"
+      },
+      "desc": {
+        "zh-Hans": "弩炮的伤害、穿甲榴弹的爆炸，\n以及铳枪的炮击威力上升。",
+        "zh-Hant": "弩砲的傷害、徹甲榴彈的爆炸，\n以及銃槍的砲擊威力上升。",
+        "ja": "バリスタのダメージや徹甲榴弾の爆発、\nガンランスの砲撃ダメージが上昇する。",
+        "en": "Increases ballista, sticky ammo,\nand gunlance shell damage."
+      },
+      "group": 4,
+      "tier": 2,
+      "_src": {
+        "file": "common/equip/cat_skill.cat_skill",
+        "row": 31
+      }
+    },
+    {
+      "id": 32,
+      "name": {
+        "zh-Hans": "猫的大毅力",
+        "zh-Hant": "貓的大毅力",
+        "ja": "ネコのド根性",
+        "en": "Felyne Moxie"
+      },
+      "desc": {
+        "zh-Hans": "当体力在一定程度以上时，\n即使承受了超过体力的伤害，\n也不因此而耗尽体力（1次）。",
+        "zh-Hant": "當體力在一定程度以上時，\n即使承受了超過體力的傷害，\n也不因此而耗盡體力（１次）。",
+        "ja": "一定以上体力がある時に、それを超える\nダメージを受けても力尽きない（１回）",
+        "en": "Prevents fainting one time\nwhen damage taken exceeds\nyour remaining health."
+      },
+      "group": 1,
+      "tier": 3,
+      "_src": {
+        "file": "common/equip/cat_skill.cat_skill",
+        "row": 32
+      }
+    },
+    {
+      "id": 33,
+      "name": {
+        "zh-Hans": "猫的异臭球达人",
+        "zh-Hant": "貓的異臭球達人",
+        "ja": "ネコのこやし玉達人",
+        "en": "Felyne Dungmaster"
+      },
+      "desc": {
+        "zh-Hans": "怪物于身中投射器异臭弹后更容易逃跑。",
+        "zh-Hant": "魔物於身中投射器異臭彈後更容易逃跑。",
+        "ja": "スリンガーこやし弾を当てた\nモンスターが逃げやすくなる。",
+        "en": "Increases the likelihood that\na monster will flee when hit\nwith a dung pod."
+      },
+      "group": -1,
+      "tier": 0,
+      "_src": {
+        "file": "common/equip/cat_skill.cat_skill",
+        "row": 33
+      }
+    },
+    {
+      "id": 34,
+      "name": {
+        "zh-Hans": "猫的理毛好手",
+        "zh-Hant": "貓的理毛好手",
+        "ja": "ネコの毛づくろい上手",
+        "en": "Felyne Groomer"
+      },
+      "desc": {
+        "zh-Hans": "防御力下降的效果时间减半，\n属性异常状态更快回复。",
+        "zh-Hant": "防禦力DOWN的效果時間減半，\n屬性異常狀態更快恢復。",
+        "ja": "防御力DOWNの効果時間が\n半分になり、属性やられが早く治る。",
+        "en": "Halves the effect duration of\nDefense Down and speeds up\nblight recovery."
+      },
+      "group": 3,
+      "tier": 1,
+      "_src": {
+        "file": "common/equip/cat_skill.cat_skill",
+        "row": 34
+      }
+    },
+    {
+      "id": 35,
+      "name": {
+        "zh-Hans": "猫的长靴术",
+        "zh-Hant": "貓的長靴術",
+        "ja": "ネコの長靴術",
+        "en": "Felyne Fur Coating"
+      },
+      "desc": {
+        "zh-Hans": "减轻或无效因地形造成的伤害及异常状态。",
+        "zh-Hant": "減輕或無效因地形造成的傷害及異常狀態。",
+        "ja": "地形によるダメージや、\nやられを軽減、無効化する。",
+        "en": "Prevents or lessens the\neffects of blights and\nenvironmental damage."
+      },
+      "group": -1,
+      "tier": 0,
+      "_src": {
+        "file": "common/equip/cat_skill.cat_skill",
+        "row": 35
+      }
+    },
+    {
+      "id": 36,
+      "name": {
+        "zh-Hans": "猫的受身术",
+        "zh-Hant": "貓的受身術",
+        "ja": "ネコの受け身術",
+        "en": "Felyne Acrobat"
+      },
+      "desc": {
+        "zh-Hans": "被击飞时能够立刻调整姿势站稳。",
+        "zh-Hant": "被擊飛時能夠立刻調整姿勢站穩。",
+        "ja": "ぶっ飛ばされた時に体勢を立て直す。",
+        "en": "Allows the hunter to recover\nquickly when sent flying."
+      },
+      "group": 1,
+      "tier": 1,
+      "_src": {
+        "file": "common/equip/cat_skill.cat_skill",
+        "row": 36
+      }
+    },
+    {
+      "id": 38,
+      "name": {
+        "zh-Hans": "猫的随从指导术",
+        "zh-Hant": "貓的隨從指導術",
+        "ja": "ネコのオトモ指導術",
+        "en": "Felyne Trainer"
+      },
+      "desc": {
+        "zh-Hans": "使随从的成长加快。",
+        "zh-Hant": "使隨從的成長加快。",
+        "ja": "オトモの成長が早くなる。",
+        "en": "Speeds up Palico growth."
+      },
+      "group": -1,
+      "tier": 0,
+      "_src": {
+        "file": "common/equip/cat_skill.cat_skill",
+        "row": 38
+      }
+    },
+    {
+      "id": 39,
+      "name": {
+        "zh-Hans": "猫的短期催眠术",
+        "zh-Hant": "貓的短期催眠術",
+        "ja": "ネコの短期催眠術",
+        "en": "Felyne Booster"
+      },
+      "desc": {
+        "zh-Hans": "用完餐后，一段时间内\n攻击力与防御力提升。",
+        "zh-Hant": "用完餐後，一段時間內\n攻擊力與防禦力提升。",
+        "ja": "食事後、しばらくの間\n攻撃力と防御力がアップする。",
+        "en": "Temporarily increases attack and\ndefense at the start of a quest."
+      },
+      "group": -1,
+      "tier": 0,
+      "_src": {
+        "file": "common/equip/cat_skill.cat_skill",
+        "row": 39
+      }
+    },
+    {
+      "id": 40,
+      "name": {
+        "zh-Hans": "猫的坚定不移术",
+        "zh-Hant": "貓的堅定不移術",
+        "ja": "ネコのふんばり術",
+        "en": "Felyne Feet"
+      },
+      "desc": {
+        "zh-Hans": "不会坐倒在地上。",
+        "zh-Hant": "不會坐倒在地上。",
+        "ja": "尻もちをつかなくなる。",
+        "en": "Prevents you from getting\nknocked on your butt."
+      },
+      "group": 1,
+      "tier": 2,
+      "_src": {
+        "file": "common/equip/cat_skill.cat_skill",
+        "row": 40
+      }
+    },
+    {
+      "id": 41,
+      "name": {
+        "zh-Hans": "猫的钓鱼好手",
+        "zh-Hant": "貓的釣魚好手",
+        "ja": "ネコの釣り上手",
+        "en": "Felyne Fisher"
+      },
+      "desc": {
+        "zh-Hans": "更容易钓到鱼。",
+        "zh-Hant": "更容易釣到魚。",
+        "ja": "魚を釣りやすくなる。",
+        "en": "Increases the likelihood that\nfish will bite when fishing."
+      },
+      "group": -1,
+      "tier": 0,
+      "_src": {
+        "file": "common/equip/cat_skill.cat_skill",
+        "row": 41
+      }
+    },
+    {
+      "id": 42,
+      "name": {
+        "zh-Hans": "猫的休息术",
+        "zh-Hant": "貓的休息術",
+        "ja": "ネコの休憩術",
+        "en": "Cool Cat"
+      },
+      "desc": {
+        "zh-Hans": "执行动作“坐下”一段时间，\n可使攻击力暂时上升。",
+        "zh-Hant": "執行動作「坐下」一段時間，\n可使攻擊力暫時上升。",
+        "ja": "ジェスチャー「座る」を一定時間\n行うと、一時的に攻撃力が上がる。",
+        "en": "Grants a temporary attack\nboost when you use the Kick\nBack gesture for a while."
+      },
+      "group": -1,
+      "tier": 0,
+      "_src": {
+        "file": "common/equip/cat_skill.cat_skill",
+        "row": 42
+      }
+    },
+    {
+      "id": 43,
+      "name": {
+        "zh-Hans": "猫的报酬金保险",
+        "zh-Hant": "貓的報酬金保險",
+        "ja": "ネコの報酬金保険",
+        "en": "Felyne Insurance"
+      },
+      "desc": {
+        "zh-Hans": "任务成员中不论是谁，\n只有在第1次力尽倒下时，\n不纳入报酬金结算。",
+        "zh-Hant": "任務成員中不論是誰，\n只有在第１次力竭倒下時，\n不納入報酬金結算。",
+        "ja": "クエストメンバーの誰が力尽きても\n最初の１回のみカウントされない。",
+        "en": "Prevents your group from\nbeing penalized the first\ntime a member faints."
+      },
+      "group": -1,
+      "tier": 0,
+      "_src": {
+        "file": "common/equip/cat_skill.cat_skill",
+        "row": 43
+      }
+    },
+    {
+      "id": 44,
+      "name": {
+        "zh-Hans": "猫的吸引仇恨好手",
+        "zh-Hant": "貓的吸引仇恨好手",
+        "ja": "ネコの憎まれ上手",
+        "en": "Felyne Provoker"
+      },
+      "desc": {
+        "zh-Hans": "更容易吸引怪物注意，\n成为攻击的目标。",
+        "zh-Hant": "更容易吸引魔物注意，\n成為攻擊的目標。",
+        "ja": "モンスターの注意を引きつけ、\n狙われやすくなる。",
+        "en": "Draws monsters' attention,\nincreasing the likelihood\nof being targeted."
+      },
+      "group": -1,
+      "tier": 0,
+      "_src": {
+        "file": "common/equip/cat_skill.cat_skill",
+        "row": 44
+      }
+    },
+    {
+      "id": 45,
+      "name": {
+        "zh-Hans": "猫的后面交给你们了！",
+        "zh-Hant": "貓的後面交給你們了！",
+        "ja": "ネコのあとは任せた！",
+        "en": "Felyne Parting Gift"
+      },
+      "desc": {
+        "zh-Hans": "力尽倒下时，\n回复区域内同伴们的体力。",
+        "zh-Hant": "力竭倒下時，\n回復區域內同伴們的體力。",
+        "ja": "力尽きた時に、エリア内にいる\n仲間の体力を回復する。",
+        "en": "Restores health to allies in\nthe area upon fainting."
+      },
+      "group": -1,
+      "tier": 0,
+      "_src": {
+        "file": "common/equip/cat_skill.cat_skill",
+        "row": 45
+      }
+    },
+    {
+      "id": 46,
+      "name": {
+        "zh-Hans": "猫的探索好天气",
+        "zh-Hant": "貓的探索好天氣",
+        "ja": "ネコの探索日和",
+        "en": "Felyne Researcher"
+      },
+      "desc": {
+        "zh-Hans": "探索时更容易取得调查报告。",
+        "zh-Hant": "探索時更容易取得調查報告。",
+        "ja": "探索で調査レポートが入手しやすくなる。",
+        "en": "Unlock investigations more\neasily during expeditions."
+      },
+      "group": -1,
+      "tier": 1,
+      "_src": {
+        "file": "common/equip/cat_skill.cat_skill",
+        "row": 46
+      }
+    },
+    {
+      "id": 47,
+      "name": {
+        "zh-Hans": "猫的天气预报",
+        "zh-Hant": "貓的天氣預報",
+        "ja": "ネコの天気予報",
+        "en": "Felyne Weathercat"
+      },
+      "desc": {
+        "zh-Hans": "前往任务时天气容易变差。",
+        "zh-Hant": "前往任務時天氣容易變差。",
+        "ja": "出発したクエストが悪天候になりやすい。",
+        "en": "Foul weather occurs more\noften during a quest."
+      },
+      "group": -1,
+      "tier": 2,
+      "_src": {
+        "file": "common/equip/cat_skill.cat_skill",
+        "row": 47
+      }
+    },
+    {
+      "id": 48,
+      "name": {
+        "zh-Hans": "猫的防滑鞋",
+        "zh-Hant": "貓的防滑鞋",
+        "ja": "ネコのスパイク靴",
+        "en": "Felyne Cleats"
+      },
+      "desc": {
+        "zh-Hans": "即使在特殊地形上，\n移动速度也不受影响。",
+        "zh-Hant": "即使遇到特殊地形，\n移動速度也不受影響。",
+        "ja": "特殊な地形でも、移動速度が\n遅くならない。",
+        "en": "Allows for normal movement speed\neven in special terrain."
+      },
+      "group": 7,
+      "tier": 1,
+      "_src": {
+        "file": "common/equip/cat_skill.cat_skill",
+        "row": 48
+      }
+    },
+    {
+      "id": 49,
+      "name": {
+        "zh-Hans": "猫的裁缝术",
+        "zh-Hant": "貓的裁縫術",
+        "ja": "ネコの裁縫術",
+        "en": "Felyne Tailor"
+      },
+      "desc": {
+        "zh-Hans": "稍微缩短特殊装备的再使用时间。",
+        "zh-Hant": "稍微縮短特殊裝備的再使用時間。",
+        "ja": "特殊装具の再使用時間が少し短くなる。",
+        "en": "Shortens the cooldown before\nspecialized tools can be reused."
+      },
+      "group": 7,
+      "tier": 2,
+      "_src": {
+        "file": "common/equip/cat_skill.cat_skill",
+        "row": 49
+      }
+    },
+    {
+      "id": 50,
+      "name": {
+        "zh-Hans": "猫的生命保险",
+        "zh-Hant": "貓的生命保險",
+        "ja": "ネコの生命保険",
+        "en": "Felyne Safeguard"
+      },
+      "desc": {
+        "zh-Hans": "所有的任务成员，不论是谁， 第1次\n力尽倒下时不算数。",
+        "zh-Hant": "任務成員中不論是誰， 只在第１次\n力竭倒下時不算數。",
+        "ja": "クエストメンバーの誰が力尽きても\n最初の１回のみカウントされない。",
+        "en": "Prevents your group from\nbeing penalized the first\ntime a member faints."
+      },
+      "group": 7,
+      "tier": 3,
+      "_src": {
+        "file": "common/equip/cat_skill.cat_skill",
+        "row": 50
+      }
+    },
+    {
+      "id": 51,
+      "name": {
+        "zh-Hans": "猫的园艺术",
+        "zh-Hant": "貓的園藝術",
+        "ja": "ネコの園芸術",
+        "en": "Felyne Gardener"
+      },
+      "desc": {
+        "zh-Hans": "部分环境生物的重新出现时间稍微缩短。",
+        "zh-Hant": "部分環境生物的重新出現時間稍微縮短。",
+        "ja": "一部の環境生物が再び出現するまでの\n時間が少し短くなる。",
+        "en": "Reduces the time before certain\nendemic life reappear."
+      },
+      "group": 8,
+      "tier": 1,
+      "_src": {
+        "file": "common/equip/cat_skill.cat_skill",
+        "row": 51
+      }
+    },
+    {
+      "id": 52,
+      "name": {
+        "zh-Hans": "猫的残余术",
+        "zh-Hant": "貓的殘餘術",
+        "ja": "ネコのおこぼれ術",
+        "en": "Felyne Scavenger"
+      },
+      "desc": {
+        "zh-Hans": "当捕捉到部分环境生物时，\n就会掉投射器弹药。",
+        "zh-Hant": "當捕捉到部分環境生物時，\n就會掉投射器彈藥。",
+        "ja": "一部の環境生物を捕まえた時、\nスリンガーの弾を落とすようになる。",
+        "en": "Causes certain endemic life to\ndrop slinger ammo when caught."
+      },
+      "group": 8,
+      "tier": 2,
+      "_src": {
+        "file": "common/equip/cat_skill.cat_skill",
+        "row": 52
+      }
+    },
+    {
+      "id": 53,
+      "name": {
+        "zh-Hans": "猫的生物博士",
+        "zh-Hant": "貓的生物博士",
+        "ja": "ネコの生物博士",
+        "en": "Felyne Zoomaster"
+      },
+      "desc": {
+        "zh-Hans": "提高珍稀环境生物的出现机率。",
+        "zh-Hant": "提高珍稀環境生物的出現機率。",
+        "ja": "珍しい環境生物が出やすくなる。",
+        "en": "Makes rare endemic life more\nlikely to appear."
+      },
+      "group": 8,
+      "tier": 3,
+      "_src": {
+        "file": "common/equip/cat_skill.cat_skill",
+        "row": 53
+      }
+    },
+    {
+      "id": 54,
+      "name": {
+        "zh-Hans": "猫的生物学者",
+        "zh-Hant": "貓的生物學者",
+        "ja": "ネコの生物学者",
+        "en": "Felyne Biologist"
+      },
+      "desc": {
+        "zh-Hans": "稍微提高珍稀环境生物的出现机率。",
+        "zh-Hant": "稍微提高珍稀環境生物的出現機率。",
+        "ja": "珍しい環境生物が少し出やすくなる。",
+        "en": "Makes rare endemic life slightly\nmore likely to appear."
+      },
+      "group": -1,
+      "tier": 0,
+      "_src": {
+        "file": "common/equip/cat_skill.cat_skill",
+        "row": 54
+      }
+    },
+    {
+      "id": 55,
+      "name": {
+        "zh-Hans": "猫的大型吸引",
+        "zh-Hant": "貓的大型吸引",
+        "ja": "ネコの大きさ自慢",
+        "en": "Felyne Macrozoologist"
+      },
+      "desc": {
+        "zh-Hans": "稍微提高大型环境生物的出现机率。",
+        "zh-Hant": "稍微提高大型環境生物的出現機率。",
+        "ja": "大きな環境生物が少し出やすくなる。",
+        "en": "Makes large endemic life\nslightly more likely to appear."
+      },
+      "group": -1,
+      "tier": 0,
+      "_src": {
+        "file": "common/equip/cat_skill.cat_skill",
+        "row": 55
+      }
+    },
+    {
+      "id": 56,
+      "name": {
+        "zh-Hans": "猫的小型吸引",
+        "zh-Hant": "貓的小型吸引",
+        "ja": "ネコの小ささ自慢",
+        "en": "Felyne Microzoologist"
+      },
+      "desc": {
+        "zh-Hans": "稍微提高小型环境生物的出现机率。",
+        "zh-Hant": "稍微提高小型環境生物的出現機率。",
+        "ja": "小さな環境生物が少し出やすくなる。",
+        "en": "Makes small endemic life\nslightly more likely to appear."
+      },
+      "group": -1,
+      "tier": 0,
+      "_src": {
+        "file": "common/equip/cat_skill.cat_skill",
+        "row": 56
+      }
+    }
+  ],
+  "ingredients": [
+    {
+      "id": 0,
+      "name": {
+        "zh-Hans": "龙腿",
+        "zh-Hant": "龍腿",
+        "ja": "龍足",
+        "en": "Wyvern Thigh"
+      },
+      "desc": {
+        "zh-Hans": "肉类食材，容易发动\n[勇敢]系用餐技能。\n因炖煮许久，入口即化到叫人吃惊。",
+        "zh-Hant": "肉類食材，容易發動\n《勇敢》體系料理技能。\n因燉煮許久，入口即化到叫人吃驚。",
+        "ja": "≪勇敢≫系統の食事スキルが発動\nしやすくなる肉食材。よく煮込む\nことで驚くほど柔らかくなる。",
+        "en": "Meat that helps trigger Courage food skills.\nA long time in the stew makes it very chewy."
+      },
+      "category": "meat",
+      "group": 0,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 0
+      }
+    },
+    {
+      "id": 1,
+      "name": {
+        "zh-Hans": "龙胸腹肉",
+        "zh-Hant": "龍胸腹肉",
+        "ja": "リュウノハラミ",
+        "en": "Wyvern Skirt Steak"
+      },
+      "desc": {
+        "zh-Hans": "肉类食材，容易发动\n[勇敢]系用餐技能。\n建议切成薄片以炭火烧烤。",
+        "zh-Hant": "肉類食材，容易發動\n《勇敢》體系料理技能。\n建議切成薄片以炭火燒烤。",
+        "ja": "≪勇敢≫系統の食事スキルが発動\nしやすくなる肉食材。薄くスライス\nして、炭火で焼くのがオススメ。",
+        "en": "Meat that helps trigger Courage food skills.\nBest served thinly sliced and grilled over\ncharcoal."
+      },
+      "category": "meat",
+      "group": 0,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 1
+      }
+    },
+    {
+      "id": 2,
+      "name": {
+        "zh-Hans": "飞龙的蛋",
+        "zh-Hant": "飛龍的蛋",
+        "ja": "飛竜の卵",
+        "en": "Wyvern Egg"
+      },
+      "desc": {
+        "zh-Hans": "肉类食材，容易发动\n[勇敢]系用餐技能。\n从飞龙巢穴找来的贵重食材。",
+        "zh-Hant": "肉類食材，容易發動\n《勇敢》體系料理技能。\n從飛龍巢穴找來的貴重食材。",
+        "ja": "≪勇敢≫系統の食事スキルが発動\nしやすくなる肉分類の食材。\n飛竜の巣から頂いた、貴重な食材。",
+        "en": "Meat that helps trigger Courage food skills.\nA precious plunder from a wyvern's nest."
+      },
+      "category": "meat",
+      "group": 0,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 2
+      }
+    },
+    {
+      "id": 3,
+      "name": {
+        "zh-Hans": "龙尾肉",
+        "zh-Hant": "龍尾肉",
+        "ja": "リュウノテール",
+        "en": "Wyvern Tail"
+      },
+      "desc": {
+        "zh-Hans": "肉类食材，容易发动\n[勇敢]系用餐技能。\n一生想至少品尝一次看看的飞龙肉。",
+        "zh-Hant": "肉類食材，容易發動\n《勇敢》體系料理技能。\n一生想品嚐至少一次看看的飛龍肉。",
+        "ja": "≪勇敢≫系統の食事スキルが発動\nしやすくなる肉食材。飛竜の肉。\n一度は味わってみたい一品。",
+        "en": "Meat that helps trigger Courage food skills.\nThe tail from a flying wyvern. Worth trying\nat least once."
+      },
+      "category": "meat",
+      "group": 0,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 3
+      }
+    },
+    {
+      "id": 4,
+      "name": {
+        "zh-Hans": "龙头",
+        "zh-Hant": "龍頭",
+        "ja": "龍頭",
+        "en": "Wyvern Head"
+      },
+      "desc": {
+        "zh-Hans": "肉类食材，容易发动\n[勇敢]系用餐技能。\n庆祝时才有可能拿出来的高级食材。",
+        "zh-Hant": "肉類食材，容易發動\n《勇敢》體系料理技能。\n慶祝時才有可能拿出來的高級食材。",
+        "ja": "≪勇敢≫系統の食事スキルが発動\nしやすくなる肉食材。おめでたい時\nに出されることもある高級食材。",
+        "en": "Meat that helps trigger Courage food skills.\nA staple of haute cuisine, it also occasionally\nfeatures in celebratory feasts."
+      },
+      "category": "meat",
+      "group": 0,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 4
+      }
+    },
+    {
+      "id": 5,
+      "name": {
+        "zh-Hans": "龙腰肉",
+        "zh-Hant": "龍腰肉",
+        "ja": "ドラゴンフィレ",
+        "en": "Wyvern Filet"
+      },
+      "desc": {
+        "zh-Hans": "肉类食材，容易发动\n[勇敢]系用餐技能。\n最有价值的部位的肉。",
+        "zh-Hant": "肉類食材，容易發動\n《勇敢》體系料理技能。\n最有價值的肉品部位。",
+        "ja": "≪勇敢≫系統の食事スキルが発動\nしやすくなる肉食材。最も価値の\nあるとされる部位の肉。",
+        "en": "Meat that helps trigger Courage food skills.\nThe most highly valued cut of wyvern meat\navailable."
+      },
+      "category": "meat",
+      "group": 0,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 5
+      }
+    },
+    {
+      "id": 6,
+      "name": {
+        "zh-Hans": "坚肉",
+        "zh-Hant": "堅肉",
+        "ja": "堅肉",
+        "en": "Tough Meat"
+      },
+      "desc": {
+        "zh-Hans": "肉类食材，容易发动\n[忍耐]系用餐技能。\n硬实的口感可以锻炼下巴。",
+        "zh-Hant": "肉類食材，容易發動\n《忍耐》體系料理技能。\n硬實的口感可以鍛鍊下巴。",
+        "ja": "≪我慢≫系統の食事スキルが発動\nしやすくなる肉食材。かなりの\n歯ごたえ。アゴが鍛えられる。",
+        "en": "Meat that helps trigger Resilience food skills.\nWorking your way through this chewy meat has\nthe added benefit of strengthening your jaw."
+      },
+      "category": "meat",
+      "group": 1,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 6
+      }
+    },
+    {
+      "id": 7,
+      "name": {
+        "zh-Hans": "棘肉",
+        "zh-Hant": "棘肉",
+        "ja": "棘肉",
+        "en": "Thorny Meat"
+      },
+      "desc": {
+        "zh-Hans": "肉类食材，容易发动\n[忍耐]系用餐技能。\n掏食黏在甲壳上的肉，注意别受伤了。",
+        "zh-Hant": "肉類食材，容易發動\n《忍耐》體系料理技能。\n掏食黏在甲殼上的肉，注意別受傷了。",
+        "ja": "≪我慢≫系統の食事スキルが発動\nしやすくなる肉食材。甲殻にへばり\n付いた肉。怪我に注意。",
+        "en": "Meat that helps trigger Resilience food skills.\nStill attached to the thorny scales from which\nit was cut, it calls for slow, careful eating."
+      },
+      "category": "meat",
+      "group": 1,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 7
+      }
+    },
+    {
+      "id": 8,
+      "name": {
+        "zh-Hans": "熟成坚肉",
+        "zh-Hant": "熟成堅肉",
+        "ja": "熟成堅肉",
+        "en": "Bullion Meat"
+      },
+      "desc": {
+        "zh-Hans": "肉类食材，容易发动\n[忍耐]系用餐技能。\n算是高级食材，适合偶尔犒赏自己。",
+        "zh-Hant": "肉類食材，容易發動\n《忍耐》體系料理技能。\n算是高級食材，適合偶爾犒賞自己。",
+        "ja": "≪我慢≫系統の食事スキルが発動\nしやすくなる肉食材。そこそこ\n高級な食材。たまの奮発にどうぞ。",
+        "en": "Meat that helps trigger Resilience food skills.\nRelatively expensive, but sometimes you've\njust gotta treat yourself."
+      },
+      "category": "meat",
+      "group": 1,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 8
+      }
+    },
+    {
+      "id": 9,
+      "name": {
+        "zh-Hans": "钢肉",
+        "zh-Hant": "鋼肉",
+        "ja": "鋼肉",
+        "en": "Steeled Meat"
+      },
+      "desc": {
+        "zh-Hans": "肉类食材，容易发动\n[忍耐]系用餐技能。\n硬到咬不下去的肉，卖点是营养价值高。",
+        "zh-Hant": "肉類食材，容易發動\n《忍耐》體系料理技能。\n硬到咬不下去的肉，賣點是營養價值高。",
+        "ja": "≪我慢≫系統の食事スキルが発動\nしやすくなる肉食材。歯が立たない\nほど堅い肉。栄養価の高さがウリ。",
+        "en": "Meat that helps trigger Resilience food skills.\nHard enough to break a tooth, but the protein\nand vitamins it packs almost makes it worth it."
+      },
+      "category": "meat",
+      "group": 1,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 9
+      }
+    },
+    {
+      "id": 10,
+      "name": {
+        "zh-Hans": "狂野鸡肉",
+        "zh-Hant": "狂野雞肉",
+        "ja": "ワイルドチキン",
+        "en": "Wild Chicken"
+      },
+      "desc": {
+        "zh-Hans": "肉类食材，容易发动\n[忍耐]系用餐技能。\n建议连骨带肉豪迈地啃咬。",
+        "zh-Hant": "肉類食材，容易發動\n《忍耐》體系料理技能。\n建議連骨帶肉，豪邁啃咬。",
+        "ja": "≪我慢≫系統の食事スキルが発動\nしやすくなる肉食材。骨まで豪快に\nかじりつくのがオススメ。",
+        "en": "Meat that helps trigger Resilience food skills.\nBest enjoyed by savagely cutting into it and\nshoveling into your mouth with abandon."
+      },
+      "category": "meat",
+      "group": 1,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 10
+      }
+    },
+    {
+      "id": 11,
+      "name": {
+        "zh-Hans": "壶腌生肉",
+        "zh-Hant": "壺醃生肉",
+        "ja": "壺漬け生肉",
+        "en": "Marinated Carpaccio"
+      },
+      "desc": {
+        "zh-Hans": "肉类食材，容易发动\n[忍耐]系用餐技能。\n加入秘传酱汁腌制熟成的肉。",
+        "zh-Hant": "肉類食材，容易發動\n《忍耐》體系料理技能。\n加入祕傳醬汁醃製熟成的肉。",
+        "ja": "≪我慢≫系統の食事スキルが発動\nしやすくなる肉食材。秘伝のタレに\nじっくりとつけ込み熟成させた肉。",
+        "en": "Meat that helps trigger Resilience food skills.\nSteeped in a secret sauce, this raw meat is\nliterally dripping with flavor."
+      },
+      "category": "meat",
+      "group": 1,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 11
+      }
+    },
+    {
+      "id": 12,
+      "name": {
+        "zh-Hans": "草食龙肉",
+        "zh-Hant": "草食龍肉",
+        "ja": "アプトノスミート",
+        "en": "Aptonoth Meat"
+      },
+      "desc": {
+        "zh-Hans": "肉类食材，容易发动\n[热血]系用餐技能。\n猎人经常食用的普通食材。",
+        "zh-Hant": "肉類食材，容易發動\n《熱血》體系料理技能。\n獵人經常食用的普通食材。",
+        "ja": "≪熱血≫系統の食事スキルが発動\nしやすくなる肉食材。ハンターの\n間で食される、一般的な食材。",
+        "en": "Meat that helps trigger Vigor food skills.\nA staple of any hunter's diet which is used\nin a wide variety of meat dishes."
+      },
+      "category": "meat",
+      "group": 2,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 12
+      }
+    },
+    {
+      "id": 13,
+      "name": {
+        "zh-Hans": "甲壳草食龙背脊肉",
+        "zh-Hant": "背甲龍背脊肉",
+        "ja": "アプケロース",
+        "en": "Apceroast"
+      },
+      "desc": {
+        "zh-Hans": "肉类食材，容易发动\n[热血]系用餐技能。\n肚子饿的猎人们最爱的大块肉。",
+        "zh-Hant": "肉類食材，容易發動\n《熱血》體系料理技能。\n肚子餓的獵人們最愛的大塊肉。",
+        "ja": "≪熱血≫系統の食事スキルが発動\nしやすくなる肉食材。腹ぺこな\nハンター達に好まれる大きな肉。",
+        "en": "Meat that helps trigger Vigor food skills.\nAlmost always served in large potions, this\nmeat is a favorite among ravenous hunters."
+      },
+      "category": "meat",
+      "group": 2,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 13
+      }
+    },
+    {
+      "id": 14,
+      "name": {
+        "zh-Hans": "骰子肉",
+        "zh-Hant": "骰子肉",
+        "ja": "サイコロミート",
+        "en": "Diced Steak"
+      },
+      "desc": {
+        "zh-Hans": "肉类食材，容易发动\n[热血]系用餐技能。\n切成小份的优质肉品。",
+        "zh-Hant": "肉類食材，容易發動\n《熱血》體系料理技能。\n切成小份的優質肉品。",
+        "ja": "≪熱血≫系統の食事スキルが発動\nしやすくなる肉食材。小さく切り\n分けられた、ちょっと質の良い肉。",
+        "en": "Meat that helps trigger Vigor food skills.\nRelatively good quality meat cut into small,\nbite-sized pieces."
+      },
+      "category": "meat",
+      "group": 2,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 14
+      }
+    },
+    {
+      "id": 15,
+      "name": {
+        "zh-Hans": "巨大沙朗",
+        "zh-Hant": "巨大沙朗",
+        "ja": "ビッグサーロイン",
+        "en": "Giant Sirloin"
+      },
+      "desc": {
+        "zh-Hans": "肉类食材，容易发动\n[热血]系用餐技能。\n草食龙的高级部位，兼顾了质与量。",
+        "zh-Hant": "肉類食材，容易發動\n《熱血》體系料理技能。\n草食龍的高級部位，兼顧了質與量。",
+        "ja": "≪熱血≫系統の食事スキルが発動\nしやすくなる肉食材。質と量を兼ね\n備えた、アプトノスの高級部位。",
+        "en": "Meat that helps trigger Vigor food skills.\nA lovely slice of Aptonoth meat that's\ntasty and filling."
+      },
+      "category": "meat",
+      "group": 2,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 15
+      }
+    },
+    {
+      "id": 16,
+      "name": {
+        "zh-Hans": "蛇龙背脊肉",
+        "zh-Hant": "蛇龍背脊肉",
+        "ja": "ガブリブロース",
+        "en": "Big Bite Burger"
+      },
+      "desc": {
+        "zh-Hans": "肉类食材，容易发动\n[热血]系用餐技能。\n大口撕咬吃个精光吧。",
+        "zh-Hant": "肉類食材，容易發動\n《熱血》體系料理技能。\n大口撕咬吃個精光吧。",
+        "ja": "≪熱血≫系統の食事スキルが発動\nしやすくなる肉食材。身が残らない\nよう、かぶりついて食べる。",
+        "en": "Meat that helps trigger Vigor food skills.\nA burger prepared the way it was meant to\nbe: almost too big to fit in your mouth."
+      },
+      "category": "meat",
+      "group": 2,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 16
+      }
+    },
+    {
+      "id": 17,
+      "name": {
+        "zh-Hans": "巨大肉",
+        "zh-Hant": "巨大肉",
+        "ja": "ギガントミート",
+        "en": "Giga Steak"
+      },
+      "desc": {
+        "zh-Hans": "肉类食材，容易发动\n[热血]系用餐技能。\n再巨型一块也吃得完的美味红肉。",
+        "zh-Hant": "肉類食材，容易發動\n《熱血》體系料理技能。\n再巨大一塊也吃得完的美味紅肉。",
+        "ja": "≪熱血≫系統の食事スキルが発動\nしやすくなる肉食材。巨大な塊でも\nぺろりと平らげてしまえる赤身肉。",
+        "en": "Meat that helps trigger Vigor food skills.\nWell-marbled steak so delectable that it's hard\nto put down even long after you've been full."
+      },
+      "category": "meat",
+      "group": 2,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 17
+      }
+    },
+    {
+      "id": 18,
+      "name": {
+        "zh-Hans": "白肝",
+        "zh-Hant": "白肝",
+        "ja": "ホワイトレバー",
+        "en": "White Liver"
+      },
+      "desc": {
+        "zh-Hans": "肉类食材，容易发动\n[智囊]系用餐技能。\n浓稠的口感大受欢迎！",
+        "zh-Hant": "肉類食材，容易發動\n《智囊》體系料理技能。\n濃稠的口感大受歡迎！",
+        "ja": "≪知恵袋≫系統の食事スキルが発動\nしやすくなる肉食材。\nとろりとした食感が大人気！",
+        "en": "Meat that helps trigger Acumen food skills.\nLoved for its goopy texture."
+      },
+      "category": "meat",
+      "group": 3,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 18
+      }
+    },
+    {
+      "id": 19,
+      "name": {
+        "zh-Hans": "烧烤胸肋肉",
+        "zh-Hant": "燒烤胸肋肉",
+        "ja": "胸焼けカルビ",
+        "en": "Barbecued Short Rib"
+      },
+      "desc": {
+        "zh-Hans": "肉类食材，容易发动\n[智囊]系用餐技能。\n几乎全是肥肉，容易上瘾。",
+        "zh-Hant": "肉類食材，容易發動\n《智囊》體系料理技能。\n幾乎全是肥肉，容易上癮。",
+        "ja": "≪知恵袋≫系統の食事スキルが発動\nしやすくなる肉食材。ほとんど脂身\nだが、クセになる肉。",
+        "en": "Meat that helps trigger Acumen food skills.\nMostly fat, this flavorful meat can be\ndangerously addictive."
+      },
+      "category": "meat",
+      "group": 3,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 19
+      }
+    },
+    {
+      "id": 20,
+      "name": {
+        "zh-Hans": "透心胸腹肉",
+        "zh-Hant": "透心胸腹肉",
+        "ja": "ハラハラミ",
+        "en": "Tangy Tripe"
+      },
+      "desc": {
+        "zh-Hans": "肉类食材，容易发动\n[智囊]系用餐技能。\n食用后总会觉得有点坐立难安的肉品。",
+        "zh-Hant": "肉類食材，容易發動\n《智囊》體系料理技能。\n食用後總會覺得有點坐立難安的肉品。",
+        "ja": "≪知恵袋≫系統の食事スキルが発動\nしやすくなる肉食材。食べると\nなんだか落ち着きが無くなる肉。",
+        "en": "Meat that helps trigger Acumen food skills.\nA stomachful of this makes it oddly difficult\nto sit still."
+      },
+      "category": "meat",
+      "group": 3,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 20
+      }
+    },
+    {
+      "id": 21,
+      "name": {
+        "zh-Hans": "火热热心脏",
+        "zh-Hant": "火熱熱心臟",
+        "ja": "アツアツハツ",
+        "en": "Hot Heart"
+      },
+      "desc": {
+        "zh-Hans": "肉类食材，容易发动\n[智囊]系用餐技能。\n口感受欢迎的部位，趁热享用！",
+        "zh-Hant": "肉類食材，容易發動\n《智囊》體系料理技能。\n口感受歡迎的部位，趁熱享用！",
+        "ja": "≪知恵袋≫系統の食事スキルが発動\nしやすくなる肉食材。食感が人気の\n部位。熱々のうちに召し上がれ！",
+        "en": "Meat that helps trigger Acumen food skills.\nA cut of meat prized for its texture, enjoyed\nbest when devoured piping hot."
+      },
+      "category": "meat",
+      "group": 3,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 21
+      }
+    },
+    {
+      "id": 22,
+      "name": {
+        "zh-Hans": "豪迈大肉",
+        "zh-Hant": "豪快臀肉",
+        "ja": "ゴウカイチボ",
+        "en": "Rich Rump"
+      },
+      "desc": {
+        "zh-Hans": "肉类食材，容易发动\n[智囊]系用餐技能。\n豪迈地厚切贵重部位的特别食材。",
+        "zh-Hant": "肉類食材，容易發動\n《智囊》體系料理技能。\n豪邁地厚切貴重部位的特別食材。",
+        "ja": "≪知恵袋≫系統の食事スキルが発動\nしやすくなる肉食材。貴重な部位を\n豪快に切り出した特別な食材。",
+        "en": "Meat that helps trigger Acumen food skills.\nAn exceptionally rich cut of meat from one\nof a monster's most prized body parts."
+      },
+      "category": "meat",
+      "group": 3,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 22
+      }
+    },
+    {
+      "id": 23,
+      "name": {
+        "zh-Hans": "肥大鹅肝",
+        "zh-Hant": "肥大鵝肝",
+        "ja": "ドスフォアグラ",
+        "en": "Grand Foie Gras"
+      },
+      "desc": {
+        "zh-Hans": "肉类食材，容易发动\n[智囊]系用餐技能。口感近似奶油，\n层次丰富的味道大受欢迎。",
+        "zh-Hant": "肉類食材，容易發動\n《智囊》體系料理技能。\n口感近似奶油，層次豐富的味道大受歡迎。",
+        "ja": "≪知恵袋≫系統の食事スキルが発動\nしやすくなる肉食材。クリーミィな\n食感と、深い味わいが大人気。",
+        "en": "Meat that helps trigger Acumen food skills.\nIts creamy texture and rich taste make it a\nmuch sought-after ingredient."
+      },
+      "category": "meat",
+      "group": 3,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 23
+      }
+    },
+    {
+      "id": 24,
+      "name": {
+        "zh-Hans": "带骨火鸡肉",
+        "zh-Hant": "帶骨火雞肉",
+        "ja": "ポーンターキー",
+        "en": "Peon Turkey"
+      },
+      "desc": {
+        "zh-Hans": "肉类食材，容易发动\n[烟火师]系用餐技能。\n肉不太多。",
+        "zh-Hant": "肉類食材，容易發動\n《煙火師》體系料理技能。\n不太有肉。",
+        "ja": "≪花火師≫系統の食事スキルが発動\nしやすくなる肉食材。\n肉付きはあまり良くない。",
+        "en": "Meat that helps trigger Artillery food skills.\nSadly, it's more bone than meat."
+      },
+      "category": "meat",
+      "group": 4,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 24
+      }
+    },
+    {
+      "id": 25,
+      "name": {
+        "zh-Hans": "高级羊肉",
+        "zh-Hant": "高級羊肉",
+        "ja": "マトングレート",
+        "en": "Great Mutton"
+      },
+      "desc": {
+        "zh-Hans": "肉类食材，容易发动\n[烟火师]系用餐技能。\n适合各种烹饪方式的食材。",
+        "zh-Hant": "肉類食材，容易發動\n《煙火師》體系料理技能。\n適合各種調理方式的食材。",
+        "ja": "≪花火師≫系統の食事スキルが発動\nしやすくなる肉食材。\n様々な調理法に適した食材。",
+        "en": "Meat that helps trigger Artillery food skills.\nHighly versatile, it's used in a wide variety\nof dishes."
+      },
+      "category": "meat",
+      "group": 4,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 25
+      }
+    },
+    {
+      "id": 26,
+      "name": {
+        "zh-Hans": "草食龙的蛋",
+        "zh-Hant": "草食龍的蛋",
+        "ja": "草食竜の卵",
+        "en": "Herbivore Egg"
+      },
+      "desc": {
+        "zh-Hans": "肉类食材，容易发动\n[烟火师]系用餐技能。\n似乎可做成很大份的荷包蛋。",
+        "zh-Hant": "肉類食材，容易發動\n《煙火師》體系料理技能。\n似乎可做成很大份的荷包蛋。",
+        "ja": "≪花火師≫系統の食事スキルが発動\nしやすくなる肉分類の食材。とても\n大きな目玉焼きが作れそうだ。",
+        "en": "Meat that helps trigger Artillery food skills.\nAn omelette made from this could feed\nseveral hungry families."
+      },
+      "category": "meat",
+      "group": 4,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 26
+      }
+    },
+    {
+      "id": 27,
+      "name": {
+        "zh-Hans": "火鸡王肉",
+        "zh-Hant": "火雞王肉",
+        "ja": "キングターキー",
+        "en": "King Turkey"
+      },
+      "desc": {
+        "zh-Hans": "肉类食材，容易发动\n[烟火师]系用餐技能。\n丰满的肉量不负王者的名号。",
+        "zh-Hant": "肉類食材，容易發動\n《煙火師》體系料理技能。\n豐滿的肉量不負王者的名號。",
+        "ja": "≪花火師≫系統の食事スキルが発動\nしやすくなる肉食材。王の名を\n冠するにふさわしい見事な肉付き。",
+        "en": "Meat that helps trigger Artillery food skills.\nIts meatiness makes it more than worthy of\nits moniker. Puts Peon Turkey to shame."
+      },
+      "category": "meat",
+      "group": 4,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 27
+      }
+    },
+    {
+      "id": 28,
+      "name": {
+        "zh-Hans": "岩浆羊肉",
+        "zh-Hant": "岩漿羊肉",
+        "ja": "マグマトン",
+        "en": "Magma Mutton"
+      },
+      "desc": {
+        "zh-Hans": "肉类食材，容易发动\n[烟火师]系用餐技能。\n炖煮越久味道越浓厚的食材。",
+        "zh-Hant": "肉類食材，容易發動\n《煙火師》體系料理技能。\n燉煮越久味道越濃厚的食材。",
+        "ja": "≪花火師≫系統の食事スキルが発動\nしやすくなる肉食材。煮込めば\n煮込むほど味わいがます食材。",
+        "en": "Meat that helps trigger Artillery food skills.\nSucculent mutton that grows even richer in\ntaste the longer it's stewed."
+      },
+      "category": "meat",
+      "group": 4,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 28
+      }
+    },
+    {
+      "id": 29,
+      "name": {
+        "zh-Hans": "帝王火鸡肉",
+        "zh-Hant": "帝王火雞肉",
+        "ja": "カイザーターキー",
+        "en": "Kaiser Turkey"
+      },
+      "desc": {
+        "zh-Hans": "肉类食材，容易发动\n[烟火师]系用餐技能。\n压倒性的肉量，不辱帝王的名号。",
+        "zh-Hant": "肉類食材，容易發動\n《煙火師》體系料理技能。\n壓倒性的肉量，不辱皇帝的名號。",
+        "ja": "≪花火師≫系統の食事スキルが発動\nしやすくなる肉食材。皇帝の名に\n恥じない圧倒的な肉付き。",
+        "en": "Meat that helps trigger Artillery food skills.\nA leg so imperially meaty that even King\nTurkey pales in comparison."
+      },
+      "category": "meat",
+      "group": 4,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 29
+      }
+    },
+    {
+      "id": 30,
+      "name": {
+        "zh-Hans": "鬃毛鲔鱼",
+        "zh-Hant": "鬃毛鮪魚",
+        "ja": "たてがみマグロ",
+        "en": "Ridgemane Tuna"
+      },
+      "desc": {
+        "zh-Hans": "鱼类食材，容易发动\n[勇敢]系用餐技能。\n鬃毛越是雄伟，风味越佳。",
+        "zh-Hant": "魚類食材，容易發動\n《勇敢》體系料理技能。\n鬃毛越是雄偉，風味越佳。",
+        "ja": "≪勇敢≫系統の食事スキルが発動\nしやすくなる魚食材。雄々しい\nたてがみが見事なほど、味も良い。",
+        "en": "Fish that helps trigger Courage food skills.\nIts meat is as tasty as its mane is audacious."
+      },
+      "category": "fish",
+      "group": 0,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 30
+      }
+    },
+    {
+      "id": 31,
+      "name": {
+        "zh-Hans": "蛇鲑鱼",
+        "zh-Hant": "蛇鮭魚",
+        "ja": "スネークサーモン",
+        "en": "Serpentine Salmon"
+      },
+      "desc": {
+        "zh-Hans": "鱼类食材，容易发动\n[勇敢]系用餐技能。\n如蛇般弯曲蠕动的鲑鱼。",
+        "zh-Hant": "魚類食材，容易發動\n《勇敢》體系料理技能。\n如蛇般彎曲蠕動的鮭魚。",
+        "ja": "≪勇敢≫系統の食事スキルが発動\nしやすくなる魚食材。くねくね動く\nサーモン。ヘビの様な魚。",
+        "en": "Fish that helps trigger Courage food skills.\nTwisty and curvy, it looks more like a snake\nthan a fish."
+      },
+      "category": "fish",
+      "group": 0,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 31
+      }
+    },
+    {
+      "id": 32,
+      "name": {
+        "zh-Hans": "勇气鳗鱼",
+        "zh-Hant": "勇氣鰻魚",
+        "ja": "勇気ウナギ",
+        "en": "Courageous Eel"
+      },
+      "desc": {
+        "zh-Hans": "鱼类食材，容易发动\n[勇敢]系用餐技能。\n据说吃了就能鼓起勇气。",
+        "zh-Hant": "魚類食材，容易發動\n《勇敢》體系料理技能。\n據說吃了就鼓起勇氣。",
+        "ja": "≪勇敢≫系統の食事スキルが発動\nしやすくなる魚食材。食べれば\n勇気が湧いてくると言われている。",
+        "en": "Fish that helps trigger Courage food skills.\nOne bite and you'll be brimming with courage."
+      },
+      "category": "fish",
+      "group": 0,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 32
+      }
+    },
+    {
+      "id": 33,
+      "name": {
+        "zh-Hans": "刺身鱼",
+        "zh-Hant": "刺身魚",
+        "ja": "サシミウオ",
+        "en": "Sushifish"
+      },
+      "desc": {
+        "zh-Hans": "鱼类食材，容易发动\n[勇敢]系用餐技能。\n油脂丰厚的美味鱼肉，亲民的大众食材。",
+        "zh-Hant": "魚類食材，容易發動\n《勇敢》體系料理技能。\n油脂豐厚的美味魚肉，親民的大眾食材。",
+        "ja": "≪勇敢≫系統の食事スキルが発動\nしやすくなる魚食材。脂の乗った\n美味い魚。幅広く親しまれている。",
+        "en": "Fish that helps trigger Courage food skills.\nDelicious, with just the right amount of fat.\nWell-liked near and far."
+      },
+      "category": "fish",
+      "group": 0,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 33
+      }
+    },
+    {
+      "id": 34,
+      "name": {
+        "zh-Hans": "古代真鲷",
+        "zh-Hant": "古代真鯛",
+        "ja": "古代真鯛",
+        "en": "Ancient Seabream"
+      },
+      "desc": {
+        "zh-Hans": "鱼类食材，容易发动\n[勇敢]系用餐技能。\n从古代流传至今的亲民高级食材。",
+        "zh-Hant": "魚類食材，容易發動\n《勇敢》體系料理技能。\n從古代流傳至今的親民高級食材。",
+        "ja": "≪勇敢≫系統の食事スキルが発動\nしやすくなる魚食材。古代から\n親しまれている高級食材。",
+        "en": "Fish that helps trigger Courage food skills.\nGourmet fish that has been prized as a\ndelicacy since ancient times."
+      },
+      "category": "fish",
+      "group": 0,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 34
+      }
+    },
+    {
+      "id": 35,
+      "name": {
+        "zh-Hans": "粗野鰤鱼",
+        "zh-Hant": "粗野鰤魚",
+        "ja": "無礼ブリ",
+        "en": "Boorish Yellowtail"
+      },
+      "desc": {
+        "zh-Hans": "鱼类食材，容易发动\n[勇敢]系用餐技能。\n外观粗野，却是富有勇气的鱼。",
+        "zh-Hant": "魚類食材，容易發動\n《勇敢》體系料理技能。\n外觀粗野，卻是生態富含勇氣的魚。",
+        "ja": "≪勇敢≫系統の食事スキルが発動\nしやすくなる魚食材。無礼な外見\nだが、その生態は勇気のある魚。",
+        "en": "Fish that helps trigger Courage food skills.\nThough criticized for its vulgar appearance,\nthis fish is actually the epitome of courage."
+      },
+      "category": "fish",
+      "group": 0,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 35
+      }
+    },
+    {
+      "id": 36,
+      "name": {
+        "zh-Hans": "大螺贝",
+        "zh-Hant": "大螺貝",
+        "ja": "大巻貝",
+        "en": "Jumbo Whelk"
+      },
+      "desc": {
+        "zh-Hans": "鱼类食材，容易发动\n[忍耐]系用餐技能。\n螺壳越大，市场价值越高。",
+        "zh-Hant": "魚類食材，容易發動\n《忍耐》體系料理技能。\n螺殼越大，市場價值越高。",
+        "ja": "≪我慢≫系統の食事スキルが発動\nしやすくなる魚食材。巻きが大きい\nほど価値が高いとされている。",
+        "en": "Fish that helps trigger Resilience food skills.\nLarger shells fetch a higher price."
+      },
+      "category": "fish",
+      "group": 1,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 36
+      }
+    },
+    {
+      "id": 37,
+      "name": {
+        "zh-Hans": "扇贝片",
+        "zh-Hant": "扇貝片",
+        "ja": "ホタテチップ",
+        "en": "Scallop Chips"
+      },
+      "desc": {
+        "zh-Hans": "鱼类食材，容易发动\n[忍耐]系用餐技能。\n保存用的干燥食品，也可用于煮汤。",
+        "zh-Hant": "魚類食材，容易發動\n《忍耐》體系料理技能。\n保存用的乾燥食品，也可用於煮湯。",
+        "ja": "≪我慢≫系統の食事スキルが発動\nしやすくなる魚食材。保存用に乾燥\nしたもの。スープにも使われる。",
+        "en": "Fish that helps trigger Resilience food skills.\nScallops dried for preservation. They can also\nbe used to make a tasty soup."
+      },
+      "category": "fish",
+      "group": 1,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 37
+      }
+    },
+    {
+      "id": 38,
+      "name": {
+        "zh-Hans": "严选壶鲍",
+        "zh-Hant": "嚴選藤壺鮑魚",
+        "ja": "厳選ツボアワビ",
+        "en": "Choice Abalone"
+      },
+      "desc": {
+        "zh-Hans": "鱼类食材，容易发动\n[忍耐]系用餐技能。\n味道和大小都顶级的藤壶鲍鱼。",
+        "zh-Hant": "魚類食材，容易發動\n《忍耐》體系料理技能。\n味道和大小都頂級品的藤壺鮑魚。",
+        "ja": "≪我慢≫系統の食事スキルが発動\nしやすくなる魚食材。味も大きさも\n一級品のツボアワビ。",
+        "en": "Fish that helps trigger Resilience food skills.\nFirst-rate in size and taste."
+      },
+      "category": "fish",
+      "group": 1,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 38
+      }
+    },
+    {
+      "id": 39,
+      "name": {
+        "zh-Hans": "藤蔓色壶鲍",
+        "zh-Hant": "藤壺色鮑魚",
+        "ja": "藤色ツボアワビ",
+        "en": "Violet Abalone"
+      },
+      "desc": {
+        "zh-Hans": "鱼类食材，容易发动\n[忍耐]系用餐技能。\n香气与味道有独特变化的鲍鱼。",
+        "zh-Hant": "魚類食材，容易發動\n《忍耐》體系料理技能。\n香氣與味道有獨特變化的鮑魚。",
+        "ja": "≪我慢≫系統の食事スキルが発動\nしやすくなる魚食材。香りも味も\n独特の変化を遂げたアワビ。",
+        "en": "Fish that helps trigger Resilience food skills.\nIts aroma and flavor have transformed as much\nas its coloration."
+      },
+      "category": "fish",
+      "group": 1,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 39
+      }
+    },
+    {
+      "id": 40,
+      "name": {
+        "zh-Hans": "秘藏壶鲍",
+        "zh-Hant": "祕藏藤壺鮑魚",
+        "ja": "秘蔵ツボアワビ",
+        "en": "Precious Abalone"
+      },
+      "desc": {
+        "zh-Hans": "鱼类食材，容易发动\n[忍耐]系用餐技能。\n被视为珍品中的珍品的藤壶鲍鱼。",
+        "zh-Hant": "魚類食材，容易發動\n《忍耐》體系料理技能。\n被視為珍品中的珍品的藤壺鮑魚。",
+        "ja": "≪我慢≫系統の食事スキルが発動\nしやすくなる魚食材。珍味中の\n珍味とされるツボアワビ。",
+        "en": "Fish that helps trigger Resilience food skills.\nHailed as a delicacy among delicacies."
+      },
+      "category": "fish",
+      "group": 1,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 40
+      }
+    },
+    {
+      "id": 41,
+      "name": {
+        "zh-Hans": "大角蝾螺",
+        "zh-Hant": "大角蠑螺",
+        "ja": "大角サザエ",
+        "en": "Large-horned Turban"
+      },
+      "desc": {
+        "zh-Hans": "鱼类食材，容易发动\n[忍耐]系用餐技能。\n壳上有大角，其生态尚在调查中。",
+        "zh-Hant": "魚類食材，容易發動\n《忍耐》體系料理技能。\n殼上有大角，其生態尚在調查中。",
+        "ja": "≪我慢≫系統の食事スキルが発動\nしやすくなる魚食材。殻に大きな\n角がある。その生態は調査中。",
+        "en": "Fish that helps trigger Resilience food skills.\nStudy of its biology has not yet uncovered the\nuse for its large horns."
+      },
+      "category": "fish",
+      "group": 1,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 41
+      }
+    },
+    {
+      "id": 42,
+      "name": {
+        "zh-Hans": "军团沙丁鱼",
+        "zh-Hant": "軍團沙丁魚",
+        "ja": "軍団イワシ",
+        "en": "Squad Sardine"
+      },
+      "desc": {
+        "zh-Hans": "鱼类食材，容易发动\n[热血]系用餐技能。\n据说会聚结成群保护自己的地盘。",
+        "zh-Hant": "魚類食材，容易發動\n《熱血》體系料理技能。\n據說會聚結成群保護自己的地盤。",
+        "ja": "≪熱血≫系統の食事スキルが発動\nしやすくなる魚食材。大きな群れを\n作り縄張りを守っているという。",
+        "en": "Fish that helps trigger Vigor food skills.\nThey form into regiment-like schools to\nprotect their territory."
+      },
+      "category": "fish",
+      "group": 2,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 42
+      }
+    },
+    {
+      "id": 43,
+      "name": {
+        "zh-Hans": "武士鲣鱼",
+        "zh-Hant": "武士鰹魚",
+        "ja": "武士カツオ",
+        "en": "Samurai Tuna"
+      },
+      "desc": {
+        "zh-Hans": "鱼类食材，容易发动\n[热血]系用餐技能。\n特色是宛如头盔般的帅气花纹。",
+        "zh-Hant": "魚類食材，容易發動\n《熱血》體系料理技能。\n特色是宛如頭盔般的帥氣花紋。",
+        "ja": "≪熱血≫系統の食事スキルが発動\nしやすくなる魚食材。カブトに\n見えるカッコイイ模様が特徴。",
+        "en": "Fish that helps trigger Vigor food skills.\nNotable for the patterns on its head\nresembling a samurai helmet."
+      },
+      "category": "fish",
+      "group": 2,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 43
+      }
+    },
+    {
+      "id": 44,
+      "name": {
+        "zh-Hans": "咬鱼的下巴",
+        "zh-Hant": "咬魚的下巴",
+        "ja": "ガライーバのカマ",
+        "en": "Gajau Gill"
+      },
+      "desc": {
+        "zh-Hans": "鱼类食材，容易发动\n[热血]系用餐技能。\n需要仔细烧烤，风味绝佳。",
+        "zh-Hant": "魚類食材，容易發動\n《熱血》體系料理技能。\n需要仔細燒烤，風味絕佳。",
+        "ja": "≪熱血≫系統の食事スキルが発動\nしやすくなる魚食材。じっくり焼き\n上げる必要があるが、味は絶品。",
+        "en": "Fish that helps trigger Vigor food skills.\nNeeds to be cooked for a long time, but\nthe wait is definitely worth it."
+      },
+      "category": "fish",
+      "group": 2,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 44
+      }
+    },
+    {
+      "id": 45,
+      "name": {
+        "zh-Hans": "咬鱼的肝",
+        "zh-Hant": "咬魚的肝",
+        "ja": "ガライーバのキモ",
+        "en": "Gajau Liver"
+      },
+      "desc": {
+        "zh-Hans": "鱼类食材，容易发动\n[热血]系用餐技能。\n含有大量良性脂肪，非常美味。",
+        "zh-Hant": "魚類食材，容易發動\n《熱血》體系料理技能。\n含有大量良性脂肪，非常美味。",
+        "ja": "≪熱血≫系統の食事スキルが発動\nしやすくなる魚食材。良質の脂肪が\n多量に含まれており、非常に美味。",
+        "en": "Fish that helps trigger Vigor food skills.\nPacked with good fats, it's both\ndelicious and nutritious."
+      },
+      "category": "fish",
+      "group": 2,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 45
+      }
+    },
+    {
+      "id": 46,
+      "name": {
+        "zh-Hans": "将军鲣鱼",
+        "zh-Hant": "將軍鰹魚",
+        "ja": "将軍カツオ",
+        "en": "Shogun Tuna"
+      },
+      "desc": {
+        "zh-Hans": "鱼类食材，容易发动\n[热血]系用餐技能。\n全身花纹宛如甲胄的了不起的鱼。",
+        "zh-Hant": "魚類食材，容易發動\n《熱血》體系料理技能。\n全身花紋宛如甲冑，出人頭地的魚。",
+        "ja": "≪熱血≫系統の食事スキルが発動\nしやすくなる魚食材。全身の模様が\n鎧兜に見える、出世魚。",
+        "en": "Fish that helps trigger Vigor food skills.\nMarkings along its entire body evoke the\nimage of a full suit of samurai armor."
+      },
+      "category": "fish",
+      "group": 2,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 46
+      }
+    },
+    {
+      "id": 47,
+      "name": {
+        "zh-Hans": "红莲鲷",
+        "zh-Hant": "紅蓮鯛",
+        "ja": "紅蓮鯛",
+        "en": "Fiery Seabream"
+      },
+      "desc": {
+        "zh-Hans": "鱼类食材，容易发动\n[热血]系用餐技能。\n有如燃烧般赤红，特征鲜明的高级食材。",
+        "zh-Hant": "魚類食材，容易發動\n《熱血》體系料理技能。\n有如燃燒般赤紅，特徵鮮明的高級食材。",
+        "ja": "≪熱血≫系統の食事スキルが発動\nしやすくなる魚食材。燃えるような\n赤さが特徴的な高級食材。",
+        "en": "Fish that helps trigger Vigor food skills.\nThis blazingly red fish looks as though it's\nperpetually aflame."
+      },
+      "category": "fish",
+      "group": 2,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 47
+      }
+    },
+    {
+      "id": 48,
+      "name": {
+        "zh-Hans": "仰背虾",
+        "zh-Hant": "仰背蝦",
+        "ja": "くの字エビ",
+        "en": "Bent-backed Shrimp"
+      },
+      "desc": {
+        "zh-Hans": "鱼类食材，容易发动\n[智囊]系用餐技能。\n背部弯曲的特色鲜明的甲壳类。不易食用。",
+        "zh-Hant": "魚類食材，容易發動\n《智囊》體系料理技能。\n背部彎曲的特色鮮明的甲殼類。不易食用。",
+        "ja": "≪知恵袋≫系統の食事スキルが発動\nしやすくなる魚食材。折れ曲がった\n背が特徴的な甲殻類。食べにくい。",
+        "en": "Fish that helps trigger Acumen food skills.\nIts distinctively contorted body makes this\nshrimp difficult to eat."
+      },
+      "category": "fish",
+      "group": 3,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 48
+      }
+    },
+    {
+      "id": 49,
+      "name": {
+        "zh-Hans": "铠甲蟹",
+        "zh-Hant": "鎧甲蟹",
+        "ja": "鎧ガニ",
+        "en": "Armor Crab"
+      },
+      "desc": {
+        "zh-Hans": "鱼类食材，容易发动\n[智囊]系用餐技能。\n身披铠甲般硬壳的甲壳类。",
+        "zh-Hant": "魚類食材，容易發動\n《智囊》體系料理技能。\n身披鎧甲般硬殼的甲殼類。",
+        "ja": "≪知恵袋≫系統の食事スキルが発動\nしやすくなる魚食材。鎧のように\n頑丈な殻をまとった甲殻類。",
+        "en": "Fish that helps trigger Acumen food skills.\nA crustacean with a shell that looks like\na suit of armor and is just as tough."
+      },
+      "category": "fish",
+      "group": 3,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 49
+      }
+    },
+    {
+      "id": 50,
+      "name": {
+        "zh-Hans": "珊瑚虾",
+        "zh-Hant": "珊瑚蝦",
+        "ja": "珊瑚エビ",
+        "en": "Coral Shrimp"
+      },
+      "desc": {
+        "zh-Hans": "鱼类食材，容易发动\n[智囊]系用餐技能。\n外观呈美丽的樱花色，小型的甲壳类。",
+        "zh-Hant": "魚類食材，容易發動\n《智囊》體系料理技能。\n外觀呈美麗的櫻花色，小型的甲殼類。",
+        "ja": "≪知恵袋≫系統の食事スキルが発動\nしやすくなる魚食材。美しい\n桜色をした、小ぶりな甲殻類。",
+        "en": "Fish that helps trigger Acumen food skills.\nPetite, but with a dazzling rose-colored shell."
+      },
+      "category": "fish",
+      "group": 3,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 50
+      }
+    },
+    {
+      "id": 51,
+      "name": {
+        "zh-Hans": "要塞蟹",
+        "zh-Hant": "要塞蟹",
+        "ja": "城塞ガニ",
+        "en": "Fortress Crab"
+      },
+      "desc": {
+        "zh-Hans": "鱼类食材，容易发动\n[智囊]系用餐技能。\n壳与贝类共生，让身体看起来更显得庞大。",
+        "zh-Hant": "魚類食材，容易發動\n《智囊》體系料理技能。\n外觀呈美麗的櫻花色，小型的甲殼類。",
+        "ja": "≪知恵袋≫系統の食事スキルが発動\nしやすくなる魚食材。殻に貝類を\n共生させ、体を大きく見せている。",
+        "en": "Fish that helps trigger Acumen food skills.\nIt attracts symbiotes to live on its shell,\nmaking its body seem larger than it is."
+      },
+      "category": "fish",
+      "group": 3,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 51
+      }
+    },
+    {
+      "id": 52,
+      "name": {
+        "zh-Hans": "女王虾",
+        "zh-Hant": "女王蝦",
+        "ja": "女王エビ",
+        "en": "Queen Shrimp"
+      },
+      "desc": {
+        "zh-Hans": "鱼类食材，容易发动\n[智囊]系用餐技能。\n称霸族群的女王虾。",
+        "zh-Hant": "魚類食材，容易發動\n《智囊》體系料理技能。\n稱霸族群的女王蝦。",
+        "ja": "≪知恵袋≫系統の食事スキルが発動\nしやすくなる魚食材。\n女王として君臨しているエビ。",
+        "en": "Fish that helps trigger Acumen food skills.\nReigns over other shrimp as their queen."
+      },
+      "category": "fish",
+      "group": 3,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 52
+      }
+    },
+    {
+      "id": 53,
+      "name": {
+        "zh-Hans": "千年蟹",
+        "zh-Hant": "千年蟹",
+        "ja": "千年蟹",
+        "en": "Millenary Crab"
+      },
+      "desc": {
+        "zh-Hans": "鱼类食材，容易发动\n[智囊]系用餐技能。\n据说活了上千年的厉害螃蟹。",
+        "zh-Hant": "魚類食材，容易發動\n《智囊》體系料理技能。\n據說活了上千年的厲害螃蟹。",
+        "ja": "≪知恵袋≫系統の食事スキルが発動\nしやすくなる魚食材。千年生きて\nいるとされる、立派なカニ。",
+        "en": "Fish that helps trigger Acumen food skills.\nA magnificent crab said to live for a thousand\nyears."
+      },
+      "category": "fish",
+      "group": 3,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 53
+      }
+    },
+    {
+      "id": 54,
+      "name": {
+        "zh-Hans": "骨章鱼",
+        "zh-Hant": "骨章魚",
+        "ja": "骨タコ",
+        "en": "Osseoctopus"
+      },
+      "desc": {
+        "zh-Hans": "鱼类食材，容易发动\n[烟火师]系用餐技能。\n口感如骨头般硬实带有嚼劲的食材。",
+        "zh-Hant": "魚類食材，容易發動\n《煙火師》體系料理技能。\n口感如骨頭般硬實帶有咬勁的食材。",
+        "ja": "≪花火師≫系統の食事スキルが発動\nしやすくなる魚食材。まるで骨の\nような厳しい歯ごたえがする食材。",
+        "en": "Fish that helps trigger Artillery food skills.\nIt has a brittle texture that's almost like\nchewing on bone."
+      },
+      "category": "fish",
+      "group": 4,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 54
+      }
+    },
+    {
+      "id": 55,
+      "name": {
+        "zh-Hans": "粉红鱼子酱",
+        "zh-Hant": "粉紅魚子醬",
+        "ja": "ピンクキャビア",
+        "en": "Pink Caviar"
+      },
+      "desc": {
+        "zh-Hans": "鱼类食材，容易发动\n[烟火师]系用餐技能。\n闪耀鲜艳粉红色的盐渍鱼卵。",
+        "zh-Hant": "魚類食材，容易發動\n《煙火師》體系料理技能。\n閃耀鮮艷粉紅色的鹽漬魚卵。",
+        "ja": "≪花火師≫系統の食事スキルが発動\nしやすくなる魚食材。鮮やかな\nピンク色に輝く魚卵の塩漬け。",
+        "en": "Fish that helps trigger Artillery food skills.\nBrilliantly pink fish eggs, lightly pickled in salt."
+      },
+      "category": "fish",
+      "group": 4,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 55
+      }
+    },
+    {
+      "id": 56,
+      "name": {
+        "zh-Hans": "百合乌贼",
+        "zh-Hant": "百合烏賊",
+        "ja": "百合イカ",
+        "en": "Lily Squid"
+      },
+      "desc": {
+        "zh-Hans": "鱼类食材，容易发动\n[烟火师]系用餐技能。\n似乎会带来出乎意料的灵感。",
+        "zh-Hant": "魚類食材，容易發動\n《煙火師》體系料理技能。\n似乎會帶來出乎意料的閃光。",
+        "ja": "≪花火師≫系統の食事スキルが発動\nしやすくなる魚食材。思わぬ閃きを\nもたらしてくれるらしい。",
+        "en": "Fish that helps trigger Artillery food skills.\nSaid to bring on flashes of insight."
+      },
+      "category": "fish",
+      "group": 4,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 56
+      }
+    },
+    {
+      "id": 57,
+      "name": {
+        "zh-Hans": "章鱼祭典",
+        "zh-Hant": "章魚祭典",
+        "ja": "タコフェスタ",
+        "en": "Ballerina Octopus"
+      },
+      "desc": {
+        "zh-Hans": "鱼类食材，容易发动\n[烟火师]系用餐技能。\n烹饪后会呈现如跳舞般的扭曲形状。",
+        "zh-Hant": "魚類食材，容易發動\n《煙火師》體系料理技能。\n調理後會呈現如跳舞般的扭曲形狀。",
+        "ja": "≪花火師≫系統の食事スキルが発動\nしやすくなる魚食材。調理すると\n踊りくねった形になってしまう。",
+        "en": "Fish that helps trigger Artillery food skills.\nCooking it makes its legs curl up like a dancer."
+      },
+      "category": "fish",
+      "group": 4,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 57
+      }
+    },
+    {
+      "id": 58,
+      "name": {
+        "zh-Hans": "灵魂鱼子酱",
+        "zh-Hant": "靈魂魚子醬",
+        "ja": "ソウルキャビア",
+        "en": "Soulful Caviar"
+      },
+      "desc": {
+        "zh-Hans": "鱼类食材，容易发动\n[烟火师]系用餐技能。\n美味足以震撼灵魂的鱼类珍馐。",
+        "zh-Hant": "魚類食材，容易發動\n《煙火師》體系料理技能。\n美味足以震撼靈魂的魚類珍饈。",
+        "ja": "≪花火師≫系統の食事スキルが発動\nしやすくなる魚食材。魂が震える\nほどの旨味を秘めた魚介の珍味。",
+        "en": "Fish that helps trigger Artillery food skills.\nFish eggs so delicious they move the soul."
+      },
+      "category": "fish",
+      "group": 4,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 58
+      }
+    },
+    {
+      "id": 59,
+      "name": {
+        "zh-Hans": "大王乌贼",
+        "zh-Hant": "大王烏賊",
+        "ja": "大王イカ",
+        "en": "Sovereign Squid"
+      },
+      "desc": {
+        "zh-Hans": "鱼类食材，容易发动\n[烟火师]系用餐技能。\n压倒性的巨型尺寸，不辱大王名号的食材。",
+        "zh-Hant": "魚類食材，容易發動\n《煙火師》體系料理技能。\n壓倒性的巨大尺寸，不辱大王名號的食材。",
+        "ja": "≪花火師≫系統の食事スキルが発動\nしやすくなる魚食材。大王の名に\n恥じない圧倒的な大きさの食材。",
+        "en": "Fish that helps trigger Artillery food skills.\nA squid whose size practically demands\nthat it be regarded as a ruler of something."
+      },
+      "category": "fish",
+      "group": 4,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 59
+      }
+    },
+    {
+      "id": 60,
+      "name": {
+        "zh-Hans": "主厨芹",
+        "zh-Hant": "主廚芹",
+        "ja": "マカセロリ",
+        "en": "Magnicelery"
+      },
+      "desc": {
+        "zh-Hans": "蔬菜类食材，容易发动\n[勇敢]系用餐技能。\n风味独特，令人不禁食指大动。",
+        "zh-Hant": "蔬菜類食材，容易發動\n《勇敢》體系料理技能。\n風味獨特，令人不禁食指大動。",
+        "ja": "≪勇敢≫系統の食事スキルが発動\nしやすくなる野菜食材。風味にクセ\nがあるが、思わず口にしたくなる。",
+        "en": "Veggie that helps trigger Courage food skills.\nOnce you develop a taste for it, you'll find it\nhard to resist."
+      },
+      "category": "veg",
+      "group": 0,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 60
+      }
+    },
+    {
+      "id": 61,
+      "name": {
+        "zh-Hans": "鬼洋葱",
+        "zh-Hant": "鬼洋蔥",
+        "ja": "オニオニオン",
+        "en": "Rapscallion"
+      },
+      "desc": {
+        "zh-Hans": "蔬菜类食材，容易发动\n[勇敢]系用餐技能。生吃的话，\n有着连鬼都会掉泪的刺激。",
+        "zh-Hant": "蔬菜類食材，容易發動\n《勇敢》體系料理技能。\n生吃的話，有著連鬼都會掉淚的刺激。",
+        "ja": "≪勇敢≫系統の食事スキルが発動\nしやすくなる野菜食材。生で食べる\nと、鬼でも涙が出るほどの刺激。",
+        "en": "Veggie that helps trigger Courage food skills.\nEaten raw, its flavor is so sharp that even a\nDeviljho might shed a tear."
+      },
+      "category": "veg",
+      "group": 0,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 61
+      }
+    },
+    {
+      "id": 62,
+      "name": {
+        "zh-Hans": "大颗仙人掌",
+        "zh-Hant": "大顆仙人掌",
+        "ja": "大玉サボテン",
+        "en": "Jewel Cactus"
+      },
+      "desc": {
+        "zh-Hans": "蔬菜类食材，容易发动\n[勇敢]系用餐技能。\n既大颗又满满的果肉。",
+        "zh-Hant": "蔬菜類食材，容易發動\n《勇敢》體系料理技能。\n既大顆又滿滿的果肉。",
+        "ja": "≪勇敢≫系統の食事スキルが発動\nしやすくなる野菜食材。\n大ぶりで、果肉が詰まっている。",
+        "en": "Veggie that helps trigger Courage food skills.\nLarge and packed with juicy, fleshy meat."
+      },
+      "category": "veg",
+      "group": 0,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 62
+      }
+    },
+    {
+      "id": 63,
+      "name": {
+        "zh-Hans": "龙花果",
+        "zh-Hant": "龍花果",
+        "ja": "ドラゴンフラワー",
+        "en": "Dragonbloom"
+      },
+      "desc": {
+        "zh-Hans": "蔬菜类食材，容易发动\n[勇敢]系用餐技能。\n坚硬度可比龙的鳞片的花。",
+        "zh-Hant": "蔬菜類食材，容易發動\n《勇敢》體系料理技能。\n堅硬度可比龍的鱗片的花。",
+        "ja": "≪勇敢≫系統の食事スキルが発動\nしやすくなる野菜食材。\n竜の鱗ほどの堅さを持つ花。",
+        "en": "Veggie that helps trigger Courage food skills.\nA flower with fruit as tough as wyvern scales."
+      },
+      "category": "veg",
+      "group": 0,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 63
+      }
+    },
+    {
+      "id": 64,
+      "name": {
+        "zh-Hans": "国王仙人掌",
+        "zh-Hant": "國王仙人掌",
+        "ja": "王様サボテン",
+        "en": "Kingly Cactus"
+      },
+      "desc": {
+        "zh-Hans": "蔬菜类食材，容易发动\n[勇敢]系用餐技能。\n品质配得上国王之名的植物。",
+        "zh-Hant": "蔬菜類食材，容易發動\n《勇敢》體系料理技能。\n品質符合國王之名的植物。",
+        "ja": "≪勇敢≫系統の食事スキルが発動\nしやすくなる野菜食材。\n王様の名にふさわしい品質の植物。",
+        "en": "Veggie that helps trigger Courage food skills.\nA cactus of majestic, almost king-like, quality."
+      },
+      "category": "veg",
+      "group": 0,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 64
+      }
+    },
+    {
+      "id": 65,
+      "name": {
+        "zh-Hans": "霜降蕃茄",
+        "zh-Hant": "霜降蕃茄",
+        "ja": "シモフリトマト",
+        "en": "Fatty Tomato"
+      },
+      "desc": {
+        "zh-Hans": "蔬菜类食材，容易发动\n[勇敢]系用餐技能。\n一口咬下甜汁满溢的最高级蕃茄。",
+        "zh-Hant": "蔬菜類食材，容易發動\n《勇敢》體系料理技能。\n一口咬下甜汁滿溢的最高級蕃茄。",
+        "ja": "≪勇敢≫系統の食事スキルが発動\nしやすくなる野菜食材。かじると\n甘い汁がたっぷりの最高級トマト。",
+        "en": "Veggie that helps trigger Courage food skills.\nA gourmet tomato bursting with sweet juices."
+      },
+      "category": "veg",
+      "group": 0,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 65
+      }
+    },
+    {
+      "id": 66,
+      "name": {
+        "zh-Hans": "坚牢蜀黍",
+        "zh-Hant": "堅牢蜀黍",
+        "ja": "堅牢モロコシ",
+        "en": "Stonecorn"
+      },
+      "desc": {
+        "zh-Hans": "蔬菜类食材，容易发动\n[忍耐]系用餐技能。\n光剥皮就让人累得半死的蔬菜。",
+        "zh-Hant": "蔬菜類食材，容易發動\n《忍耐》體系料理技能。\n光剝皮就累得半死的蔬菜。",
+        "ja": "≪我慢≫系統の食事スキルが発動\nしやすくなる野菜食材。\n皮を剥く労力が尋常じゃない野菜。",
+        "en": "Veggie that helps trigger Resilience food skills.\nA stalk of corn that takes almost superhuman\nstrength to shuck."
+      },
+      "category": "veg",
+      "group": 1,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 66
+      }
+    },
+    {
+      "id": 67,
+      "name": {
+        "zh-Hans": "坚定土豆",
+        "zh-Hant": "堅定馬鈴薯",
+        "ja": "ふんばりポテト",
+        "en": "Steadfast Spud"
+      },
+      "desc": {
+        "zh-Hans": "蔬菜类食材，容易发动\n[忍耐]系用餐技能。\n根部抓地力强，收获时就很辛苦。",
+        "zh-Hant": "蔬菜類食材，容易發動\n《忍耐》體系料理技能。\n根部抓地力強，收穫時就很辛苦。",
+        "ja": "≪我慢≫系統の食事スキルが発動\nしやすくなる野菜食材。力強い根を\n張り巡らすため、収穫には一苦労。",
+        "en": "Veggie that helps trigger Resilience food skills.\nThe tenacious roots it spreads make for back-\nbreaking work come harvesting time."
+      },
+      "category": "veg",
+      "group": 1,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 67
+      }
+    },
+    {
+      "id": 68,
+      "name": {
+        "zh-Hans": "严选茸菇",
+        "zh-Hant": "嚴選茸菇",
+        "ja": "厳選スジタケ",
+        "en": "Exquisite Shroomcap"
+      },
+      "desc": {
+        "zh-Hans": "蔬菜类食材，容易发动\n[忍耐]系用餐技能。\n连料理人都会赞不绝口的优质蘑菇。",
+        "zh-Hant": "蔬菜類食材，容易發動\n《忍耐》體系料理技能。\n連料理人都會讚不絕口的優質香菇。",
+        "ja": "≪我慢≫系統の食事スキルが発動\nしやすくなる野菜食材。料理人も\nうなるほど上質なキノコ。",
+        "en": "Veggie that helps trigger Resilience food skills.\nA delectable mushroom that even chefs are wont\nto pop into their mouths while cooking."
+      },
+      "category": "veg",
+      "group": 1,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 68
+      }
+    },
+    {
+      "id": 69,
+      "name": {
+        "zh-Hans": "月夜菌",
+        "zh-Hant": "月夜茸",
+        "ja": "月夜茸",
+        "en": "Moonlit Mushroom"
+      },
+      "desc": {
+        "zh-Hans": "蔬菜类食材，容易发动\n[忍耐]系用餐技能。\n散发出月光般淡淡光芒的茸菇。",
+        "zh-Hant": "蔬菜類食材，容易發動\n《忍耐》體系料理技能。\n散發出月光般淡淡光芒的茸菇。",
+        "ja": "≪我慢≫系統の食事スキルが発動\nしやすくなる野菜食材。\n月光のような淡い輝きのスジタケ。",
+        "en": "Veggie that helps trigger Resilience food skills.\nA mushroom that glows faintly like the moon."
+      },
+      "category": "veg",
+      "group": 1,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 69
+      }
+    },
+    {
+      "id": 70,
+      "name": {
+        "zh-Hans": "灵光茸菇",
+        "zh-Hant": "靈光茸菇",
+        "ja": "霊光スジタケ",
+        "en": "Spirit Shroomcap"
+      },
+      "desc": {
+        "zh-Hans": "蔬菜类食材，容易发动\n[忍耐]系用餐技能。\n环绕着幻想般的光辉的蘑菇。",
+        "zh-Hant": "蔬菜類食材，容易發動\n《忍耐》體系料理技能。\n環繞著幻想般的光輝的香菇。",
+        "ja": "≪我慢≫系統の食事スキルが発動\nしやすくなる野菜食材。\n幻想的な輝きをまとったキノコ。",
+        "en": "Veggie that helps trigger Resilience food skills.\nThe glow of this mushroom can only be described\nas otherworldly."
+      },
+      "category": "veg",
+      "group": 1,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 70
+      }
+    },
+    {
+      "id": 71,
+      "name": {
+        "zh-Hans": "土笋",
+        "zh-Hant": "土筍",
+        "ja": "ツチタケノコ",
+        "en": "Soiled Shroomcap"
+      },
+      "desc": {
+        "zh-Hans": "蔬菜类食材，容易发动\n[忍耐]系用餐技能。\n由于难得一见，曾被称为梦幻食材。",
+        "zh-Hant": "蔬菜類食材，容易發動\n《忍耐》體系料理技能。\n由於難得一見，曾有一時被稱為夢幻食材。",
+        "ja": "≪我慢≫系統の食事スキルが発動\nしやすくなる野菜食材。あまりの見\nつけ難さに一時は幻とも呼ばれた。",
+        "en": "Veggie that helps trigger Resilience food skills.\nSurprisingly difficult to find, they were once\nthought to be only a legend."
+      },
+      "category": "veg",
+      "group": 1,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 71
+      }
+    },
+    {
+      "id": 72,
+      "name": {
+        "zh-Hans": "土堤南瓜",
+        "zh-Hant": "土堤南瓜",
+        "ja": "ドテカボチャ",
+        "en": "Plumpkin"
+      },
+      "desc": {
+        "zh-Hans": "蔬菜类食材，容易发动\n[热血]系用餐技能。\n沉甸甸硕大的南瓜，至于味道嘛……",
+        "zh-Hant": "蔬菜類食材，容易發動\n《熱血》體系料理技能。\n沉甸甸碩大的南瓜，至於味道嘛……",
+        "ja": "≪熱血≫系統の食事スキルが発動\nしやすくなる野菜食材。どっしりと\nした立派なカボチャ。味は…。",
+        "en": "Veggie that helps trigger Vigor food skills.\nAn imposing, gorgeously proportioned\npumpkin. Its taste is almost irrelevant."
+      },
+      "category": "veg",
+      "group": 2,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 72
+      }
+    },
+    {
+      "id": 73,
+      "name": {
+        "zh-Hans": "棍棒葱",
+        "zh-Hant": "棍棒蔥",
+        "ja": "根棒ネギ",
+        "en": "Cudgel Onion"
+      },
+      "desc": {
+        "zh-Hans": "蔬菜类食材，容易发动\n[热血]系用餐技能。特色是如其名般的\n粗野外型以及辛辣的口感。",
+        "zh-Hant": "蔬菜類食材，容易發動\n《熱血》體系料理技能。\n特色是如其名般的粗野外型以及辛辣的口感。",
+        "ja": "≪熱血≫系統の食事スキルが発動\nしやすくなる野菜食材。その名の\n通り荒々しい形と辛さが特徴。",
+        "en": "Veggie that helps trigger Vigor food skills.\nAs its name suggests, its sharp taste and\nrough appearance are almost ogreish."
+      },
+      "category": "veg",
+      "group": 2,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 73
+      }
+    },
+    {
+      "id": 74,
+      "name": {
+        "zh-Hans": "亮光花",
+        "zh-Hant": "亮光花",
+        "ja": "シャインフラワー",
+        "en": "Shinebloom"
+      },
+      "desc": {
+        "zh-Hans": "蔬菜类食材，容易发动\n[热血]系用餐技能。散发的花香，\n令人想起枝叶间洒落的阳光。",
+        "zh-Hant": "蔬菜類食材，容易發動\n《熱血》體系料理技能。\n散發的花香令人想起枝葉間灑落的陽光。",
+        "ja": "≪熱血≫系統の食事スキルが発動\nしやすくなる野菜食材。\n木漏れ日を思わせる香りのする花。",
+        "en": "Veggie that helps trigger Vigor food skills.\nIts aroma paints the mind with an image of\nsoft, dappled sunlight."
+      },
+      "category": "veg",
+      "group": 2,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 74
+      }
+    },
+    {
+      "id": 75,
+      "name": {
+        "zh-Hans": "百阳草",
+        "zh-Hant": "百陽草",
+        "ja": "百陽草",
+        "en": "Sunkissed Grass"
+      },
+      "desc": {
+        "zh-Hans": "蔬菜类食材，容易发动\n[热血]系用餐技能。\n据说可以治疗百病的植物。",
+        "zh-Hant": "蔬菜類食材，容易發動\n《熱血》體系料理技能。\n據說可以治百病的植物。",
+        "ja": "≪熱血≫系統の食事スキルが発動\nしやすくなる野菜食材。\n万病に効くとされる植物。",
+        "en": "Veggie that helps trigger Vigor food skills.\nAn herb claimed to have broad remedial powers."
+      },
+      "category": "veg",
+      "group": 2,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 75
+      }
+    },
+    {
+      "id": 76,
+      "name": {
+        "zh-Hans": "黄金花",
+        "zh-Hant": "黃金花",
+        "ja": "ゴールドフラワー",
+        "en": "Goldbloom"
+      },
+      "desc": {
+        "zh-Hans": "蔬菜类食材，容易发动\n[热血]系用餐技能。\n美丽到被喻为黄金般的鲜花。",
+        "zh-Hant": "蔬菜類食材，容易發動\n《熱血》體系料理技能。\n美麗到被喻為黃金般的花朵。",
+        "ja": "≪熱血≫系統の食事スキルが発動\nしやすくなる野菜食材。\n黄金にたとえられるほど美しい花。",
+        "en": "Veggie that helps trigger Vigor food skills.\nA flower that radiates golden beauty."
+      },
+      "category": "veg",
+      "group": 2,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 76
+      }
+    },
+    {
+      "id": 77,
+      "name": {
+        "zh-Hans": "帝王松露",
+        "zh-Hant": "帝王松露",
+        "ja": "キングトリュフ",
+        "en": "King Truffle"
+      },
+      "desc": {
+        "zh-Hans": "蔬菜类食材，容易发动\n[热血]系用餐技能。只在料理里\n加入一些，就会洋溢着幸福的香气。",
+        "zh-Hant": "蔬菜類食材，容易發動\n《熱血》體系料理技能。\n只在料理裡加入一些，就會洋溢著幸福的香氣。",
+        "ja": "≪熱血≫系統の食事スキルが発動\nしやすくなる野菜食材。料理に少し\n入れるだけで、幸せな香りが漂う。",
+        "en": "Veggie that helps trigger Vigor food skills.\nEven a pinch of this adds volumes of delightful\naromas to any dish."
+      },
+      "category": "veg",
+      "group": 2,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 77
+      }
+    },
+    {
+      "id": 78,
+      "name": {
+        "zh-Hans": "五香芹菜",
+        "zh-Hant": "五香芹菜",
+        "ja": "五香セロリ",
+        "en": "Aromaticelery"
+      },
+      "desc": {
+        "zh-Hans": "蔬菜类食材，容易发动\n[智囊]系用餐技能。\n香气会随调理方式变化的食材。",
+        "zh-Hant": "蔬菜類食材，容易發動\n《智囊》體系料理技能。\n香氣會隨調理方式變化的食材。",
+        "ja": "≪知恵袋≫系統の食事スキルが発動\nしやすくなる野菜食材。調理方法に\nよって香りが変化する食材。",
+        "en": "Veggie that helps trigger Acumen food skills.\nIts aroma varies greatly depending on how\nit's prepared."
+      },
+      "category": "veg",
+      "group": 3,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 78
+      }
+    },
+    {
+      "id": 79,
+      "name": {
+        "zh-Hans": "七彩甜椒",
+        "zh-Hant": "七彩甜椒",
+        "ja": "虹色パプリカ",
+        "en": "Prismatic Paprika"
+      },
+      "desc": {
+        "zh-Hans": "蔬菜类食材，容易发动\n[智囊]系用餐技能。\n色彩会随调理方式变化的食材。",
+        "zh-Hant": "蔬菜類食材，容易發動\n《智囊》體系料理技能。\n色彩會隨調理方式變化的食材。",
+        "ja": "≪知恵袋≫系統の食事スキルが発動\nしやすくなる野菜食材。調理方法に\nよって彩りが変化する食材。",
+        "en": "Veggie that helps trigger Acumen food skills.\nIts coloration varies greatly depending on how\nit's prepared."
+      },
+      "category": "veg",
+      "group": 3,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 79
+      }
+    },
+    {
+      "id": 80,
+      "name": {
+        "zh-Hans": "瘴气果实",
+        "zh-Hant": "瘴氣果實",
+        "ja": "瘴気の果実",
+        "en": "Tainted Fruit"
+      },
+      "desc": {
+        "zh-Hans": "蔬菜类食材，容易发动\n[智囊]系用餐技能。\n在严苛环境下依然坚强成长的果实。",
+        "zh-Hant": "蔬菜類食材，容易發動\n《智囊》體系料理技能。\n在嚴苛環境下依然成長出來的果實。",
+        "ja": "≪知恵袋≫系統の食事スキルが発動\nしやすくなる野菜食材。\n過酷な環境下でも成長した果物。",
+        "en": "Veggie that helps trigger Acumen food skills.\nA fruit that's ripened in spite of the extreme\nconditions of the Rotten Vale."
+      },
+      "category": "veg",
+      "group": 3,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 80
+      }
+    },
+    {
+      "id": 81,
+      "name": {
+        "zh-Hans": "天堂莓果",
+        "zh-Hant": "天堂莓果",
+        "ja": "ヘブンベリー",
+        "en": "Heavenberry"
+      },
+      "desc": {
+        "zh-Hans": "蔬菜类食材，容易发动\n[智囊]系用餐技能。味道刺激，\n会令食用者有升天感觉的植物。",
+        "zh-Hant": "蔬菜類食材，容易發動\n《智囊》體系料理技能。\n味道刺激，會令食用者有升天感覺的植物。",
+        "ja": "≪知恵袋≫系統の食事スキルが発動\nしやすくなる野菜食材。昇天して\nしまうほど刺激的な味の植物。",
+        "en": "Veggie that helps trigger Acumen food skills.\nIts flavor is praised as a taste of heaven."
+      },
+      "category": "veg",
+      "group": 3,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 81
+      }
+    },
+    {
+      "id": 82,
+      "name": {
+        "zh-Hans": "彼岸的果实",
+        "zh-Hant": "彼岸的果實",
+        "ja": "彼岸の果実",
+        "en": "Elysian Fruit"
+      },
+      "desc": {
+        "zh-Hans": "蔬菜类食材，容易发动\n[智囊]系用餐技能。散发出的香气，\n彷佛不属于这世界的果实。",
+        "zh-Hant": "蔬菜類食材，容易發動\n《智囊》體系料理技能。\n散發出的香氣彷彿不屬於這世界的果實。",
+        "ja": "≪知恵袋≫系統の食事スキルが発動\nしやすくなる野菜食材。この世の\nものとは思えない香りがする果物。",
+        "en": "Veggie that helps trigger Acumen food skills.\nIt has an aroma so magical it seems to come\nfrom another world."
+      },
+      "category": "veg",
+      "group": 3,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 82
+      }
+    },
+    {
+      "id": 83,
+      "name": {
+        "zh-Hans": "百万卷心菜",
+        "zh-Hant": "百萬高麗菜",
+        "ja": "ミリオンキャベツ",
+        "en": "Millionfold Cabbage"
+      },
+      "desc": {
+        "zh-Hans": "蔬菜类食材，容易发动\n[智囊]系用餐技能。叶片异于常理的\n重迭造就出如奇迹般的口感。",
+        "zh-Hant": "蔬菜類食材，容易發動\n《智囊》體系料理技能。\n葉片異於常理的重疊造就出如奇蹟般的口感。",
+        "ja": "≪知恵袋≫系統の食事スキルが発動\nしやすくなる野菜食材。葉の異常な\n程の重なりが生み出す奇跡の食感。",
+        "en": "Veggie that helps trigger Acumen food skills.\nIt boasts a phenomenal texture thanks to its\ninnumerable layers of leaves."
+      },
+      "category": "veg",
+      "group": 3,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 83
+      }
+    },
+    {
+      "id": 84,
+      "name": {
+        "zh-Hans": "怪鸟豆",
+        "zh-Hant": "怪鳥豆",
+        "ja": "クック豆",
+        "en": "Kut-Ku Bean"
+      },
+      "desc": {
+        "zh-Hans": "蔬菜类食材，容易发动\n[烟火师]系用餐技能。\n有时会混入辣度足以令人喷火的果实。",
+        "zh-Hant": "蔬菜類食材，容易發動\n《煙火師》體系料理技能。\n有時會混入辣度足以令人噴火的果實。",
+        "ja": "≪花火師≫系統の食事スキルが発動\nしやすくなる野菜食材。時折、火が\n出そうな辛さの実が混ざっている。",
+        "en": "Veggie that helps trigger Artillery food skills.\nThe occasional bean is hot enough to have\nyou spouting fire like a Yian Kut-Ku."
+      },
+      "category": "veg",
+      "group": 4,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 84
+      }
+    },
+    {
+      "id": 85,
+      "name": {
+        "zh-Hans": "炎熟芒果",
+        "zh-Hant": "炎熟芒果",
+        "ja": "炎熟マンゴー",
+        "en": "Molten Mango"
+      },
+      "desc": {
+        "zh-Hans": "蔬菜类食材，容易发动\n[烟火师]系用餐技能。收获后依然\n保有温度，会急速持续成熟。",
+        "zh-Hant": "蔬菜類食材，容易發動\n《煙火師》體系料理技能。\n收穫後依然保有溫度，會急速持續成熟。",
+        "ja": "≪花火師≫系統の食事スキルが発動\nしやすくなる野菜食材。収穫後も\n熱を持ち、急速に熟し続ける果物。",
+        "en": "Veggie that helps trigger Artillery food skills.\nA mango that ripens quickly after it's picked,\nand continues to seethe with heat long after."
+      },
+      "category": "veg",
+      "group": 4,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 85
+      }
+    },
+    {
+      "id": 86,
+      "name": {
+        "zh-Hans": "岩石果",
+        "zh-Hant": "岩石果",
+        "ja": "ロックフルーツ",
+        "en": "Rockfruit"
+      },
+      "desc": {
+        "zh-Hans": "蔬菜类食材，容易发动\n[烟火师]系用餐技能。\n外皮如岩石般坚硬的植物食材。",
+        "zh-Hant": "蔬菜類食材，容易發動\n《煙火師》體系料理技能。\n外皮如岩石般堅硬的植物食材。",
+        "ja": "≪花火師≫系統の食事スキルが発動\nしやすくなる野菜食材。\n岩のような堅さの皮を持つ植物。",
+        "en": "Veggie that helps trigger Artillery food skills.\nA fruit with a tough, rock-like rind."
+      },
+      "category": "veg",
+      "group": 4,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 86
+      }
+    },
+    {
+      "id": 87,
+      "name": {
+        "zh-Hans": "热带菠萝",
+        "zh-Hant": "熱帶鳳梨",
+        "ja": "トロピカパイン",
+        "en": "Divineapple"
+      },
+      "desc": {
+        "zh-Hans": "蔬菜类食材，容易发动\n[烟火师]系用餐技能。\n不易种植的热带水果。",
+        "zh-Hant": "蔬菜類食材，容易發動\n《煙火師》體系料理技能。\n不易種植成長的熱帶水果。",
+        "ja": "≪花火師≫系統の食事スキルが発動\nしやすくなる野菜食材。なかなか\n育たないトロピカルなフルーツ。",
+        "en": "Veggie that helps trigger Artillery food skills.\nA tropical fruit that's tricky to grow."
+      },
+      "category": "veg",
+      "group": 4,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 87
+      }
+    },
+    {
+      "id": 88,
+      "name": {
+        "zh-Hans": "狂野水果",
+        "zh-Hant": "狂野水果",
+        "ja": "ワイルドフルーツ",
+        "en": "Wildfruit"
+      },
+      "desc": {
+        "zh-Hans": "蔬菜类食材，容易发动\n[烟火师]系用餐技能。\n老饕喜爱的狂野味道。",
+        "zh-Hant": "蔬菜類食材，容易發動\n《煙火師》體系料理技能。\n老饕喜愛的狂野味道。",
+        "ja": "≪花火師≫系統の食事スキルが発動\nしやすくなる野菜食材。\n通好みなワイルドな味わい。",
+        "en": "Veggie that helps trigger Artillery food skills.\nIts wild taste is a favorite among gourmets."
+      },
+      "category": "veg",
+      "group": 4,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 88
+      }
+    },
+    {
+      "id": 89,
+      "name": {
+        "zh-Hans": "绿宝石榴莲",
+        "zh-Hant": "綠寶石榴槤",
+        "ja": "エメラルドリアン",
+        "en": "Emerald Durian"
+      },
+      "desc": {
+        "zh-Hans": "蔬菜类食材，容易发动\n[烟火师]系用餐技能。被喻为有如\n闪耀着绿色宝石般的稀有果实。",
+        "zh-Hant": "蔬菜類食材，容易發動\n《煙火師》體系料理技能。\n被喻為有如閃耀著綠色寶石般的稀有果實。",
+        "ja": "≪花火師≫系統の食事スキルが発動\nしやすくなる野菜食材。緑色に輝き\n宝石に例えられるほど希少な果実。",
+        "en": "Veggie that helps trigger Artillery food skills.\nA rare fruit that shines like an emerald, and\nis almost as valuable."
+      },
+      "category": "veg",
+      "group": 4,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 89
+      }
+    },
+    {
+      "id": 90,
+      "name": {
+        "zh-Hans": "泥芋酒",
+        "zh-Hant": "泥芋酒",
+        "ja": "泥芋酒",
+        "en": "Tater Mud"
+      },
+      "desc": {
+        "zh-Hans": "酒类，容易发动\n[眼力]系用餐技能。\n注意别喝到烂醉。",
+        "zh-Hant": "酒類食材，容易發動\n《眼力》體系料理技能。\n注意別喝到爛醉。",
+        "ja": "≪目利き≫系統の食事スキルが発動\nしやすくなる酒。悪酔い注意。",
+        "en": "Alcohol that helps trigger Perception food skills.\nA drink that goes down as easy as it sounds."
+      },
+      "category": "drink",
+      "group": 5,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 90
+      }
+    },
+    {
+      "id": 91,
+      "name": {
+        "zh-Hans": "龙酒",
+        "zh-Hant": "龍酒",
+        "ja": "竜酒",
+        "en": "Dragon Ale"
+      },
+      "desc": {
+        "zh-Hans": "酒类，容易发动\n[眼力]系用餐技能。\n连龙都会醉倒的烈酒。",
+        "zh-Hant": "酒類食材，容易發動\n《眼力》體系料理技能。\n連龍都會醉倒的烈酒。",
+        "ja": "≪目利き≫系統の食事スキルが発動\nしやすくなる酒。竜も酔うほどの\n強いお酒。",
+        "en": "Alcohol that helps trigger Perception food skills.\nStrong enough to knock out a wyvern, though\nhow that was tested is left up to the imagination."
+      },
+      "category": "drink",
+      "group": 5,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 91
+      }
+    },
+    {
+      "id": 92,
+      "name": {
+        "zh-Hans": "鬼芋酒",
+        "zh-Hant": "鬼芋酒",
+        "ja": "鬼芋酒",
+        "en": "Demontater Brew"
+      },
+      "desc": {
+        "zh-Hans": "酒类，容易发动\n[眼力]系用餐技能。\n连鬼都赞不绝口的呛辣好酒。",
+        "zh-Hant": "酒類食材，容易發動\n《眼力》體系料理技能。\n連鬼都讚不絕口的嗆辣好酒。",
+        "ja": "≪目利き≫系統の食事スキルが発動\nしやすくなる酒。鬼もうなるほど\n辛口のお酒。",
+        "en": "Alcohol that helps trigger Perception food skills.\nBitter enough to put a hole through a Deviljho's\nstomach."
+      },
+      "category": "drink",
+      "group": 5,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 92
+      }
+    },
+    {
+      "id": 93,
+      "name": {
+        "zh-Hans": "龙琥珀酒",
+        "zh-Hant": "龍琥珀酒",
+        "ja": "龍ノコハク酒",
+        "en": "Wyvern Amber Ale"
+      },
+      "desc": {
+        "zh-Hans": "酒类，容易发动\n[眼力]系用餐技能。\n熟成后的香气和层次丰富的味道广受欢迎。",
+        "zh-Hant": "酒類食材，容易發動\n《眼力》體系料理技能。\n熟成後的香氣和層次豐富的味道廣受歡迎。",
+        "ja": "≪目利き≫系統の食事スキルが発動\nしやすくなる酒。熟成による香りと\n深い味わいが人気のお酒。",
+        "en": "Alcohol that helps trigger Perception food skills.\nAn aromatic, full-bodied brew."
+      },
+      "category": "drink",
+      "group": 5,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 93
+      }
+    },
+    {
+      "id": 94,
+      "name": {
+        "zh-Hans": "黄金芋酒",
+        "zh-Hant": "黃金芋酒",
+        "ja": "黄金芋酒",
+        "en": "Goldenfish Brew"
+      },
+      "desc": {
+        "zh-Hans": "酒类，容易发动\n[眼力]系用餐技能。\n难以入手的梦幻之酒。",
+        "zh-Hant": "酒類食材，容易發動\n《眼力》體系料理技能。\n如夢幻般很難到手的酒。",
+        "ja": "≪目利き≫系統の食事スキルが発動\nしやすくなる酒。\n滅多に手に入らない幻の一品。",
+        "en": "Alcohol that helps trigger Perception food skills.\nConsider yourself lucky to get your hands on\nthis holy grail of brews."
+      },
+      "category": "drink",
+      "group": 5,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 94
+      }
+    },
+    {
+      "id": 95,
+      "name": {
+        "zh-Hans": "大吟酿·屠龙",
+        "zh-Hant": "大吟釀‧屠龍",
+        "ja": "大吟醸・龍ころし",
+        "en": "Dragonkiller Sake"
+      },
+      "desc": {
+        "zh-Hans": "酒类，容易发动[眼力]系用餐技能。\n经过工匠长年研究与酿造后，\n所制出的顶级成品。",
+        "zh-Hant": "酒類食材，容易發動\n《眼力》體系料理技能。\n經過工匠長年研究與釀造後，所製出的頂級成品。",
+        "ja": "≪目利き≫系統の食事スキルが発動\nしやすくなる酒。職人が長年の研究\nと醸造の末にたどり着いた頂点。",
+        "en": "Alcohol that helps trigger Perception food skills.\nRice wine distilled according to a long-researched\nprocess. The epitome of sake."
+      },
+      "category": "drink",
+      "group": 5,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 95
+      }
+    },
+    {
+      "id": 96,
+      "name": {
+        "zh-Hans": "猎人啤酒",
+        "zh-Hant": "獵人啤酒",
+        "ja": "狩人ビール",
+        "en": "Hunter's Brew"
+      },
+      "desc": {
+        "zh-Hans": "酒类，容易发动\n[运气]系用餐技能。\n狩猎之后一定要来一杯！",
+        "zh-Hant": "酒類食材，容易發動\n《運氣》體系料理技能。\n狩獵之後一定要來一杯！",
+        "ja": "≪運気≫系統の食事スキルが発動\nしやすくなる酒。一狩り行った\n後には、これで一杯！",
+        "en": "Alcohol that helps trigger Fortune food skills.\nThe perfect refreshment after a long hunt."
+      },
+      "category": "drink",
+      "group": 6,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 96
+      }
+    },
+    {
+      "id": 97,
+      "name": {
+        "zh-Hans": "星星白兰地",
+        "zh-Hant": "星星白蘭地",
+        "ja": "スターブランデー",
+        "en": "Star Brandy"
+      },
+      "desc": {
+        "zh-Hans": "酒类，容易发动\n[运气]系用餐技能。\n带有调查团认证推荐的星星标记的酒。",
+        "zh-Hant": "酒類食材，容易發動\n《運氣》體系料理技能。\n調查團認證推薦，帶有星星的酒。",
+        "ja": "≪運気≫系統の食事スキルが発動\nしやすくなる酒。調査団お墨付きの\n星がついてるお酒。",
+        "en": "Alcohol that helps trigger Fortune food skills.\nIts bottle features the Research Commission's\nfamous sapphire star on its label."
+      },
+      "category": "drink",
+      "group": 6,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 97
+      }
+    },
+    {
+      "id": 98,
+      "name": {
+        "zh-Hans": "达人啤酒",
+        "zh-Hant": "達人啤酒",
+        "ja": "達人ビール",
+        "en": "Master Ale"
+      },
+      "desc": {
+        "zh-Hans": "酒类，容易发动\n[运气]系用餐技能。\n味道层次丰富，老饕喜爱的黑啤酒！",
+        "zh-Hant": "酒類食材，容易發動\n《運氣》體系料理技能。\n味道層次豐富，老饕喜愛的黑啤酒！",
+        "ja": "≪運気≫系統の食事スキルが発動\nしやすくなる酒。\n通が好む味わい深い黒ビール。",
+        "en": "Alcohol that helps trigger Fortune food skills.\nBrewed with roasted malt, this rich, velvety brew\nis popular with beer aficionados."
+      },
+      "category": "drink",
+      "group": 6,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 98
+      }
+    },
+    {
+      "id": 99,
+      "name": {
+        "zh-Hans": "火龙威士忌",
+        "zh-Hant": "火龍威士忌",
+        "ja": "レウスウィスキー",
+        "en": "Ratha Whiskey"
+      },
+      "desc": {
+        "zh-Hans": "酒类，容易发动[运气]系用餐技能。\n在以火龙吐息烧焦的圆木桶里，\n熟成过的名酒。",
+        "zh-Hant": "酒類食材，容易發動\n《運氣》體系料理技能。\n放入以火龍吐息燒焦的圓木桶裡，熟成過的名酒。",
+        "ja": "≪運気≫系統の食事スキルが発動\nしやすくなる酒。火竜のブレスで\n焦がしたタルで熟成させた名品。",
+        "en": "Alcohol that helps trigger Fortune food skills.\nWhiskey aged in a barrel scorched by a\nRathalos's fiery breath."
+      },
+      "category": "drink",
+      "group": 6,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 99
+      }
+    },
+    {
+      "id": 100,
+      "name": {
+        "zh-Hans": "星辰啤酒",
+        "zh-Hant": "星辰啤酒",
+        "ja": "アステラビール",
+        "en": "Astera Beer"
+      },
+      "desc": {
+        "zh-Hans": "酒类，容易发动[运气]系用餐技能。\n在调查据点制作的当地啤酒，\n适合用来庆功。",
+        "zh-Hant": "酒類食材，容易發動\n《運氣》體系料理技能。\n在調查據點製作的當地啤酒，用適合用來做慶功。",
+        "ja": "≪運気≫系統の食事スキルが発動\nしやすくなる酒。調査拠点で作られ\nたご当地ビール。祝杯にピッタリ。",
+        "en": "Alcohol that helps trigger Fortune food skills.\nThe local brew of the Research Commission.\nPerfect for celebratory toasts."
+      },
+      "category": "drink",
+      "group": 6,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 100
+      }
+    },
+    {
+      "id": 101,
+      "name": {
+        "zh-Hans": "吐息酒",
+        "zh-Hant": "吐息酒",
+        "ja": "ブレスワイン",
+        "en": "Blessed Wine"
+      },
+      "desc": {
+        "zh-Hans": "酒类，容易发动\n[运气]系用餐技能。\n“一辈子至少想喝一次看看的葡萄酒”\n排行榜第一名。",
+        "zh-Hant": "酒類食材，容易發動\n《運氣》體系料理技能。\n一輩子至少想喝一次看看的葡萄酒，排行榜第一名。",
+        "ja": "≪運気≫系統の食事スキルが発動\nしやすくなる酒。一生に一度は飲ん\nでみたいワインランキング一位。",
+        "en": "Alcohol that helps trigger Fortune food skills.\nIt holds the record for the longest time at the\ntop of the rankings in Wine Hunter's Monthly."
+      },
+      "category": "drink",
+      "group": 6,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 101
+      }
+    },
+    {
+      "id": 102,
+      "name": {
+        "zh-Hans": "猛角药膳酒",
+        "zh-Hant": "猛角藥膳酒",
+        "ja": "猛角薬膳酒",
+        "en": "Greathorn's Gulp"
+      },
+      "desc": {
+        "zh-Hans": "酒类食材，容易发动\n《旅行准备》体系料理技能。\n使用了以永霜冻土生物的角制成的生药。",
+        "zh-Hant": "酒類食材，容易發動\n《旅行準備》體系料理技能。\n配合永霜凍土生物的角為生藥的酒。",
+        "ja": "≪旅支度≫系統の食事スキルが発動\nしやすくなる酒。渡りの凍て地の生\n物の角を生薬として配合したお酒。",
+        "en": "Alcohol that helps trigger Preparation food skills.\nMade with the powdered horns of animals\nnative to Hoarfrost Reach."
+      },
+      "category": "drink",
+      "group": 7,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 102
+      }
+    },
+    {
+      "id": 103,
+      "name": {
+        "zh-Hans": "幸运龙舌兰酒",
+        "zh-Hant": "幸運龍舌蘭酒",
+        "ja": "ラッキーテキーラ",
+        "en": "Auspicious Ale"
+      },
+      "desc": {
+        "zh-Hans": "酒类食材，容易发动\n《旅行准备》体系料理技能。\n祈祷旅途幸运，吉祥的酒。",
+        "zh-Hant": "酒類食材，容易發動\n《旅行準備》體系料理技能。\n祈禱旅途幸運，吉祥的酒。",
+        "ja": "≪旅支度≫系統の食事スキルが発動\nしやすくなる酒。旅の幸運を祈って\n振舞われる、縁起のいいお酒。",
+        "en": "Alcohol that helps trigger Preparation food skills.\nTraditionally gifted to travelers as a good-luck \ncharm for the road."
+      },
+      "category": "drink",
+      "group": 7,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 103
+      }
+    },
+    {
+      "id": 104,
+      "name": {
+        "zh-Hans": "款冬酒",
+        "zh-Hant": "款冬酒",
+        "ja": "バッケ酒",
+        "en": "Butterbrew"
+      },
+      "desc": {
+        "zh-Hans": "酒类食材，容易发动\n《旅行准备》体系料理技能。\n浸入特产的款冬花芽，具滋养强壮之效。",
+        "zh-Hant": "酒類食材，容易發動\n《旅行準備》體系料理技能。\n浸入特產的款冬花芽，具滋養強壯之效。",
+        "ja": "≪旅支度≫系統の食事スキルが発動\nしやすくなる酒。特産のフキノトウ\nを漬け込み、滋養強壮効果がある。",
+        "en": "Alcohol that helps trigger Preparation food skills.\nA bracing brew made by fermenting fresh-picked \nbutterbur from the Reach."
+      },
+      "category": "drink",
+      "group": 7,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 104
+      }
+    },
+    {
+      "id": 105,
+      "name": {
+        "zh-Hans": "特浓蜂蜜酒",
+        "zh-Hant": "特濃蜂蜜酒",
+        "ja": "特濃蜂蜜酒",
+        "en": "Fortified Honeywine"
+      },
+      "desc": {
+        "zh-Hans": "酒类食材，容易发动\n《旅行准备》体系料理技能。\n严选天然素材，彻底温暖身体。",
+        "zh-Hant": "酒類食材，容易發動\n《旅行準備》體系料理技能。\n嚴選天然素材，徹底溫暖身體。",
+        "ja": "≪旅支度≫系統の食事スキルが発動\nしやすくなる酒。こだわった自然の\n素材が、体を芯から温めてくれる。",
+        "en": "Alcohol that helps trigger Preparation food skills.\nThe carefully selected natural ingredients in this \nbrew warm the body to its core."
+      },
+      "category": "drink",
+      "group": 7,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 105
+      }
+    },
+    {
+      "id": 106,
+      "name": {
+        "zh-Hans": "魔女苹果酒",
+        "zh-Hant": "魔女蘋果酒",
+        "ja": "ウィッチシードル",
+        "en": "Entrancing Alembic"
+      },
+      "desc": {
+        "zh-Hans": "酒类食材，容易发动\n《旅行准备》体系料理技能。\n甜美又妖艳的香味，有如魔女的诱惑。",
+        "zh-Hant": "酒類食材，容易發動\n《旅行準備》體系料理技能。\n甜美又妖豔的香味，有如魔女的誘惑般。",
+        "ja": "≪旅支度≫系統の食事スキルが発動\nしやすくなる酒。甘美で妖艶な香り\nが、まるで魔女の誘惑のよう。",
+        "en": "Alcohol that helps trigger Preparation food skills.\nThis fruity spirit's sweet aroma bewitches any \nwho catch a whiff."
+      },
+      "category": "drink",
+      "group": 7,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 106
+      }
+    },
+    {
+      "id": 107,
+      "name": {
+        "zh-Hans": "疯狂龙舌兰酒",
+        "zh-Hant": "瘋狂龍舌蘭酒",
+        "ja": "クレイジーテキーラ",
+        "en": "Tequila de Locos"
+      },
+      "desc": {
+        "zh-Hans": "酒类食材，容易发动\n《旅行准备》体系料理技能。\n勇敢猎人测试勇气时饮用的，让人陷入疯狂的酒。",
+        "zh-Hant": "酒類食材，容易發動\n《旅行準備》體系料理技能。\n勇敢獵人測試勇氣而喝，讓人陷入瘋狂的酒。",
+        "ja": "≪旅支度≫系統の食事スキルが発動\nしやすくなる酒。勇敢な狩人が度胸\n試しに飲む、クレイジーに強い酒。",
+        "en": "Alcohol that helps trigger Preparation food skills.\nAn insanely potent spirit drunk by foolhardy \nhunters to prove their mettle."
+      },
+      "category": "drink",
+      "group": 7,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 107
+      }
+    },
+    {
+      "id": 108,
+      "name": {
+        "zh-Hans": "冰柱伏特加",
+        "zh-Hant": "冰柱伏特加",
+        "ja": "氷柱ウォッカ",
+        "en": "Glacial Vodka"
+      },
+      "desc": {
+        "zh-Hans": "酒类食材，容易发动\n《开拓者》体系料理技能。\n在伏特加中豪爽加入冰柱的自信作品。",
+        "zh-Hant": "酒類食材，容易發動\n《開拓者》體系料理技能。\n在伏特加中豪爽加入冰柱的自信作品。",
+        "ja": "≪開拓者≫系統の食事スキルが発動\nしやすくなる酒。豪快にウォッカを\nオン・ザ・ツララした意欲作。",
+        "en": "Alcohol that helps trigger Trailblazer food skills.\nThe Canteen's elevated vodka on the rocks,\nnow served boldly atop an icicle."
+      },
+      "category": "drink",
+      "group": 8,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 108
+      }
+    },
+    {
+      "id": 109,
+      "name": {
+        "zh-Hans": "快乐龙舌兰酒",
+        "zh-Hant": "快樂龍舌蘭酒",
+        "ja": "ハッピーテキーラ",
+        "en": "Toasting Tequila"
+      },
+      "desc": {
+        "zh-Hans": "酒类食材，容易发动\n《开拓者》体系料理技能。\n在祝贺狩猎成功等宴席上，用于干杯的酒。",
+        "zh-Hant": "酒類食材，容易發動\n《開拓者》體系料理技能。\n用於祝賀狩獵成功等宴席，乾杯用的酒。",
+        "ja": "≪開拓者≫系統の食事スキルが発動\nしやすくなる酒。狩猟の成功など\n祝いの席で振舞われる、乾杯酒。",
+        "en": "Alcohol that helps trigger Trailblazer food skills.\nA cheery vintage used to celebrate a successful\nhunt and other happy occasions."
+      },
+      "category": "drink",
+      "group": 8,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 109
+      }
+    },
+    {
+      "id": 110,
+      "name": {
+        "zh-Hans": "融雪高球鸡尾酒",
+        "zh-Hant": "融雪高球雞尾酒",
+        "ja": "雪解けハイボール",
+        "en": "Snowmelt Snifter"
+      },
+      "desc": {
+        "zh-Hans": "酒类食材，容易发动\n《开拓者》体系料理技能。融雪给人\n以爽快感，最适合修复人际关系的一杯酒。",
+        "zh-Hant": "酒類食材，容易發動\n《開拓者》體系料理技能。\n融雪喝來爽快，最適合修復舊好的一杯酒。",
+        "ja": "≪開拓者≫系統の食事スキルが発動\nしやすくなる酒。雪解け水がスッと\n爽やかな、仲直りに最適の一杯。",
+        "en": "Alcohol that helps trigger Trailblazer food skills.\nThe clean taste of freshly melted snow makes \nthis a tradition for post-fight make-up toasting."
+      },
+      "category": "drink",
+      "group": 8,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 110
+      }
+    },
+    {
+      "id": 111,
+      "name": {
+        "zh-Hans": "银岭高球鸡尾酒",
+        "zh-Hant": "銀嶺高球雞尾酒",
+        "ja": "銀嶺ハイボール",
+        "en": "Frostpeak Fizz"
+      },
+      "desc": {
+        "zh-Hans": "酒类食材，容易发动\n《开拓者》体系料理技能。使用闪耀银色的\n超高硬度的冰块，奢侈的一杯酒。",
+        "zh-Hant": "酒類食材，容易發動\n《開拓者》體系料理技能。\n使用閃耀銀色超高硬度的冰，奢侈的一杯酒。",
+        "ja": "≪開拓者≫系統の食事スキルが発動\nしやすくなる酒。銀色にかがやく\n超高硬度の氷を贅沢に使った一杯。",
+        "en": "Alcohol that helps trigger Trailblazer food skills.\nA luxurious drink served over silvery shards \nof ultra-dense ice."
+      },
+      "category": "drink",
+      "group": 8,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 111
+      }
+    },
+    {
+      "id": 112,
+      "name": {
+        "zh-Hans": "水晶高球鸡尾酒",
+        "zh-Hant": "水晶高球雞尾酒",
+        "ja": "クリスタルハイボール",
+        "en": "Crystal Quaff"
+      },
+      "desc": {
+        "zh-Hans": "酒类食材，容易发动\n《开拓者》体系料理技能。\n杯中像是只有气泡漂浮，澄净的一杯酒。",
+        "zh-Hant": "酒類食材，容易發動\n《開拓者》體系料理技能。\n杯中像是只有氣泡漂浮，澄淨的一杯酒。",
+        "ja": "≪開拓者≫系統の食事スキルが発動\nしやすくなる酒。まるで泡だけが\n浮かんで見えるほどクリアな一杯。",
+        "en": "Alcohol that helps trigger Trailblazer food skills.\nA delicate drink so clear it looks as if bubbles \nare rising up out of an empty glass."
+      },
+      "category": "drink",
+      "group": 8,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 112
+      }
+    },
+    {
+      "id": 113,
+      "name": {
+        "zh-Hans": "灼炎生命之水",
+        "zh-Hant": "灼炎生命之水",
+        "ja": "灼炎のスピリタス",
+        "en": "Searing Spirit"
+      },
+      "desc": {
+        "zh-Hans": "酒类食材，容易发动\n《开拓者》体系料理技能。\n只要喝下一口，身体就会变得炽热。",
+        "zh-Hant": "酒類食材，容易發動\n《開拓者》體系料理技能。\n只要喝下一口，身體就會變得赤熱。",
+        "ja": "≪開拓者≫系統の食事スキルが発動\nしやすくなる酒。一口飲んだだけで\n身体が赤熱してしまうほどの強さ。",
+        "en": "Alcohol that helps trigger Trailblazer food skills.\nA single sip of this potent brew starts a fire \nracing from the belly to every extremity."
+      },
+      "category": "drink",
+      "group": 8,
+      "_src": {
+        "file": "common/facility/food.rfd",
+        "row": 113
+      }
+    }
+  ]
+}
