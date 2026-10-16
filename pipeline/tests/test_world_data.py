@@ -314,3 +314,28 @@ def test_monster_rewards_match_kiranico() -> None:
     cap = next(r for r in rewards if r["em"] == "em001_00" and r["rank"] == "low" and r["slot"] == 0)
     assert cap["label"]["zh-Hans"] == "捕获%s"
     assert {items[i["item"]]: i["weight"] for i in cap["items"]}["雌火龙的鳞"] == 35
+
+
+def test_status_and_hidden_values_match_public_data() -> None:
+    monsters = {m["key"]: m for m in load("monsters.json", "monsters")}
+    kushala = monsters["em024_00"]["status"]
+    # Kiranico 钢龙：龙封力 200 +20 → 750、每 5 秒 −2；毒总伤 10 × 2 × 25 = 500
+    assert (kushala["elderseal"]["base"], kushala["elderseal"]["increase"], kushala["elderseal"]["max"]) == (
+        200,
+        20,
+        750,
+    )
+    assert (
+        kushala["poisonDamage"]["damage"]
+        * kushala["poisonDamage"]["coefficient"]
+        * kushala["poison"]["duration"]
+        == 500
+    )
+    rathian = monsters["em001_00"]["status"]
+    assert rathian["traps"]["flash"] == [20, 16, 12, 8]
+    assert (rathian["capture"]["base"], rathian["capture"]["increase"]) == (150, 200)
+    mx = json.loads((WORLD / "mechanics.json").read_text(encoding="utf-8"))
+    assert mx["evade"]["frames"] == [13, 15, 17, 19, 22, 25]
+    assert mx["frostcraft"]["multipliers"]["great-sword"] == [1.0, 1.05, 1.15, 1.3]
+    assert mx["frostcraft"]["multipliers"]["heavy-bowgun"] == [1.0, 1.1, 1.2, 1.3]
+    assert mx["kinsect"]["bonus"]["sever"] == 1.3 and mx["kinsect"]["dustInterval"]["heal"] == 5.5

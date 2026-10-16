@@ -1,0 +1,373 @@
+---
+import SiteLayout from '../../../layouts/SiteLayout.astro';
+import { loadMonsters } from '../../../data/world/load';
+import type { Buildup, Monster } from '../../../data/world/schema';
+import { STATUS_LABEL, monsterIconUrl, monsterName } from '../../../lib/world/monsters';
+
+const monsters = loadMonsters().filter((m) => m.name);
+const TABS = [
+  { key: 'poison', label: STATUS_LABEL.poison },
+  { key: 'sleep', label: STATUS_LABEL.sleep },
+  { key: 'paralysis', label: STATUS_LABEL.paralysis },
+  { key: 'blast', label: STATUS_LABEL.blast },
+  { key: 'stun', label: STATUS_LABEL.stun },
+  { key: 'exhaust', label: STATUS_LABEL.exhaust },
+  { key: 'mount', label: STATUS_LABEL.mount },
+  { key: 'capture', label: '捕获' },
+] as const;
+type Key = (typeof TABS)[number]['key'];
+const get = (m: Monster, k: Key): Buildup => m.status[k];
+const sec = (v: number) => (v ? `${+v.toFixed(2)}` : '—');
+const decay = (b: Buildup) => (b.decay && b.decayInterval ? `−${b.decay} / ${sec(b.decayInterval)} 秒` : '—');
+// 毒总伤：Kiranico 的公式（伤害 × 系数 × 持续秒）；系数的含义未确认
+const poisonTotal = (m: Monster) =>
+  Math.round(m.status.poisonDamage.damage * m.status.poisonDamage.coefficient * m.status.poison.duration);
+const elder = monsters.filter((m) => m.status.elderseal.base > 0);
+---
+
+<SiteLayout
+  title="状态异常数值"
+  current="encyclopedia"
+  description="怪物猎人：世界 冰原 全部大型怪物的状态异常耐性对比：毒、睡眠、麻痹、爆破、眩晕、减气、骑乘、捕获，以及古龙的龙封力积累"
+  wide
+>
+  <nav class="s-crumbs" aria-label="位置">
+    <a href="/world/encyclopedia/">百科</a>
+    <span>状态异常数值</span>
+  </nav>
+  <div class="s-head">
+    <h1>状态异常数值</h1>
+    <p>
+      全部大型怪物的异常耐性对比。「初始」是第一次发作需要的积累值，每发作一次增加「每次」直到「上限」；
+      积累值随时间按「衰减」减少。点表头可排序。
+    </p>
+  </div>
+
+  <div class="st-tabs" role="tablist" aria-label="异常种类" data-st-tabs>
+    {TABS.map((t, i) => (
+      <button type="button" role="tab" aria-selected={i === 0 ? 'true' : 'false'} data-tab={t.key}>
+        {t.label}
+      </button>
+    ))}
+  </div>
+
+  {TABS.map((t, i) => (
+    <div class="s-table-wrap st-wrap" data-panel={t.key} hidden={i > 0}>
+      <table class="s-table" data-sortable>
+        <thead>
+          <tr>
+            <th class="s-left">怪物</th>
+            <th>
+              <button type="button" data-sort>
+                初始
+              </button>
+            </th>
+            <th>
+              <button type="button" data-sort>
+                每次
+              </button>
+            </th>
+            <th>
+              <button type="button" data-sort>
+                上限
+              </button>
+            </th>
+            <th class="s-left">衰减</th>
+            {t.key !== 'capture' && t.key !== 'mount' && t.key !== 'blast' && (
+              <th>
+                <button type="button" data-sort>
+                  持续（秒）
+                </button>
+              </th>
+            )}
+            {t.key === 'poison' && (
+              <th title="伤害 × 系数 × 持续秒（Kiranico 的算法）">
+                <button type="button" data-sort>
+                  总伤害
+                </button>
+              </th>
+            )}
+            {t.key === 'blast' && (
+              <th>
+                <button type="button" data-sort>
+                  爆破伤害
+                </button>
+              </th>
+            )}
+            {t.key === 'exhaust' && (
+              <th>
+                <button type="button" data-sort>
+                  耐力伤害
+                </button>
+              </th>
+            )}
+          </tr>
+        </thead>
+        <tbody>
+          {monsters.map((m) => {
+            const b = get(m, t.key);
+            const icon = monsterIconUrl(m);
+            return (
+              <tr>
+                <td class="s-left">
+                  <a class="s-icon-cell st-mon" href={`/world/monsters/${m.key}/`}>
+                    {icon && <img src={icon} alt="" width="28" height="28" loading="lazy" />}
+                    {monsterName(m)}
+                  </a>
+                </td>
+                {b.base || b.max ? (
+                  <>
+                    <td class="s-num" data-v={b.base}>
+                      {b.base}
+                    </td>
+                    <td class="s-num" data-v={b.increase}>
+                      +{b.increase}
+                    </td>
+                    <td class="s-num" data-v={b.max}>
+                      {b.max}
+                    </td>
+                    <td class="s-left s-num">{decay(b)}</td>
+                  </>
+                ) : (
+                  <>
+                    <td class="s-dim" data-v="99999">
+                      无效
+                    </td>
+                    <td class="s-dim" data-v="99999">
+                      —
+                    </td>
+                    <td class="s-dim" data-v="99999">
+                      —
+                    </td>
+                    <td class="s-dim">—</td>
+                  </>
+                )}
+                {t.key !== 'capture' && t.key !== 'mount' && t.key !== 'blast' && (
+                  <td class="s-num" data-v={b.duration}>
+                    {sec(b.duration)}
+                  </td>
+                )}
+                {t.key === 'poison' && (
+                  <td class="s-num" data-v={poisonTotal(m)}>
+                    {poisonTotal(m) || '—'}
+                  </td>
+                )}
+                {t.key === 'blast' && (
+                  <td class="s-num" data-v={m.status.blastDamage}>
+                    {m.status.blastDamage || '—'}
+                  </td>
+                )}
+                {t.key === 'exhaust' && (
+                  <td class="s-num" data-v={m.status.exhaustDamage}>
+                    {m.status.exhaustDamage || '—'}
+                  </td>
+                )}
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  ))}
+
+  <section class="s-section" id="elderseal">
+    <h2>
+      龙封力积累 <small class="s-dim">只有古龙种设置了龙封力的积累</small>
+    </h2>
+    <div class="s-table-wrap st-wrap">
+      <table class="s-table">
+        <thead>
+          <tr>
+            <th class="s-left">怪物</th>
+            <th>初始</th>
+            <th>每次</th>
+            <th>上限</th>
+            <th class="s-left">衰减</th>
+          </tr>
+        </thead>
+        <tbody>
+          {elder.map((m) => {
+            const b = m.status.elderseal;
+            return (
+              <tr>
+                <td class="s-left">
+                  <a class="st-mon" href={`/world/monsters/${m.key}/`}>
+                    {monsterName(m)}
+                  </a>
+                </td>
+                <td class="s-num">{b.base}</td>
+                <td class="s-num">+{b.increase}</td>
+                <td class="s-num">{b.max}</td>
+                <td class="s-left s-num">{decay(b)}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="s-section">
+    <h2>闪光</h2>
+    <p class="st-note">闪光弹令怪物失明的时间（上位及以下），每次缩短，到最短值为止。</p>
+    <div class="st-flash">
+      {[...new Map(monsters.map((m) => [m.status.traps.flash.join('→'), m])).entries()].map(([seq]) => (
+        <p>
+          <b>{seq ? `${seq.replaceAll('→', ' → ')} 秒` : '无效'}</b>
+          <span>
+            {monsters
+              .filter((m) => m.status.traps.flash.join('→') === seq)
+              .map(monsterName)
+              .join('、')}
+          </span>
+        </p>
+      ))}
+    </div>
+  </section>
+
+  <p class="s-note">
+    数据来源：各怪物的 <code>em/emXXX/YY/data/emXXX.dtt_eda</code>
+    。雌火龙、钢龙等的毒、睡眠、麻痹、爆破、眩晕、减气、骑乘、 捕获、闪光、龙封力积累已与 Kiranico
+    核对一致。毒总伤按 Kiranico 的算法（伤害 × 系数 × 持续秒）推导，系数的含义未确认。
+    猎人身上的属性异常（火、水、雷、冰、龙属性异常等）的基础参数未在数据中找到。
+  </p>
+</SiteLayout>
+
+<script>
+  // 异常种类标签页
+  const tabs = [...document.querySelectorAll<HTMLButtonElement>('[data-st-tabs] [data-tab]')];
+  const panels = [...document.querySelectorAll<HTMLElement>('[data-panel]')];
+  const show = (key: string) => {
+    for (const t of tabs) t.setAttribute('aria-selected', String(t.dataset.tab === key));
+    for (const p of panels) p.hidden = p.dataset.panel !== key;
+  };
+  for (const t of tabs) t.addEventListener('click', () => show(t.dataset.tab!));
+
+  // 点表头排序：第一次升序，再点降序
+  for (const table of document.querySelectorAll<HTMLTableElement>('[data-sortable]')) {
+    const body = table.tBodies[0]!;
+    table.querySelectorAll<HTMLButtonElement>('[data-sort]').forEach((btn) => {
+      const col = (btn.closest('th') as HTMLTableCellElement).cellIndex;
+      btn.addEventListener('click', () => {
+        const asc = btn.dataset.dir !== 'asc';
+        table.querySelectorAll<HTMLButtonElement>('[data-sort]').forEach((b) => delete b.dataset.dir);
+        btn.dataset.dir = asc ? 'asc' : 'desc';
+        const rows = [...body.rows];
+        const v = (r: HTMLTableRowElement) => Number(r.cells[col]?.dataset.v ?? 0);
+        rows.sort((a, b) => (asc ? v(a) - v(b) : v(b) - v(a)));
+        body.append(...rows);
+      });
+    });
+  }
+</script>
+
+<style>
+  .st-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1);
+    margin-bottom: var(--space-3);
+  }
+
+  .st-tabs button {
+    padding: 6px 14px;
+    border: 1px solid var(--c-line);
+    border-radius: var(--radius);
+    background: var(--c-surface);
+    color: var(--c-text-2);
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .st-tabs button[aria-selected='true'] {
+    border-color: var(--c-accent);
+    background: var(--c-accent-soft);
+    color: var(--c-text);
+  }
+
+  .st-tabs button:focus-visible,
+  [data-sort]:focus-visible {
+    outline: 2px solid var(--c-focus);
+    outline-offset: 2px;
+  }
+
+  .st-wrap {
+    max-height: none;
+  }
+
+  .st-wrap[hidden] {
+    display: none;
+  }
+
+  [data-sort] {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+  }
+
+  [data-sort]::after {
+    content: ' ↕';
+    color: var(--c-text-3);
+  }
+
+  [data-sort][data-dir='asc']::after {
+    content: ' ↑';
+    color: var(--c-accent);
+  }
+
+  [data-sort][data-dir='desc']::after {
+    content: ' ↓';
+    color: var(--c-accent);
+  }
+
+  .st-mon {
+    color: var(--c-text);
+    text-decoration: none;
+  }
+
+  .st-mon:hover {
+    color: var(--c-accent);
+  }
+
+  .s-section h2 small {
+    font-size: var(--text-sm);
+    font-weight: 400;
+  }
+
+  #elderseal {
+    scroll-margin-top: 72px;
+  }
+
+  .st-note {
+    margin: 0 0 var(--space-3);
+    color: var(--c-text-2);
+    font-size: var(--text-sm);
+  }
+
+  .st-flash p {
+    display: grid;
+    grid-template-columns: 12rem minmax(0, 1fr);
+    gap: var(--space-3);
+    margin: 0 0 var(--space-2);
+    font-size: var(--text-sm);
+  }
+
+  .st-flash b {
+    font-family: var(--font-num);
+    font-weight: 500;
+  }
+
+  .st-flash span {
+    color: var(--c-text-2);
+  }
+
+  @media (max-width: 700px) {
+    .st-flash p {
+      grid-template-columns: 1fr;
+      gap: 2px;
+    }
+  }
+</style>

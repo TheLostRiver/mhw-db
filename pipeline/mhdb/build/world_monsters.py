@@ -238,11 +238,15 @@ def build_monsters(s: Source, log=print) -> list[dict]:
                 "blast": _buildup(a.blast),
                 "blastDamage": a.blast_damage,
                 "exhaustDamage": round(a.exhaust_damage, 2),
+                "poisonDamage": {"damage": a.poison_damage, "coefficient": round(a.poison_coefficient, 3)},
+                "capture": _buildup(a.capture),
+                "elderseal": _buildup(a.elderseal),
                 "traps": {
                     "shock": _trap(a.shock_trap),
                     "pitfall": _trap(a.pitfall_trap),
                     "ivy": _trap(a.ivy_trap),
                     "dung": _trap(a.dung),
+                    "flash": _trap(a.flash),
                 },
             },
             # 同一怪物可有多条笔记记录（等级或形态不同，如煌黑龙的火 / 冰形态），去重后按文件顺序全部给出

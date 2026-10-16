@@ -5,7 +5,9 @@
 f32 持续秒、f32 每次缩短秒、f32 最短秒。组与组之间夹着几个附加值（毒伤害、爆破伤害等）。
 
 只取已核对的部分：毒、睡眠、麻痹、眩晕、减气、骑乘、爆破（初始 / 增加 / 上限 / 衰减 / 持续），
-爆破伤害、减气时的体力伤害，陷阱（麻痹陷阱、落穴陷阱、藤蔓陷阱）与粪弹的持续时间。
+爆破伤害、减气时的体力伤害，陷阱（麻痹陷阱、落穴陷阱、藤蔓陷阱）与粪弹的持续时间，
+毒伤害与系数（Kiranico 的毒总伤 = 伤害 × 系数 × 持续秒）、捕获（麻醉）积累、闪光（上位及以下）的持续递减、
+龙封力积累（偏移 612，只有古龙非 0；钢龙 200 +20 → 750、每 5 秒 −2 与 Kiranico 一致）。
 雌火龙的值与 Kiranico 一致（毒 250 +150 → 700、15 秒；眩晕 120 +100 → 620、7 秒；爆破 120 +60 → 720、伤害 100；
 麻痹陷阱 8 → 6 → 4 → 2 秒等）。
 """
@@ -49,6 +51,11 @@ class Eda:
     shock_trap: Buildup
     pitfall_trap: Buildup
     ivy_trap: Buildup
+    poison_damage: int
+    poison_coefficient: float  # 是每秒跳数还是倍率未确认
+    capture: Buildup
+    flash: Buildup
+    elderseal: Buildup
 
 
 def parse(data: bytes) -> Eda:
@@ -70,24 +77,30 @@ def parse(data: bytes) -> Eda:
         return v
 
     poison = group()
-    skip(2)  # 毒伤害、间隔（含义未核对）
+    poison_damage, poison_coefficient = struct.unpack_from("<If", data, o)
+    o += 8
     sleep, paralysis, stun, exhaust = group(), group(), group(), group()
     skip(1)
     (exhaust_damage,) = struct.unpack_from("<f", data, o)
     o += 4
     mount, blast = group(), group()
     (blast_damage,) = skip(1)
-    group()  # 捕获
-    skip(2)  # 可捕获体力（上位 / 大师级，未核对）
-    group()  # 眩晕（上位）附加参数
+    capture = group()
+    skip(2)  # MHW-Editor 称为可捕获体力（上位 / 大师级）；不可捕获的钢龙也有值，未确认
+    flash = (
+        group()
+    )  # 闪光（上位及以下）：只用持续 / 每次缩短 / 最短（雌火龙 20 → 16 → 12 → 8 与 Kiranico 一致）
     skip(1)
-    group()  # 眩晕（大师级）附加参数
+    group()  # 闪光（大师级），字段含义未确认
     skip(8)
     group()  # 骑乘击倒
     skip(1)
     dung = group()
     skip(2)
     shock, pitfall, ivy = group(), group(), group()
+    group()  # 第 4 种陷阱，未确认
+    skip(2)
+    elderseal = group()
     if o > len(data):
         raise EdaError("文件太短")
     return Eda(
@@ -105,4 +118,9 @@ def parse(data: bytes) -> Eda:
         shock,
         pitfall,
         ivy,
+        poison_damage,
+        poison_coefficient,
+        capture,
+        flash,
+        elderseal,
     )

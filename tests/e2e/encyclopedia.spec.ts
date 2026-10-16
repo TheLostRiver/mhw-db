@@ -48,6 +48,8 @@ const PAGES = [
   ['/world/quests/', '任务'],
   ['/world/quests/655/', '沉睡之森的女王'],
   ['/world/quests/51612/', '黑龙'],
+  ['/world/status/', '状态异常数值'],
+  ['/world/hidden-values/', '隐藏数值'],
 ] as const;
 
 for (const [path, heading] of PAGES) {
@@ -152,4 +154,17 @@ test('任务详情：怪物体力按倍率换算，可跳到怪物页并看到�
   await expect(page).toHaveURL(/\/world\/monsters\/em001_00\/$/);
   await expect(page.getByRole('heading', { name: /报酬/ })).toBeVisible();
   await expect(page.locator('.mo-rewards').first()).toContainText('捕获雌火龙');
+});
+
+test('状态异常数值：切换种类、点表头排序', async ({ page }) => {
+  await page.goto('/world/status/', { waitUntil: 'networkidle' });
+  await page.getByRole('tab', { name: '麻痹' }).click();
+  const panel = page.locator('[data-panel="paralysis"]');
+  await expect(panel).toBeVisible();
+  await expect(page.locator('[data-panel="poison"]')).toBeHidden();
+  await panel.getByRole('button', { name: /初始/ }).click();
+  const first = Number(await panel.locator('tbody tr').first().locator('td').nth(1).getAttribute('data-v'));
+  const second = Number(await panel.locator('tbody tr').nth(1).locator('td').nth(1).getAttribute('data-v'));
+  expect(first).toBeLessThanOrEqual(second);
+  await expect(page.locator('#elderseal')).toContainText('钢龙');
 });

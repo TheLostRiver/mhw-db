@@ -33,6 +33,7 @@ from mhdb.build.world_gear import (
     build_pendants,
     horn_notes,
 )
+from mhdb.build.world_mechanics import build_mechanics
 from mhdb.build.world_monsters import build_monsters
 from mhdb.build.world_moves import build_moves
 from mhdb.build.world_palico import build_canteen, build_palico, build_palico_gear
@@ -490,6 +491,7 @@ def build(raw: Path, out: Path, log=print) -> dict:
     for key in ("melder", "shop", "deliveries", "bounties", "argosy"):
         write_records(out / "facilities" / f"{key}.json", key, facilities[key])
     write_json(out / "quests.json", quests)
+    write_json(out / "mechanics.json", build_mechanics(s))
     write_records(out / "monster-rewards.json", "rewards", monster_rewards)
     write_records(out / "palico-gear.json", "gear", palico_gear)
     write_json(out / "palico.json", palico)

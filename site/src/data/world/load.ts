@@ -38,6 +38,7 @@ import type {
   Steamworks,
 } from './schema-facilities';
 import type { Canteen, Palico, PalicoGearItem } from './schema-palico';
+import type { Mechanics } from './schema-mechanics';
 import type { MonsterReward, Quests } from './schema-quests';
 
 const ROOT = new URL('../../../../data/world/', import.meta.url);
@@ -86,6 +87,7 @@ export const loadLayeredWeapons = () => read<Partial<Record<WeaponType, LayeredW
 export const loadPalicoGear = () => read<{ gear: PalicoGearItem[] }>('palico-gear.json').gear;
 export const loadPalico = () => read<Palico>('palico.json');
 export const loadCanteen = () => read<Canteen>('canteen.json');
+export const loadMechanics = () => read<Mechanics>('mechanics.json');
 export const loadQuests = () => read<Quests>('quests.json');
 export const loadMonsterRewards = () => read<{ rewards: MonsterReward[] }>('monster-rewards.json').rewards;
 export const loadMelder = () => read<{ melder: MelderTarget[] }>('facilities/melder.json').melder;

@@ -1,0 +1,455 @@
+---
+import SiteLayout from '../../../layouts/SiteLayout.astro';
+import { loadMechanics, loadSkills } from '../../../data/world/load';
+import { SHARPNESS_COLORS } from '../../../lib/world/builder';
+import { WEAPON_ORDER, WEAPON_TYPE_NAMES, weaponIconUrl } from '../../../lib/world/weapons';
+
+const mx = loadMechanics();
+const skills = new Map(loadSkills().map((s) => [s.name['zh-Hans'], s]));
+const blessing = skills.get('精灵加护');
+const SHARP = ['红', '橙', '黄', '绿', '蓝', '白', '紫'];
+const segments = [0, ...mx.frostcraft.segments, 100];
+const segLabel = (i: number) => `${i === 0 ? 0 : segments[i]! + 1}–${segments[i + 1]}`;
+const pct = (x: number) => `${x >= 1 ? '+' : ''}${Math.round((x - 1) * 100)}%`;
+const LEVEL_ROWS = [
+  { key: 'power', label: '力量 → 攻击值' },
+  { key: 'speed', label: '速度 → 移动速度' },
+  { key: 'heal', label: '回复粉尘' },
+  { key: 'blast', label: '爆破粉尘' },
+  { key: 'paralysis', label: '麻痹粉尘' },
+  { key: 'poison', label: '毒粉尘' },
+] as const;
+const k = mx.kinsect;
+---
+
+<SiteLayout
+  title="隐藏数值"
+  current="encyclopedia"
+  description="怪物猎人：世界 冰原 游戏里看不见的数值：回避性能的无敌时间、精灵加护、钝器能手、寒气炼成倍率、操虫棍的萃取与猎虫参数"
+  wide
+>
+  <nav class="s-crumbs" aria-label="位置">
+    <a href="/world/encyclopedia/">百科</a>
+    <span>隐藏数值</span>
+  </nav>
+  <div class="s-head">
+    <h1>隐藏数值</h1>
+    <p>游戏界面不会直接写出来、但影响手感的数值。只列出已经与公开资料核对过的部分。</p>
+  </div>
+  <nav class="s-tabs" aria-label="本页">
+    <a href="#evade">回避性能</a>
+    <a href="#blessing">精灵加护</a>
+    <a href="#skills">技能阈值</a>
+    <a href="#frostcraft">寒气炼成</a>
+    <a href="#kinsect">操虫棍</a>
+  </nav>
+
+  <section class="s-section hv-sec" id="evade">
+    <h2>回避性能：翻滚的无敌时间</h2>
+    <div class="hv-bars">
+      {mx.evade.frames.map((f, i) => (
+        <div class="hv-bar" style={`--w: ${f / mx.evade.mantle}`}>
+          <span>Lv{i}</span>
+          <i />
+          <b>{f} 帧</b>
+          <small>≈ {(f / 60).toFixed(2)} 秒</small>
+        </div>
+      ))}
+      <div class="hv-bar hv-bar--mantle" style="--w: 1">
+        <span>回避衣装</span>
+        <i />
+        <b>{mx.evade.mantle} 帧</b>
+        <small>≈ {(mx.evade.mantle / 60).toFixed(2)} 秒</small>
+      </div>
+    </div>
+    <p class="hv-note">
+      翻滚（回避）的无敌帧数，与 Fextralife 的 13 / 15 / 17 / 19 / 22 / 25 一致。秒数按 1 帧 = 1/60
+      秒换算（推断）。 数据里还有 9 组其他回避动作的帧数，对应哪种动作未确认，未列出。
+    </p>
+  </section>
+
+  {blessing && (
+    <section class="s-section hv-sec" id="blessing">
+      <h2>精灵加护</h2>
+      <div class="s-table-wrap hv-wrap">
+        <table class="s-table">
+          <thead>
+            <tr>
+              <th>等级</th>
+              <th>发动几率</th>
+              <th>受到的伤害</th>
+              <th>减伤</th>
+            </tr>
+          </thead>
+          <tbody>
+            {blessing.levels.map((l) => (
+              <tr>
+                <td class="s-num">Lv{l.level}</td>
+                <td class="s-num">{l.params[0]}%</td>
+                <td class="s-num">{l.params[1]}%</td>
+                <td class="s-num">−{100 - (l.params[1] ?? 100)}%</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p class="hv-note">
+        技能参数取自 <code>skill_data.skl_dat</code>，与等级说明（减轻 15 / 30 / 50 / 60%）和 Fextralife
+        的几率一致。
+      </p>
+    </section>
+  )}
+
+  <section class="s-section hv-sec" id="skills">
+    <h2>技能的阈值与加值</h2>
+    <dl class="hv-facts">
+      <div>
+        <dt>弱点特效</dt>
+        <dd>物理肉质 ≥ {mx.skills.weaknessExploitHitzone} 的部位发动</dd>
+      </div>
+      <div>
+        <dt>火场怪力</dt>
+        <dd>体力 ≤ {Math.round(mx.skills.heroicsHealth * 100)}% 时发动</dd>
+      </div>
+      <div>
+        <dt>滑走强化</dt>
+        <dd>
+          滑行后 {mx.skills.slide.duration} 秒内会心 +{mx.skills.slide.affinity}%
+        </dd>
+      </div>
+    </dl>
+    <h3 class="hv-sub">钝器能手：按锐利度的攻击加值</h3>
+    <div class="hv-sharp">
+      {mx.skills.bludgeoner.sharpness.map((v, i) => (
+        <div style={`--c: var(--sharp-${SHARPNESS_COLORS[i]})`}>
+          <i />
+          <span>{SHARP[i]}</span>
+          <b>{v ? `+${v}` : '—'}</b>
+        </div>
+      ))}
+      <div class="hv-sharp__bow">
+        <span>弩的近战</span>
+        <b>+{mx.skills.bludgeoner.bowgunMelee}</b>
+      </div>
+    </div>
+    <p class="hv-note">
+      来源：<code>common/pl/pl_skill_param.plsp</code>。弱点特效阈值 45、火场怪力 35%、钝器能手（红 / 橙
+      +30、黄 +25、绿 +15）、 滑走 30 秒 / 会心 +30% 均与公开资料一致。
+    </p>
+  </section>
+
+  <section class="s-section hv-sec" id="frostcraft">
+    <h2>
+      寒气炼成 <small class="s-dim">冰呪龙系列技能「冰呪龙的神秘」4 件效果</small>
+    </h2>
+    <p class="hv-lead">纳刀时积累寒气，攻击时按寒气量提升攻击力。下表为寒气量（0–100）各段的攻击倍率。</p>
+    <div class="s-table-wrap hv-wrap">
+      <table class="s-table">
+        <thead>
+          <tr>
+            <th class="s-left">武器</th>
+            {segments.slice(0, -1).map((_, i) => (
+              <th>寒气 {segLabel(i)}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {WEAPON_ORDER.map((w) => (
+            <tr>
+              <td class="s-left">
+                <span class="s-icon-cell">
+                  <img src={weaponIconUrl(w, 0)} alt="" width="22" height="22" loading="lazy" />
+                  {WEAPON_TYPE_NAMES[w]}
+                </span>
+              </td>
+              {(mx.frostcraft.multipliers[w] ?? []).map((x) => (
+                <td class="s-num">
+                  ×{x}
+                  <small class="hv-pct">{x > 1 ? pct(x) : ''}</small>
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <p class="hv-note">
+      倍率与 Fextralife 一致（大剑、大锤 5 / 15 / 30%，重弩 10 / 20 / 30%，其余 5 / 20 /
+      25%）。寒气的积累速度与每击消耗量单位未确认，未列出。
+    </p>
+  </section>
+
+  <section class="s-section hv-sec" id="kinsect">
+    <h2>操虫棍：萃取与猎虫</h2>
+    <div class="hv-cols">
+      <article>
+        <h3>萃取</h3>
+        <dl class="hv-facts">
+          <div>
+            <dt>红色（攻击）</dt>
+            <dd>{k.extractDuration.red} 秒</dd>
+          </div>
+          <div>
+            <dt>白色（移动）</dt>
+            <dd>{k.extractDuration.white} 秒</dd>
+          </div>
+          <div>
+            <dt>橙色（防御）</dt>
+            <dd>{k.extractDuration.orange} 秒</dd>
+          </div>
+          <div>
+            <dt>三色</dt>
+            <dd>{k.extractDuration.triple} 秒</dd>
+          </div>
+          <div>
+            <dt>红 + 白 攻击</dt>
+            <dd>×{k.extractAttack.redWhite}</dd>
+          </div>
+          <div>
+            <dt>三色 攻击</dt>
+            <dd>×{k.extractAttack.triple}</dd>
+          </div>
+        </dl>
+      </article>
+      <article>
+        <h3>猎虫加成的倍率</h3>
+        <dl class="hv-facts">
+          <div>
+            <dt>攻击强化【切断】</dt>
+            <dd>×{k.bonus.sever}</dd>
+          </div>
+          <div>
+            <dt>攻击强化【打击】</dt>
+            <dd>×{k.bonus.blunt}</dd>
+          </div>
+          <div>
+            <dt>攻击强化【属性】</dt>
+            <dd>×{k.bonus.element}</dd>
+          </div>
+          <div>
+            <dt>速度强化</dt>
+            <dd>×{k.bonus.speed}</dd>
+          </div>
+          <div>
+            <dt>回复强化【体力】</dt>
+            <dd>×{k.bonus.heal}</dd>
+          </div>
+          <div>
+            <dt>召回时回复的猎虫耐力</dt>
+            <dd>{k.bonus.recallStamina}</dd>
+          </div>
+        </dl>
+      </article>
+      <article>
+        <h3>粉尘的间隔</h3>
+        <dl class="hv-facts">
+          <div>
+            <dt>爆破</dt>
+            <dd>{k.dustInterval.blast} 秒</dd>
+          </div>
+          <div>
+            <dt>回复</dt>
+            <dd>{k.dustInterval.heal} 秒</dd>
+          </div>
+          <div>
+            <dt>麻痹</dt>
+            <dd>{k.dustInterval.paralysis} 秒</dd>
+          </div>
+          <div>
+            <dt>毒</dt>
+            <dd>{k.dustInterval.poison} 秒</dd>
+          </div>
+        </dl>
+      </article>
+    </div>
+    <h3 class="hv-sub">猎虫等级 → 数值</h3>
+    <div class="s-table-wrap hv-wrap">
+      <table class="s-table hv-levels">
+        <thead>
+          <tr>
+            <th class="s-left">项目</th>
+            {Array.from({ length: 20 }, (_, i) => (
+              <th>{i + 1}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {LEVEL_ROWS.map((r) => (
+            <tr>
+              <td class="s-left">{r.label}</td>
+              {k.levels[r.key].map((v) => (
+                <td class="s-num">{v}</td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <p class="hv-note">
+      来源：<code>hm/wp/wp10/wp10_param.w10p</code>
+      。萃取持续与攻击倍率、猎虫加成倍率、粉尘间隔与社区指南一致； 等级表与已下架的 Steam
+      指南数值一致。另有两张等级表（属性、绿色萃取回复量）对应关系未确认，未列出。 猎虫自身的等级见{' '}
+      <a href="/world/kinsects/">猎虫</a>。
+    </p>
+  </section>
+</SiteLayout>
+
+<style>
+  .hv-sec {
+    scroll-margin-top: 72px;
+  }
+
+  .s-section h2 small {
+    font-size: var(--text-sm);
+    font-weight: 400;
+  }
+
+  .hv-note,
+  .hv-lead {
+    max-width: 60rem;
+    margin: var(--space-3) 0 0;
+    color: var(--c-text-2);
+    font-size: var(--text-sm);
+  }
+
+  .hv-lead {
+    margin: 0 0 var(--space-3);
+  }
+
+  .hv-sub {
+    margin: var(--space-5) 0 var(--space-2);
+    font-size: var(--text-md);
+  }
+
+  .hv-wrap {
+    max-height: none;
+  }
+
+  .hv-bars {
+    display: grid;
+    gap: 6px;
+    max-width: 48rem;
+  }
+
+  .hv-bar {
+    display: grid;
+    grid-template-columns: 5.5em minmax(0, 1fr) 4.5em 5.5em;
+    align-items: center;
+    gap: var(--space-3);
+    font-size: var(--text-sm);
+  }
+
+  .hv-bar i {
+    height: 12px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, var(--c-accent) calc(var(--w) * 100%), var(--c-surface-3) 0);
+  }
+
+  .hv-bar--mantle i {
+    background: var(--c-amber);
+  }
+
+  .hv-bar b {
+    font-family: var(--font-num);
+    font-weight: 500;
+    text-align: right;
+  }
+
+  .hv-bar small {
+    color: var(--c-text-3);
+    font-family: var(--font-num);
+  }
+
+  .hv-facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
+    gap: var(--space-2) var(--space-4);
+    margin: 0;
+  }
+
+  .hv-facts dt {
+    color: var(--c-text-3);
+    font-size: var(--text-xs);
+  }
+
+  .hv-facts dd {
+    margin: 0;
+    font-family: var(--font-num);
+  }
+
+  .hv-sharp {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  .hv-sharp > div {
+    display: grid;
+    justify-items: center;
+    gap: 2px;
+    min-width: 4.5rem;
+    padding: var(--space-2);
+    border-radius: var(--radius);
+    background: var(--c-surface);
+    box-shadow: inset 0 0 0 1px var(--c-line);
+  }
+
+  .hv-sharp i {
+    width: 100%;
+    height: 6px;
+    border-radius: 1px;
+    background: var(--c);
+  }
+
+  .hv-sharp span {
+    color: var(--c-text-2);
+    font-size: var(--text-xs);
+  }
+
+  .hv-sharp b {
+    font-family: var(--font-num);
+  }
+
+  .hv-pct {
+    margin-left: 4px;
+    color: var(--c-accent);
+    font-size: 10px;
+  }
+
+  .hv-cols {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+    gap: var(--space-3);
+  }
+
+  .hv-cols article {
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius);
+    background: var(--c-surface);
+    box-shadow: inset 0 0 0 1px var(--c-line);
+  }
+
+  .hv-cols h3 {
+    margin: 0 0 var(--space-2);
+    font-size: var(--text-md);
+  }
+
+  .hv-cols .hv-facts {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .hv-levels td,
+  .hv-levels th {
+    padding-inline: 6px;
+  }
+
+  @media (max-width: 700px) {
+    .hv-bar {
+      grid-template-columns: 4.5em minmax(0, 1fr) 4em;
+    }
+
+    .hv-bar small {
+      display: none;
+    }
+  }
+</style>

@@ -892,12 +892,20 @@ export const Monster = z
         blast: Buildup,
         blastDamage: z.number().int().min(0),
         exhaustDamage: z.number().min(0),
+        /** 毒：每次的伤害与系数（Kiranico 的毒总伤 = 伤害 × 系数 × 持续秒；系数的含义未确认） */
+        poisonDamage: z.object({ damage: z.number().int().min(0), coefficient: z.number().min(0) }).strict(),
+        /** 捕获用麻醉的积累 */
+        capture: Buildup,
+        /** 龙封力的积累（只有古龙非 0） */
+        elderseal: Buildup,
         traps: z
           .object({
             shock: z.array(z.number()),
             pitfall: z.array(z.number()),
             ivy: z.array(z.number()),
             dung: z.array(z.number()),
+            /** 闪光（上位及以下）每次的持续秒数 */
+            flash: z.array(z.number()),
           })
           .strict(),
       })
