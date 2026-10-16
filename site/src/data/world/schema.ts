@@ -187,6 +187,35 @@ export const ELEMENTS = [
   'blast',
 ] as const;
 const Element = z.object({ type: z.enum(ELEMENTS), value: z.number().int().positive() }).strict();
+const coating = z.number().int().min(0).max(2);
+/** 武器专属参数（见 docs/DATA.md 3.2）：铳枪炮击、斩击斧 / 盾斧的瓶、双属性双剑、弓的可用瓶（0 无 1 有 2 强化） */
+const WeaponSpecial = z
+  .object({
+    shelling: z
+      .object({ type: z.enum(['normal', 'long', 'wide']), level: z.number().int().min(1) })
+      .strict()
+      .optional(),
+    phial: z
+      .object({
+        type: z.enum(['power', 'element', 'dragon', 'exhaust', 'paralysis', 'poison', 'impact']),
+        value: z.number().int().min(0),
+      })
+      .strict()
+      .optional(),
+    elements: z.tuple([Element, Element]).optional(),
+    coatings: z
+      .object({
+        close: coating,
+        power: coating,
+        paralysis: coating,
+        poison: coating,
+        sleep: coating,
+        blast: coating,
+      })
+      .strict()
+      .optional(),
+  })
+  .strict();
 
 export const Weapon = z
   .object({
@@ -222,6 +251,7 @@ export const Weapon = z
       })
       .strict()
       .optional(),
+    special: WeaponSpecial.optional(),
     /** 冥赤龙武器（可设定觉醒能力） */
     awakened: z.literal(true).optional(),
     /** 同名同数值的重复行，指向保留的那一条 */

@@ -94,6 +94,15 @@ RANGED = spec(
     """,
 )
 
+# 武器专属参数：近战 / 远程武器行的 special_1（弓为 special_ammo）是这些表的行号。
+# 字段顺序参照 MHW-Editor 的 wep_glan / wep_saxe / wep_wsd / bbtbl 模板；各取值已与 Kiranico 逐种核对（见 docs/DATA.md 3.2）
+GUNLANCE_SHELL = spec("wep_glan.wep_glan", "id:I type:H level:H")  # type 0 通常 1 放射 2 扩散；level 从 0 起
+PHIAL = spec("wep_saxe.wep_saxe", "id:I type:B value:H")  # 斩击斧：0 强击 1 强属性 2 灭龙 3 减气 4 麻痹 5 毒
+DUAL_ELEMENT = spec("wep_wsword.wep_wsd", "id:I element_1:B value_1:h element_2:B value_2:h")
+BOW_COATING = spec(
+    "bottle_table.bbtbl", "close:B power:B paralysis:B poison:B sleep:B blast:B"
+)  # 0 无 1 有 2 强化
+
 AWAKENING = spec(
     "em104_limit_break.em104lb",
     # category：能力种类（1 攻击 2 防御 3 会心 4 属性 5 镶嵌槽 6 锐利度 7 系列技能 9 以后为武器专属）；

@@ -269,8 +269,43 @@ def build_mantles(s: Source, items: dict[int, dict]) -> list[dict]:
 AWAKENED_TREE = 87
 
 
+SHELL_TYPES = ["normal", "long", "wide"]
+SA_PHIALS = ["power", "element", "dragon", "exhaust", "paralysis", "poison"]
+CB_PHIALS = ["impact", "element"]
+
+
+def _special(key: str, r: dict, tables: dict[str, list[dict]]) -> dict | None:
+    """武器专属参数：铳枪炮击、斩击斧 / 盾斧的瓶、双属性双剑、弓的可用瓶。"""
+    if key == "gunlance":
+        t = tables["shell"][r["special_1"]]
+        return {"shelling": {"type": SHELL_TYPES[t["type"]], "level": t["level"] + 1}}
+    if key == "switch-axe":
+        t = tables["phial"][r["special_1"]]
+        return {"phial": {"type": SA_PHIALS[t["type"]], "value": t["value"]}}
+    if key == "charge-blade":
+        return {"phial": {"type": CB_PHIALS[r["special_1"]], "value": 0}}
+    if key == "dual-blades" and r["special_1"]:
+        t = tables["dual"][r["special_1"]]
+        return {
+            "elements": [
+                {"type": ELEMENTS[t["element_1"]], "value": t["value_1"]},
+                {"type": ELEMENTS[t["element_2"]], "value": t["value_2"]},
+            ]
+        }
+    if key == "bow":
+        t = tables["coating"][r["special_ammo"]]
+        return {"coatings": {k: t[k] for k in ("close", "power", "paralysis", "poison", "sleep", "blast")}}
+    return None
+
+
 def build_weapons(s: Source) -> dict[str, list[dict]]:
     kire = s.table("common/equip/kireaji.kire", S.SHARPNESS)
+    tables = {
+        "shell": s.table("common/equip/wep_glan.wep_glan", S.GUNLANCE_SHELL),
+        "phial": s.table("common/equip/wep_saxe.wep_saxe", S.PHIAL),
+        "dual": s.table("common/equip/wep_wsword.wep_wsd", S.DUAL_ELEMENT),
+        "coating": s.table("common/equip/bottle_table.bbtbl", S.BOW_COATING),
+    }
     out: dict[str, list[dict]] = {}
     for file, key, text, ranged in S.WEAPON_TYPES:
         rel = f"common/equip/{file}.wp_dat_g" if ranged else f"common/equip/{file}.wp_dat"
@@ -319,6 +354,8 @@ def build_weapons(s: Source) -> dict[str, list[dict]]:
                     "specialAmmo": r["special_ammo"],
                     "parts": [r["muzzle"], r["barrel"], r["magazine"], r["scope"]],
                 }
+            if special := _special(key, r, tables):
+                w["special"] = special
             if r["tree_id"] == AWAKENED_TREE:
                 w["awakened"] = True
             # 同名同数值的重复行（如冥赤龙武器的第二套模型）只保留第一条供选择

@@ -4,7 +4,14 @@ import FilterBox from '../../../components/site/FilterBox.astro';
 import { loadColors, loadConstants, loadSkills, loadWeapons } from '../../../data/world/load';
 import { RANGED, type Weapon, type WeaponType } from '../../../data/world/schema';
 import { SHARPNESS_COLORS, sharpnessBar } from '../../../lib/world/builder';
-import { ELDERSEAL, ELEMENT_NAMES, socketIconUrl } from '../../../lib/world/encyclopedia';
+import {
+  COATING_LABEL,
+  ELDERSEAL,
+  ELEMENT_NAMES,
+  PHIAL_LABEL,
+  SHELL_LABEL,
+  socketIconUrl,
+} from '../../../lib/world/encyclopedia';
 import { WEAPON_ORDER, WEAPON_TYPE_NAMES, weaponIconUrl } from '../../../lib/world/weapons';
 
 export function getStaticPaths() {
@@ -21,6 +28,29 @@ const rarities = [...new Set(weapons.map((w) => w.rarity))].sort((a, b) => a - b
 const ranged = RANGED.has(type);
 const element = (e: Weapon['element']) => (e ? `${ELEMENT_NAMES[e.type] ?? e.type} ${e.value * 10}` : '');
 const FULL = 400;
+// 专属参数列：铳枪炮击、斩击斧 / 盾斧的瓶、弓的可用瓶
+const SPECIAL_HEAD: Partial<Record<WeaponType, string>> = {
+  gunlance: '炮击',
+  'switch-axe': '瓶',
+  'charge-blade': '瓶',
+  bow: '可用瓶',
+};
+const specialHead = SPECIAL_HEAD[type];
+type Coating = keyof typeof COATING_LABEL;
+const specialText = (w: Weapon): string => {
+  const sp = w.special;
+  if (!sp) return '';
+  if (sp.shelling) return `${SHELL_LABEL[sp.shelling.type]} Lv${sp.shelling.level}`;
+  if (sp.phial) return `${PHIAL_LABEL[sp.phial.type]}${sp.phial.value ? ` ${sp.phial.value * 10}` : ''}`;
+  const coatings = sp.coatings;
+  if (coatings)
+    return (Object.keys(COATING_LABEL) as Coating[])
+      .filter((k) => coatings[k] > 0)
+      .map((k) => `${COATING_LABEL[k].replace('瓶', '')}${coatings[k] > 1 ? '+' : ''}`)
+      .join('、');
+  return '';
+};
+const elementsOf = (w: Weapon) => w.special?.elements ?? (w.element ? [w.element] : []);
 ---
 
 <SiteLayout
@@ -68,6 +98,7 @@ const FULL = 400;
               <th>攻击</th>
               <th>会心</th>
               <th>属性</th>
+              {specialHead && <th class="s-left">{specialHead}</th>}
               {!ranged && <th class="s-left">锐利度</th>}
               <th>镶嵌槽</th>
               <th>防御</th>
@@ -110,16 +141,17 @@ const FULL = 400;
                       {w.affinity > 0 ? `+${w.affinity}` : w.affinity}%
                     </td>
                     <td class="s-num">
-                      {w.element && (
-                        <span class={`wp-el wp-el--${w.element.type}`}>{element(w.element)}</span>
-                      )}
+                      {elementsOf(w).map((e) => (
+                        <span class={`wp-el wp-el--${e.type}`}>{element(e)}</span>
+                      ))}
                       {w.hiddenElement && (
                         <span class={`wp-el wp-el--${w.hiddenElement.type} wp-hidden`}>
                           （{element(w.hiddenElement)}）
                         </span>
                       )}
-                      {!w.element && !w.hiddenElement && <span class="s-dim">—</span>}
+                      {elementsOf(w).length === 0 && !w.hiddenElement && <span class="s-dim">—</span>}
                     </td>
+                    {specialHead && <td class="s-left">{specialText(w) || <span class="s-dim">—</span>}</td>}
                     {!ranged && (
                       <td class="s-left">
                         {base && max ? (
@@ -169,7 +201,9 @@ const FULL = 400;
 
   <p class="s-note">
     数据来源：<code>common/equip/*.wp_dat</code>（近战）、<code>*.wp_dat_g</code>（远程）、
-    <code>common/equip/kireaji.kire</code>（锐利度）；
+    <code>common/equip/kireaji.kire</code>（锐利度）、
+    <code>wep_glan</code>、<code>wep_saxe</code>、<code>wep_wsd</code>、<code>bottle_table.bbtbl</code>
+    （炮击、瓶、双属性、弓的可用瓶，已与 Kiranico 抽查核对）；
     武器倍率取自游戏程序数据。龙封力「大」已核对，「小」「中」按顺序推断。
   </p>
 </SiteLayout>
@@ -235,6 +269,10 @@ const FULL = 400;
 
   .wp-hidden {
     opacity: 0.75;
+  }
+
+  .wp-el + .wp-el {
+    margin-left: 6px;
   }
 
   .wp-sharp {

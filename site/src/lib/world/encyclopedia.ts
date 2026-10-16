@@ -35,6 +35,26 @@ export const ITEM_TYPES: { type: number; slug: string; label: string; note: stri
   { type: 5, slug: 'room', label: '房间装饰', note: '个人房间的装饰品' },
 ];
 
+/** 武器专属参数的名字（与游戏文本 cm_status 的 STATUS_BURST_TYPE0x、AXE_BOTTLE_TYPE_0x、STATUS_BOW_BOTTLE_0x 一致） */
+export const SHELL_LABEL = { normal: '通常型', long: '放射型', wide: '扩散型' } as const;
+export const PHIAL_LABEL = {
+  power: '强击瓶',
+  element: '强属性瓶',
+  dragon: '灭龙瓶',
+  exhaust: '减气瓶',
+  paralysis: '麻痹瓶',
+  poison: '毒瓶',
+  impact: '榴弹瓶',
+} as const;
+export const COATING_LABEL = {
+  close: '接击瓶',
+  power: '强击瓶',
+  paralysis: '麻痹瓶',
+  poison: '毒瓶',
+  sleep: '睡眠瓶',
+  blast: '爆破瓶',
+} as const;
+
 export const itemIconUrl = (i: Pick<Item, 'icon'>) => `${BASE}/item/${i.icon.id}-${i.icon.color}.webp`;
 export const equipIconUrl = (slot: string, rarity: number) => `${BASE}/equip/${slot}-${rarity}.webp`;
 export const socketIconUrl = (level: number) => `${BASE}/socket/${level}.webp`;

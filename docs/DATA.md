@@ -72,6 +72,11 @@ uv run mhdb nodes     # 大地图标记（采集点等）→ data/world/map-node
 | 防具类型 | `type` 0 普通防具、2 幻化服装；1 / 3 含 HARDUMMY 占位与联动装 | 名称（1 / 3 的含义 ❓） |
 | 防具变体 | `variant` 1 = α、2 = β | 名称（精英·…阿尔法 / 贝塔）；护石也有该字段，含义 ❓ |
 | 物品图标颜色 | `itemData.icon_color` 是 `ui_colortable` 第 1 张表（28 色）的序号 | 回复药 = 绿；超心·回避珠 = 15 号蓝紫，与画面一致 |
+| 铳枪炮击 | `g_lance.wp_dat` 的 `special_1` 是 `wep_glan` 的行号；type 0 通常 / 1 放射 / 2 扩散，level 从 0 起 | Kiranico：铁铳枪 I 通常 Lv1、骨炮 I 放射 Lv1、铬金戟 I–III 通常 Lv4–6 |
+| 斩击斧的瓶 | `special_1` → `wep_saxe`；type 0 强击 1 强属性 2 灭龙 3 减气 4 麻痹 5 毒（与 `cm_status` 的 AXE_BOTTLE_TYPE_01–06 顺序相同），value 为显示值 ÷ 10 | Kiranico：改良钢斧 毒 30、甲壳斧 麻痹 18、力量斧 灭龙 30 / 42、贼龙斧 减气 12 / 15 |
+| 盾斧的瓶 | `special_1` 0 榴弹、1 强属性 | Kiranico：调查团试作盾斧 榴弹、火龙剑斧 强属性 |
+| 双属性双剑 | `special_1` 非 0 时 → `wep_wsd` 的两组属性（属性编号与武器属性相同），武器行本身的属性为空 | Kiranico：Twin Flames 毒 27 / 火 27、Strong Ale 麻痹 12 / 睡眠 6 |
+| 弓的可用瓶 | `bow.wp_dat_g` 的 `special_ammo` → `bottle_table.bbtbl`：接击、强击、麻痹、毒、睡眠、爆破，0 无 1 有 2 强化 | Kiranico / 社区 wiki：Princess Arrow I 接击、强击、毒（强化） |
 
 ### 3.2 推断（未与游戏核对）
 
