@@ -339,3 +339,12 @@ def test_status_and_hidden_values_match_public_data() -> None:
     assert mx["frostcraft"]["multipliers"]["great-sword"] == [1.0, 1.05, 1.15, 1.3]
     assert mx["frostcraft"]["multipliers"]["heavy-bowgun"] == [1.0, 1.1, 1.2, 1.3]
     assert mx["kinsect"]["bonus"]["sever"] == 1.3 and mx["kinsect"]["dustInterval"]["heal"] == 5.5
+
+
+def test_records() -> None:
+    d = json.loads((WORLD / "records.json").read_text(encoding="utf-8"))
+    rabbit = next(e for e in d["endemic"] if e["name"]["zh-Hans"] == "绕行兔")
+    assert 101 in rabbit["stages"]
+    medals = {m["id"]: m for m in d["medals"]}
+    assert medals[49]["condition"]["zh-Hans"].startswith("猎人等级达到100")
+    assert medals[50]["iceborne"] and not medals[49]["iceborne"]

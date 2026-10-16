@@ -254,6 +254,14 @@ uv run mhdb nodes     # 大地图标记（采集点等）→ data/world/map-node
 **未找到 / 未做**：猎人身上的属性异常（火、水、雷、冰、龙属性异常等）的基础参数不在 `pl_param.plp` 已知字段里；
 武器防御的角度与击退阈值（`wNNp` 437 / 444）字段含义未核对；武器龙封「小 / 中 / 大」每次命中的积累量未定位。
 
+### 3.11 纪录类（`records.json`，`mhdb/build/world_records.py`）
+
+- **环境生物**（86）：`em_animal_note.emai` 第 i 条 ↔ `ec_info` 第 i 条（按键名排序，NOTE_ECnnn_vv_DESC），名称取捕获后的物品名，
+  栖息地图取 `stage_0–5`。稀有标志、出现条件等字段含义未确认，未显示。
+- **勋章**（100）：`cm_medal` 的 `MEDAL_nnn`（冰原第一个写作 `MEDAL050`，无下划线）；条件优先取 `_doc_re`（改写版），其次 `_doc` / `_doc1`。图标与数值条件未找到。
+- **NPC**（122）：`chr_names` 的 `Nnnn_NPC_NAME`，没有介绍文本。
+- **追加内容**（396）：`steam/dlc_package_header` 的 `Package####_id`；名称为 HARDUMMY 的（PC 版被抹掉的平台独占内容）跳过。
+
 ## 4. 界面图标（游戏 UI 贴图）
 
 | 图集 | 内容 | 用到的格子 |

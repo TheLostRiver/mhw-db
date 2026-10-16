@@ -1,0 +1,138 @@
+---
+import SiteLayout from '../../../layouts/SiteLayout.astro';
+import FilterBox from '../../../components/site/FilterBox.astro';
+import { itemById, loadMaps, loadRecords } from '../../../data/world/load';
+import { itemIconUrl } from '../../../lib/world/encyclopedia';
+
+const { endemic } = loadRecords();
+const stageNames = new Map<number, string>(loadMaps().map((s) => [s.id, s.name['zh-Hans']]));
+stageNames.set(109, '聚魔之地');
+const lines = (t?: string) => (t ?? '').split('\n');
+---
+
+<SiteLayout
+  title="环境生物"
+  current="encyclopedia"
+  description="怪物猎人：世界 冰原 环境生物调查笔记：栖息的地图与笔记原文"
+  wide
+>
+  <nav class="s-crumbs" aria-label="位置">
+    <a href="/world/encyclopedia/">百科</a>
+    <span>环境生物</span>
+  </nav>
+  <div class="s-head">
+    <h1>
+      环境生物 <span class="b-label">{endemic.length} 种</span>
+    </h1>
+    <p>用捕虫网或捕获用网子捕到的环境生物：调查笔记原文与栖息的地图。地图上的出现位置见各地图页。</p>
+  </div>
+  <FilterBox label="按名称、地图或笔记筛选" placeholder="按名称、地图或笔记筛选" />
+
+  <ul class="en-grid">
+    {endemic.map((e) => {
+      const item = itemById(e.item);
+      return (
+        <li
+          class="en-card"
+          data-filter-row
+          data-text={[
+            e.name['zh-Hans'],
+            e.name.en,
+            ...e.stages.map((s) => stageNames.get(s)),
+            e.desc['zh-Hans'],
+          ]
+            .filter(Boolean)
+            .join(' ')
+            .toLowerCase()}
+        >
+          <header>
+            {item && <img src={itemIconUrl(item)} alt="" width="36" height="36" loading="lazy" />}
+            <div>
+              <strong>{e.name['zh-Hans']}</strong>
+              {e.name.en && <small>{e.name.en}</small>}
+            </div>
+          </header>
+          <p class="en-desc">
+            {lines(e.desc['zh-Hans']).map((l) => (
+              <span>{l}</span>
+            ))}
+          </p>
+          <ul class="en-stages">
+            {e.stages.map((s) => (
+              <li>{stageNames.get(s) ?? s}</li>
+            ))}
+          </ul>
+        </li>
+      );
+    })}
+  </ul>
+
+  <p class="s-note">
+    数据来源：<code>common/note/em_animal_note.emai</code>（捕获后的物品、出现的地图）与调查笔记文本{' '}
+    <code>ec_info</code>（第 i 条与第 i 条对应）。 稀有度、出现的时间与天气等字段含义未确认，未显示。
+  </p>
+</SiteLayout>
+
+<style>
+  .en-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+    gap: var(--space-3);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .en-card {
+    display: grid;
+    align-content: start;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius);
+    background:
+      radial-gradient(120% 80% at 0% 0%, color-mix(in oklab, #5cc98f 10%, transparent), transparent 60%),
+      var(--c-surface);
+    box-shadow: inset 0 0 0 1px var(--c-line);
+  }
+
+  .en-card header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  .en-card header div {
+    display: grid;
+  }
+
+  .en-card small {
+    color: var(--c-text-3);
+    font-size: var(--text-xs);
+  }
+
+  .en-desc {
+    display: grid;
+    margin: 0;
+    color: var(--c-text-2);
+    font-family: 'Noto Serif SC Variable', serif;
+    font-size: var(--text-sm);
+    line-height: 1.8;
+  }
+
+  .en-stages {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .en-stages li {
+    padding: 0 8px;
+    border: 1px solid var(--c-line-strong);
+    border-radius: 999px;
+    color: var(--c-text-2);
+    font-size: var(--text-xs);
+  }
+</style>

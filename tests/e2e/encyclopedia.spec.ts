@@ -50,6 +50,8 @@ const PAGES = [
   ['/world/quests/51612/', '黑龙'],
   ['/world/status/', '状态异常数值'],
   ['/world/hidden-values/', '隐藏数值'],
+  ['/world/endemic/', '环境生物'],
+  ['/world/records/', '勋章'],
 ] as const;
 
 for (const [path, heading] of PAGES) {

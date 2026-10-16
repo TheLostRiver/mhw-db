@@ -1,0 +1,190 @@
+---
+import SiteLayout from '../../../layouts/SiteLayout.astro';
+import { loadRecords } from '../../../data/world/load';
+
+const { medals, npcs, dlc } = loadRecords();
+const lines = (t?: string) => (t ?? '').replace(/\r?\n/g, '');
+// DLC 按名称里「」之前的类别分组（追加家具、追加饰物、追加动作……）
+const dlcGroups = new Map<string, string[]>();
+for (const d of dlc) {
+  const name = d.name['zh-Hans'];
+  const m = /^(.+?)[「『]/.exec(name);
+  const group = m ? m[1]!.trim() : '其他';
+  dlcGroups.set(group, [...(dlcGroups.get(group) ?? []), m ? name.slice(m[1]!.length).trim() : name]);
+}
+const groups = [...dlcGroups.entries()].sort((a, b) => b[1].length - a[1].length);
+---
+
+<SiteLayout
+  title="勋章、NPC 与追加内容"
+  current="encyclopedia"
+  description="怪物猎人：世界 冰原 勋章（成就）的获得条件、NPC 一览与追加内容（DLC）"
+  wide
+>
+  <nav class="s-crumbs" aria-label="位置">
+    <a href="/world/encyclopedia/">百科</a>
+    <span>纪录</span>
+  </nav>
+  <div class="s-head">
+    <h1>勋章、NPC 与追加内容</h1>
+    <p>公会卡上的勋章（游戏内的成就）与获得条件、据点里的人物，以及追加内容的包名。</p>
+  </div>
+  <nav class="s-tabs" aria-label="本页">
+    <a href="#medals">勋章 {medals.length}</a>
+    <a href="#npcs">NPC {npcs.length}</a>
+    <a href="#dlc">追加内容 {dlc.length}</a>
+  </nav>
+
+  <section class="s-section rc-sec" id="medals">
+    <h2>勋章</h2>
+    {[false, true].map((ice) => (
+      <>
+        <h3 class="rc-sub">{ice ? '冰原追加' : '世界'}</h3>
+        <ol class="rc-medals">
+          {medals
+            .filter((m) => m.iceborne === ice)
+            .map((m) => (
+              <li>
+                <span class="rc-no">{String(m.id).padStart(3, '0')}</span>
+                <div>
+                  <strong>{m.name['zh-Hans']}</strong>
+                  <small>{lines(m.condition['zh-Hans'])}</small>
+                </div>
+              </li>
+            ))}
+        </ol>
+      </>
+    ))}
+  </section>
+
+  <section class="s-section rc-sec" id="npcs">
+    <h2>NPC</h2>
+    <ul class="rc-npcs">
+      {npcs.map((n) => (
+        <li>{n.name['zh-Hans']}</li>
+      ))}
+    </ul>
+  </section>
+
+  <section class="s-section rc-sec" id="dlc">
+    <h2>追加内容</h2>
+    <div class="rc-dlc">
+      {groups.map(([g, names]) => (
+        <details open={names.length < 40}>
+          <summary>
+            {g} <small>{names.length}</small>
+          </summary>
+          <ul>
+            {names.map((n) => (
+              <li>{n}</li>
+            ))}
+          </ul>
+        </details>
+      ))}
+    </div>
+  </section>
+
+  <p class="s-note">
+    数据来源：游戏文本 <code>cm_medal</code>（勋章名与条件）、<code>chr_names</code>（NPC 名）、
+    <code>steam/dlc_package_header</code>（追加内容包名）。 勋章图标与获得条件的数值数据、NPC
+    的介绍文本未在数据中找到。平台独占的追加内容（PC 版文本被抹掉）未列出。
+  </p>
+</SiteLayout>
+
+<style>
+  .rc-sec {
+    scroll-margin-top: 72px;
+  }
+
+  .rc-sub {
+    margin: var(--space-4) 0 var(--space-2);
+    color: var(--c-text-2);
+    font-size: var(--text-md);
+  }
+
+  .rc-medals {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .rc-medals li {
+    display: grid;
+    grid-template-columns: 3em minmax(0, 1fr);
+    gap: var(--space-2);
+    align-items: start;
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius);
+    background:
+      linear-gradient(135deg, color-mix(in oklab, #e0b84f 12%, transparent), transparent 50%),
+      var(--c-surface);
+    box-shadow: inset 0 0 0 1px var(--c-line);
+  }
+
+  .rc-medals div {
+    display: grid;
+  }
+
+  .rc-medals small {
+    color: var(--c-text-2);
+    font-size: var(--text-xs);
+  }
+
+  .rc-no {
+    color: #e0b84f;
+    font-family: var(--font-num);
+    font-size: var(--text-xs);
+  }
+
+  .rc-npcs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .rc-npcs li {
+    padding: 2px 10px;
+    border: 1px solid var(--c-line);
+    border-radius: 999px;
+    background: var(--c-surface);
+    font-size: var(--text-sm);
+  }
+
+  .rc-dlc {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 360px), 1fr));
+    gap: var(--space-3);
+    align-items: start;
+  }
+
+  .rc-dlc details {
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius);
+    background: var(--c-surface);
+    box-shadow: inset 0 0 0 1px var(--c-line);
+  }
+
+  .rc-dlc summary {
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .rc-dlc summary small {
+    color: var(--c-text-3);
+    font-family: var(--font-num);
+    font-weight: 400;
+  }
+
+  .rc-dlc ul {
+    margin: var(--space-2) 0 0;
+    padding-left: 1.2em;
+    color: var(--c-text-2);
+    font-size: var(--text-sm);
+  }
+</style>

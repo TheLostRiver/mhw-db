@@ -23,6 +23,7 @@ import { FACILITY_FILES } from './schema-facilities';
 import { PALICO_FILES } from './schema-palico';
 import { MonsterRewards, Quests } from './schema-quests';
 import { Mechanics } from './schema-mechanics';
+import { Records } from './schema-records';
 
 const ROOT = new URL('../../../../data/world/', import.meta.url);
 const read = (rel: string): unknown => JSON.parse(readFileSync(fileURLToPath(new URL(rel, ROOT)), 'utf-8'));
@@ -45,6 +46,7 @@ describe('结构', () => {
     Monsters.parse(read('monsters.json'));
     Combinations.parse(read('combinations.json'));
     Mechanics.parse(read('mechanics.json'));
+    Records.parse(read('records.json'));
     LayeredWeapons.parse(read('weapon-layered.json'));
   });
 

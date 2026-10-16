@@ -26,6 +26,7 @@ import {
   loadPalicoGear,
   loadPendants,
   loadQuests,
+  loadRecords,
   loadShop,
   loadSkills,
   loadWeaponCustom,
@@ -48,6 +49,7 @@ const ITEM_GLYPH: Record<string, string> = {
   room: 'room',
 };
 const custom = loadWeaponCustom();
+const records = loadRecords();
 
 interface Entry {
   label: string;
@@ -84,7 +86,13 @@ const chapters: Chapter[] = [
         count: monsters.length,
       },
       { label: '怪物招式', note: '攻击动作与伤害', glyph: 'monster-moves' },
-      { label: '环境生物', note: '栖息地、捕获、稀有度', glyph: 'endemic' },
+      {
+        label: '环境生物',
+        note: '调查笔记与栖息地',
+        glyph: 'endemic',
+        href: '/world/endemic/',
+        count: records.endemic.length,
+      },
       {
         label: '地图',
         note: '采集点、环境生物、钓点',
@@ -363,10 +371,28 @@ const chapters: Chapter[] = [
     hue: '#e07a9a',
     lead: '勋章、祭典的轮换日程、人物与追加内容。',
     entries: [
-      { label: '勋章', note: '条件一览', glyph: 'achievement' },
+      {
+        label: '勋章',
+        note: '获得条件一览',
+        glyph: 'achievement',
+        href: '/world/records/#medals',
+        count: records.medals.length,
+      },
       { label: '祭典与日历', note: '轮换日程', glyph: 'festival' },
-      { label: 'NPC', note: '人物一览', glyph: 'npc' },
-      { label: 'DLC', note: '追加内容', glyph: 'dlc' },
+      {
+        label: 'NPC',
+        note: '人物一览',
+        glyph: 'npc',
+        href: '/world/records/#npcs',
+        count: records.npcs.length,
+      },
+      {
+        label: 'DLC',
+        note: '追加内容',
+        glyph: 'dlc',
+        href: '/world/records/#dlc',
+        count: records.dlc.length,
+      },
     ],
   },
   {
