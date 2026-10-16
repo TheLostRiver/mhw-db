@@ -35,6 +35,14 @@ const PAGES = [
   ['/world/layered-weapons/', '武器外观'],
   ['/world/layered-weapons/heavy-bowgun/', '重弩'],
   ['/world/weapons/hunting-horn/', '狩猎笛'],
+  ['/world/melder/', '神秘炼金'],
+  ['/world/provisions/', '补给物资所'],
+  ['/world/deliveries/', '交货委托'],
+  ['/world/bounties/', '奖金'],
+  ['/world/steamworks/', '蒸气机关管理所'],
+  ['/world/expeditions/', '随从探险队'],
+  ['/world/argosy/', '交易船'],
+  ['/world/botany/', '植生研究所'],
 ] as const;
 
 for (const [path, heading] of PAGES) {
@@ -117,4 +125,14 @@ test('狩猎笛旋律按音色筛选，从武器页跳转时带上音色', async
   expect(await shown.count()).toBeLessThan(await page.locator('[data-ml-row]').count());
   await page.getByRole('button', { name: '全部旋律' }).click();
   await expect(page.locator('[data-ml-row][hidden]')).toHaveCount(0);
+});
+
+test('神秘炼金可以按素材反查能炼成什么', async ({ page }) => {
+  await page.goto('/world/melder/', { waitUntil: 'networkidle' });
+  const rows = page.locator('[data-filter-row]');
+  const all = await rows.count();
+  await page.getByRole('searchbox', { name: '按成品或素材筛选' }).fill('扭曲狂骨');
+  const shown = page.locator('[data-filter-row]:not([hidden])');
+  expect(await shown.count()).toBeGreaterThan(0);
+  expect(await shown.count()).toBeLessThan(all);
 });

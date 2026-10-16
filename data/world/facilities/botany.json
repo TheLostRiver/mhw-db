@@ -1,0 +1,805 @@
+{
+  "plants": [
+    {
+      "item": 7,
+      "category": "plant",
+      "quests": 2,
+      "harvest": [
+        4,
+        5,
+        6
+      ],
+      "initial": false,
+      "_src": {
+        "file": "common/plant/plant_item.plit",
+        "row": 0
+      }
+    },
+    {
+      "item": 20,
+      "category": "plant",
+      "quests": 2,
+      "harvest": [
+        4,
+        5,
+        6
+      ],
+      "initial": false,
+      "_src": {
+        "file": "common/plant/plant_item.plit",
+        "row": 1
+      }
+    },
+    {
+      "item": 24,
+      "category": "plant",
+      "quests": 2,
+      "harvest": [
+        4,
+        5,
+        6
+      ],
+      "initial": false,
+      "_src": {
+        "file": "common/plant/plant_item.plit",
+        "row": 2
+      }
+    },
+    {
+      "item": 33,
+      "category": "plant",
+      "quests": 1,
+      "harvest": [
+        2,
+        4,
+        8
+      ],
+      "initial": true,
+      "_src": {
+        "file": "common/plant/plant_item.plit",
+        "row": 3
+      }
+    },
+    {
+      "item": 34,
+      "category": "plant",
+      "quests": 1,
+      "harvest": [
+        2,
+        4,
+        8
+      ],
+      "initial": false,
+      "_src": {
+        "file": "common/plant/plant_item.plit",
+        "row": 4
+      }
+    },
+    {
+      "item": 35,
+      "category": "plant",
+      "quests": 1,
+      "harvest": [
+        2,
+        4,
+        8
+      ],
+      "initial": false,
+      "_src": {
+        "file": "common/plant/plant_item.plit",
+        "row": 5
+      }
+    },
+    {
+      "item": 36,
+      "category": "plant",
+      "quests": 1,
+      "harvest": [
+        2,
+        4,
+        8
+      ],
+      "initial": false,
+      "_src": {
+        "file": "common/plant/plant_item.plit",
+        "row": 6
+      }
+    },
+    {
+      "item": 37,
+      "category": "plant",
+      "quests": 1,
+      "harvest": [
+        2,
+        4,
+        8
+      ],
+      "initial": false,
+      "_src": {
+        "file": "common/plant/plant_item.plit",
+        "row": 7
+      }
+    },
+    {
+      "item": 38,
+      "category": "plant",
+      "quests": 1,
+      "harvest": [
+        2,
+        4,
+        8
+      ],
+      "initial": false,
+      "_src": {
+        "file": "common/plant/plant_item.plit",
+        "row": 8
+      }
+    },
+    {
+      "item": 40,
+      "category": "plant",
+      "quests": 1,
+      "harvest": [
+        2,
+        4,
+        8
+      ],
+      "initial": false,
+      "_src": {
+        "file": "common/plant/plant_item.plit",
+        "row": 9
+      }
+    },
+    {
+      "item": 41,
+      "category": "plant",
+      "quests": 3,
+      "harvest": [
+        6,
+        7,
+        8
+      ],
+      "initial": false,
+      "_src": {
+        "file": "common/plant/plant_item.plit",
+        "row": 10
+      }
+    },
+    {
+      "item": 39,
+      "category": "plant",
+      "quests": 1,
+      "harvest": [
+        2,
+        4,
+        8
+      ],
+      "initial": false,
+      "_src": {
+        "file": "common/plant/plant_item.plit",
+        "row": 11
+      }
+    },
+    {
+      "item": 1006,
+      "category": "plant",
+      "quests": 1,
+      "harvest": [
+        2,
+        4,
+        8
+      ],
+      "initial": false,
+      "_src": {
+        "file": "common/plant/plant_item.plit",
+        "row": 12
+      }
+    },
+    {
+      "item": 1007,
+      "category": "plant",
+      "quests": 3,
+      "harvest": [
+        4,
+        5,
+        6
+      ],
+      "initial": false,
+      "_src": {
+        "file": "common/plant/plant_item.plit",
+        "row": 13
+      }
+    },
+    {
+      "item": 42,
+      "category": "mushroom",
+      "quests": 1,
+      "harvest": [
+        2,
+        4,
+        8
+      ],
+      "initial": true,
+      "_src": {
+        "file": "common/plant/plant_item.plit",
+        "row": 14
+      }
+    },
+    {
+      "item": 43,
+      "category": "mushroom",
+      "quests": 2,
+      "harvest": [
+        4,
+        5,
+        6
+      ],
+      "initial": false,
+      "_src": {
+        "file": "common/plant/plant_item.plit",
+        "row": 15
+      }
+    },
+    {
+      "item": 44,
+      "category": "mushroom",
+      "quests": 1,
+      "harvest": [
+        2,
+        4,
+        8
+      ],
+      "initial": false,
+      "_src": {
+        "file": "common/plant/plant_item.plit",
+        "row": 16
+      }
+    },
+    {
+      "item": 45,
+      "category": "mushroom",
+      "quests": 3,
+      "harvest": [
+        4,
+        5,
+        6
+      ],
+      "initial": false,
+      "_src": {
+        "file": "common/plant/plant_item.plit",
+        "row": 17
+      }
+    },
+    {
+      "item": 46,
+      "category": "mushroom",
+      "quests": 1,
+      "harvest": [
+        2,
+        4,
+        8
+      ],
+      "initial": false,
+      "_src": {
+        "file": "common/plant/plant_item.plit",
+        "row": 18
+      }
+    },
+    {
+      "item": 47,
+      "category": "mushroom",
+      "quests": 1,
+      "harvest": [
+        2,
+        4,
+        8
+      ],
+      "initial": false,
+      "_src": {
+        "file": "common/plant/plant_item.plit",
+        "row": 19
+      }
+    },
+    {
+      "item": 48,
+      "category": "mushroom",
+      "quests": 2,
+      "harvest": [
+        4,
+        5,
+        6
+      ],
+      "initial": false,
+      "_src": {
+        "file": "common/plant/plant_item.plit",
+        "row": 20
+      }
+    },
+    {
+      "item": 870,
+      "category": "mushroom",
+      "quests": 1,
+      "harvest": [
+        2,
+        4,
+        8
+      ],
+      "initial": false,
+      "_src": {
+        "file": "common/plant/plant_item.plit",
+        "row": 21
+      }
+    },
+    {
+      "item": 32,
+      "category": "insect",
+      "quests": 1,
+      "harvest": [
+        2,
+        4,
+        8
+      ],
+      "initial": true,
+      "_src": {
+        "file": "common/plant/plant_item.plit",
+        "row": 22
+      }
+    },
+    {
+      "item": 49,
+      "category": "insect",
+      "quests": 1,
+      "harvest": [
+        2,
+        4,
+        8
+      ],
+      "initial": true,
+      "_src": {
+        "file": "common/plant/plant_item.plit",
+        "row": 23
+      }
+    },
+    {
+      "item": 50,
+      "category": "insect",
+      "quests": 2,
+      "harvest": [
+        4,
+        5,
+        6
+      ],
+      "initial": false,
+      "_src": {
+        "file": "common/plant/plant_item.plit",
+        "row": 24
+      }
+    },
+    {
+      "item": 51,
+      "category": "insect",
+      "quests": 3,
+      "harvest": [
+        8,
+        9,
+        10
+      ],
+      "initial": false,
+      "_src": {
+        "file": "common/plant/plant_item.plit",
+        "row": 25
+      }
+    },
+    {
+      "item": 52,
+      "category": "insect",
+      "quests": 1,
+      "harvest": [
+        2,
+        4,
+        8
+      ],
+      "initial": false,
+      "_src": {
+        "file": "common/plant/plant_item.plit",
+        "row": 26
+      }
+    },
+    {
+      "item": 53,
+      "category": "insect",
+      "quests": 2,
+      "harvest": [
+        4,
+        5,
+        6
+      ],
+      "initial": false,
+      "_src": {
+        "file": "common/plant/plant_item.plit",
+        "row": 27
+      }
+    },
+    {
+      "item": 77,
+      "category": "insect",
+      "quests": 1,
+      "harvest": [
+        2,
+        4,
+        8
+      ],
+      "initial": false,
+      "_src": {
+        "file": "common/plant/plant_item.plit",
+        "row": 28
+      }
+    },
+    {
+      "item": 84,
+      "category": "insect",
+      "quests": 2,
+      "harvest": [
+        4,
+        5,
+        6
+      ],
+      "initial": false,
+      "_src": {
+        "file": "common/plant/plant_item.plit",
+        "row": 29
+      }
+    },
+    {
+      "item": 94,
+      "category": "plant",
+      "quests": 1,
+      "harvest": [
+        20,
+        40,
+        80
+      ],
+      "initial": true,
+      "_src": {
+        "file": "common/plant/plant_item.plit",
+        "row": 30
+      }
+    },
+    {
+      "item": 95,
+      "category": "plant",
+      "quests": 1,
+      "harvest": [
+        5,
+        10,
+        20
+      ],
+      "initial": false,
+      "_src": {
+        "file": "common/plant/plant_item.plit",
+        "row": 31
+      }
+    },
+    {
+      "item": 96,
+      "category": "plant",
+      "quests": 3,
+      "harvest": [
+        8,
+        10,
+        12
+      ],
+      "initial": false,
+      "_src": {
+        "file": "common/plant/plant_item.plit",
+        "row": 32
+      }
+    },
+    {
+      "item": 97,
+      "category": "plant",
+      "quests": 1,
+      "harvest": [
+        15,
+        30,
+        45
+      ],
+      "initial": false,
+      "_src": {
+        "file": "common/plant/plant_item.plit",
+        "row": 33
+      }
+    },
+    {
+      "item": 98,
+      "category": "plant",
+      "quests": 1,
+      "harvest": [
+        20,
+        40,
+        80
+      ],
+      "initial": true,
+      "_src": {
+        "file": "common/plant/plant_item.plit",
+        "row": 34
+      }
+    },
+    {
+      "item": 99,
+      "category": "plant",
+      "quests": 3,
+      "harvest": [
+        8,
+        10,
+        12
+      ],
+      "initial": false,
+      "_src": {
+        "file": "common/plant/plant_item.plit",
+        "row": 35
+      }
+    },
+    {
+      "item": 100,
+      "category": "plant",
+      "quests": 1,
+      "harvest": [
+        20,
+        40,
+        80
+      ],
+      "initial": false,
+      "_src": {
+        "file": "common/plant/plant_item.plit",
+        "row": 36
+      }
+    },
+    {
+      "item": 101,
+      "category": "plant",
+      "quests": 2,
+      "harvest": [
+        30,
+        40,
+        50
+      ],
+      "initial": false,
+      "_src": {
+        "file": "common/plant/plant_item.plit",
+        "row": 37
+      }
+    }
+  ],
+  "fertilizers": [
+    {
+      "name": {
+        "zh-Hans": "植物肥料",
+        "zh-Hant": "植物肥料",
+        "ja": "植物肥料",
+        "en": "Fertilizer"
+      },
+      "desc": {
+        "zh-Hans": "补充栽培植物需要的营养，\n增加收获个数的肥料。\n[效果时间：3次任务]",
+        "zh-Hant": "補充栽培植物需要的營養，\n增加收穫個數的肥料。\n《效果時間：3次任務》",
+        "ja": "植物が育つのに必要な栄養を\n補い、収穫個数を増やす肥料。\n≪効果時間：３クエスト≫",
+        "en": "Contains the necessary nutrients\nto grow a large quantity of plants.\nLasts for 3 quests."
+      },
+      "effect": {
+        "zh-Hans": "草与果实收获量提升【小】",
+        "zh-Hant": "草‧果實收穫量UP【小】",
+        "ja": "草・実収穫量ＵＰ【小】",
+        "en": "Plant Harvest Up (S)"
+      },
+      "price": 100,
+      "duration": 3,
+      "_src": {
+        "file": "common/plant/plant_fertilizer.plfe",
+        "row": 0
+      }
+    },
+    {
+      "name": {
+        "zh-Hans": "蘑菇菌床",
+        "zh-Hant": "香菇菌床",
+        "ja": "キノコ菌床",
+        "en": "Mushroom Substrate"
+      },
+      "desc": {
+        "zh-Hans": "使蘑菇容易扎根，\n增加收获个数的肥料。\n[效果时间：3次任务]",
+        "zh-Hant": "使香菇容易紮根，\n增加收穫個數的肥料。\n《效果時間：3次任務》",
+        "ja": "キノコが根付きやすくして、\n収穫個数を増やす肥料。\n≪効果時間：３クエスト≫",
+        "en": "Fine fertilizer that makes it easy\nto grow a bed of mushrooms.\nLasts for 3 quests."
+      },
+      "effect": {
+        "zh-Hans": "蘑菇收获量提升【小】",
+        "zh-Hant": "香菇收穫量UP【小】",
+        "ja": "キノコ収穫量ＵＰ【小】",
+        "en": "Fungi Harvest Up (S)"
+      },
+      "price": 100,
+      "duration": 3,
+      "_src": {
+        "file": "common/plant/plant_fertilizer.plfe",
+        "row": 1
+      }
+    },
+    {
+      "name": {
+        "zh-Hans": "招虫果冻",
+        "zh-Hant": "招蟲果凍",
+        "ja": "虫寄せゼリー",
+        "en": "Summoner Jelly"
+      },
+      "desc": {
+        "zh-Hans": "散发虫喜欢的味道的饵食，\n也能影响蜂蜜的收获量。\n[效果时间：3次任务]",
+        "zh-Hant": "散發蟲喜歡的味道的餌食，\n也能影響蜂蜜的收穫量。\n《效果時間：3次任務》",
+        "ja": "虫の好きなにおいがするエサ。\nハチミツの収獲量にも影響がある。\n≪効果時間：３クエスト≫",
+        "en": "Bait with an odor that insects love.\nAlso boosts your honey harvests.\nGood for 3 quests."
+      },
+      "effect": {
+        "zh-Hans": "虫与蜂蜜收获量提升【小】",
+        "zh-Hant": "蟲‧蜂蜜收穫量UP【小】",
+        "ja": "虫・ハチミツ量ＵＰ【小】",
+        "en": "Bug/Honey Harvest Up (S)"
+      },
+      "price": 100,
+      "duration": 3,
+      "_src": {
+        "file": "common/plant/plant_fertilizer.plfe",
+        "row": 2
+      }
+    },
+    {
+      "name": {
+        "zh-Hans": "活性剂",
+        "zh-Hant": "活性劑",
+        "ja": "活性剤",
+        "en": "Catalyst"
+      },
+      "desc": {
+        "zh-Hans": "促进栽培速度，\n缩短收获必要时间的肥料。\n[效果时间：4次任务]",
+        "zh-Hant": "促進栽培速度，\n縮短收穫所需時間的肥料。\n《效果時間：4次任務》",
+        "ja": "栽培を促進させ、収穫に必要な\n時間を短縮する肥料。\n≪効果時間：４クエスト≫",
+        "en": "Speeds up cultivation so you\ncan begin your harvest quicker.\nLasts for 4 quests."
+      },
+      "effect": {
+        "zh-Hans": "成长力提升【小】",
+        "zh-Hant": "成長力UP【小】",
+        "ja": "成長力ＵＰ【小】",
+        "en": "Growth Up (S)"
+      },
+      "price": 300,
+      "duration": 4,
+      "_src": {
+        "file": "common/plant/plant_fertilizer.plfe",
+        "row": 3
+      }
+    },
+    {
+      "name": {
+        "zh-Hans": "植物肥料·大",
+        "zh-Hant": "植物肥料‧大",
+        "ja": "植物肥料グレート",
+        "en": "Mega Fertilizer"
+      },
+      "desc": {
+        "zh-Hans": "给予植物丰富的营养，\n大幅增加收获个数的肥料。\n[效果时间：4次任务]",
+        "zh-Hant": "給予植物豐富的營養，\n大幅增加收穫個數的肥料。\n《效果時間：4次任務》",
+        "ja": "植物にたっぷりと栄養を与え、\n収穫個数を大きく増やす肥料。\n≪効果時間：４クエスト≫",
+        "en": "Filled to the brim with nutrients\nto grow a huge quantity of plants.\nLasts for 4 quests."
+      },
+      "effect": {
+        "zh-Hans": "草与果实收获量提升【大】",
+        "zh-Hant": "草‧果實收穫量UP【大】",
+        "ja": "草・実収穫量ＵＰ【大】",
+        "en": "Plant Harvest Up (L)"
+      },
+      "price": 250,
+      "duration": 4,
+      "_src": {
+        "file": "common/plant/plant_fertilizer.plfe",
+        "row": 4
+      }
+    },
+    {
+      "name": {
+        "zh-Hans": "严选蘑菇菌床",
+        "zh-Hant": "嚴選香菇菌床",
+        "ja": "厳選キノコ菌床",
+        "en": "Choice Mushroom Substrate"
+      },
+      "desc": {
+        "zh-Hans": "使蘑菇非常容易扎根，\n大幅增加收获个数的肥料。\n[效果时间：4次任务]",
+        "zh-Hant": "使香菇非常容易紮根，\n大幅增加收穫個數的肥料。\n《效果時間：4次任務》",
+        "ja": "キノコがとても根付きやすくなり\n収穫個数が大きく増える肥料。\n≪効果時間：４クエスト≫",
+        "en": "Wonderful fertilizer that's capable\nof growing large mushroom beds.\nLasts for 4 quests."
+      },
+      "effect": {
+        "zh-Hans": "蘑菇收获量提升【大】",
+        "zh-Hant": "香菇收穫量UP【大】",
+        "ja": "キノコ収穫量ＵＰ【大】",
+        "en": "Fungi Harvest Up (L)"
+      },
+      "price": 250,
+      "duration": 4,
+      "_src": {
+        "file": "common/plant/plant_fertilizer.plfe",
+        "row": 5
+      }
+    },
+    {
+      "name": {
+        "zh-Hans": "浓厚招虫果冻",
+        "zh-Hant": "濃厚招蟲果凍",
+        "ja": "濃厚虫寄せゼリー",
+        "en": "Thick Summoner Jelly"
+      },
+      "desc": {
+        "zh-Hans": "拥有绝大招虫效果的饵食，\n对蜂蜜的收获量也有效果。\n[效果时间：4次任务]",
+        "zh-Hant": "擁有絕大招蟲效果的餌食，\n對蜂蜜的收穫量也有效果。\n《效果時間：4次任務》",
+        "ja": "虫寄せに絶大な効果のあるエサ。\nハチミツの収獲にも効果がある。\n≪効果時間：４クエスト≫",
+        "en": "Bait that lures in insects with ease.\nAlso boosts your honey harvests.\nGood for 4 quests."
+      },
+      "effect": {
+        "zh-Hans": "虫与蜂蜜收获量提升【大】",
+        "zh-Hant": "蟲‧蜂蜜收穫量UP【大】",
+        "ja": "虫・ハチミツ量ＵＰ【大】",
+        "en": "Bug/Honey Harvest Up (L)"
+      },
+      "price": 250,
+      "duration": 4,
+      "_src": {
+        "file": "common/plant/plant_fertilizer.plfe",
+        "row": 6
+      }
+    },
+    {
+      "name": {
+        "zh-Hans": "远古活性剂",
+        "zh-Hant": "遠古活性劑",
+        "ja": "いにしえの活性剤",
+        "en": "Ancient Catalyst"
+      },
+      "desc": {
+        "zh-Hans": "促进栽培速度，\n大幅缩短收获必要时间的肥料。\n[效果时间：4次任务]",
+        "zh-Hant": "促進栽培速度，\n大幅縮短收穫所需時間的肥料。\n《效果時間：4次任務》",
+        "ja": "栽培を促進させ、収穫に必要な\n時間を大きく短縮する肥料。\n≪効果時間：４クエスト≫",
+        "en": "Greatly speeds up cultivation so you\ncan begin your harvest quicker.\nLasts for 4 quests."
+      },
+      "effect": {
+        "zh-Hans": "成长力提升【大】",
+        "zh-Hant": "成長力UP【大】",
+        "ja": "成長力ＵＰ【大】",
+        "en": "Growth Up (L)"
+      },
+      "price": 500,
+      "duration": 4,
+      "_src": {
+        "file": "common/plant/plant_fertilizer.plfe",
+        "row": 7
+      }
+    },
+    {
+      "name": {
+        "zh-Hans": "软土",
+        "zh-Hant": "軟土",
+        "ja": "やわらかい土",
+        "en": "Soft Soil"
+      },
+      "desc": {
+        "zh-Hans": "能够延长所有肥料的效果，\n研究者们渴望的肥料。\n[效果时间：5次任务]",
+        "zh-Hant": "能夠延長所有肥料的效果，\n研究者們渴望的肥料。\n《效果時間：５次任務》",
+        "ja": "あらゆる肥料の効果を長持ちさせる\n研究者あこがれの肥料。\n≪効果時間：５クエスト≫",
+        "en": "This soil extends the duration\nof current fertilizer effects.\nLasts for 5 quests."
+      },
+      "effect": {},
+      "price": 600,
+      "duration": 5,
+      "_src": {
+        "file": "common/plant/plant_fertilizer.plfe",
+        "row": 8
+      }
+    }
+  ]
+}

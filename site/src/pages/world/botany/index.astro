@@ -1,0 +1,128 @@
+---
+import SiteLayout from '../../../layouts/SiteLayout.astro';
+import FacilityTabs from '../../../components/site/FacilityTabs.astro';
+import ItemName from '../../../components/site/ItemName.astro';
+import { loadBotany } from '../../../data/world/load';
+
+const { plants, fertilizers } = loadBotany();
+const CATEGORIES = [
+  { key: 'plant', title: '草与果实' },
+  { key: 'mushroom', title: '蘑菇' },
+  { key: 'insect', title: '虫与蜂蜜' },
+] as const;
+const lines = (t?: string) => (t ?? '').replace(/\n/g, '');
+---
+
+<SiteLayout
+  title="植生研究所"
+  current="encyclopedia"
+  description="怪物猎人：世界 冰原 植生研究所：可种植物、所需任务数、收获量与肥料"
+  wide
+>
+  <nav class="s-crumbs" aria-label="位置">
+    <a href="/world/encyclopedia/">百科</a>
+    <span>植生研究所</span>
+  </nav>
+  <div class="s-head">
+    <h1>植生研究所</h1>
+    <p>种下作物，完成若干次任务后收获。收获量随施用的肥料变化；肥料用调查点数购买，持续若干次任务。</p>
+  </div>
+  <FacilityTabs current="botany" />
+
+  <div class="bo-cats">
+    {CATEGORIES.map((c) => (
+      <section class="s-section">
+        <h2>{c.title}</h2>
+        <div class="s-table-wrap bo-wrap">
+          <table class="s-table">
+            <thead>
+              <tr>
+                <th class="s-left">作物</th>
+                <th title="收获前要完成的任务数">任务数</th>
+                <th title="无肥料 / 小 / 大肥料">收获量</th>
+              </tr>
+            </thead>
+            <tbody>
+              {plants
+                .filter((p) => p.category === c.key)
+                .map((p) => (
+                  <tr>
+                    <td class="s-left">
+                      <ItemName id={p.item} />
+                      {p.initial && <small class="bo-init">初始</small>}
+                    </td>
+                    <td class="s-num">{p.quests}</td>
+                    <td class="s-num">{p.harvest.join(' / ')}</td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    ))}
+  </div>
+
+  <section class="s-section">
+    <h2>肥料</h2>
+    <div class="s-table-wrap bo-wrap">
+      <table class="s-table">
+        <thead>
+          <tr>
+            <th class="s-left">肥料</th>
+            <th class="s-left">效果</th>
+            <th>价格</th>
+            <th>持续</th>
+            <th class="s-left">说明</th>
+          </tr>
+        </thead>
+        <tbody>
+          {fertilizers.map((f) => (
+            <tr>
+              <td class="s-left">{f.name['zh-Hans']}</td>
+              <td class="s-left">{f.effect['zh-Hans'] ?? <span class="s-dim">—</span>}</td>
+              <td class="s-num">{f.price} 点</td>
+              <td class="s-num">{f.duration} 次任务</td>
+              <td class="s-left bo-desc">{lines(f.desc['zh-Hans'])}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <p class="s-note">
+    数据来源：<code>common/plant/plant_item.plit</code>（作物、任务数、收获量）、
+    <code>plant_fertilizer.plfe</code>（肥料）与设施文本。 已与 GameWith、Fextralife 核对：怪力种子 2 次任务 4
+    个、屠龙果实 3 次 6 / 7 / 8；植物肥料 100 点 3 次、活性剂 300 点 4 次、软土 600 点。 「初始」=
+    一开始就能种（推断）；使用活性剂后的任务数未确认，未显示。
+  </p>
+</SiteLayout>
+
+<style>
+  .bo-cats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr));
+    gap: var(--space-4);
+  }
+
+  .bo-cats .s-section {
+    margin: 0;
+  }
+
+  .bo-wrap {
+    max-height: none;
+  }
+
+  .bo-init {
+    margin-left: 6px;
+    color: var(--c-accent);
+    font-size: 10px;
+  }
+
+  .bo-desc {
+    min-width: 18rem;
+    color: var(--c-text-2);
+    font-size: var(--text-sm);
+    white-space: normal;
+  }
+</style>

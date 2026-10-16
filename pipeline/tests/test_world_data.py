@@ -226,3 +226,36 @@ def test_pendant_and_layered_weapon_recipes() -> None:
     layered = json.loads((WORLD / "weapon-layered.json").read_text(encoding="utf-8"))
     iron = by_name(layered["long-sword"], "基本外观【铁】")
     assert (iron["kind"], iron["cost"]) == ("base", 250)
+
+
+def facility(name: str, key: str | None = None):
+    data = json.loads((WORLD / "facilities" / f"{name}.json").read_text(encoding="utf-8"))
+    return data[key] if key else data
+
+
+def test_facilities_match_public_data() -> None:
+    items = {i["name"]["zh-Hans"]: i["id"] for i in load("items.json", "items")}
+    # Kiranico 神秘炼金：回复药·大 20 点 / 炼金值 10，铁矿石提供 2
+    mega = next(t for t in facility("melder", "melder") if t["item"] == items["回复药·大"])
+    assert (mega["points"], mega["melding"]) == (20, 10)
+    assert [items["铁矿石"], 2] in mega["sources"]
+    # 交货委托：古代树森林营地计划之1 = 铁矿石 ×2 + 太古大骨 ×1、50 点
+    camp = by_name_key(facility("deliveries", "deliveries"), "title", "古代树森林营地计划之1")
+    assert camp["cost"] == 50
+    assert {m["item"]: m["count"] for m in camp["materials"]} == {items["铁矿石"]: 2, items["太古大骨"]: 1}
+    # 奖金：在矿脉采掘 6 次 = 铠玉 ×1、40 点
+    ore = next(b for b in facility("bounties", "bounties") if "在矿脉采掘6次" in b["desc"].get("zh-Hans", ""))
+    assert ore["points"] == 40 and ore["rewards"] == [{"item": items["铠玉"], "count": 1}]
+    # 植生研究所：屠龙果实 3 次任务 6 / 7 / 8
+    botany = facility("botany")
+    dragon = next(p for p in botany["plants"] if p["item"] == items["屠龙果实"])
+    assert (dragon["quests"], dragon["harvest"]) == (3, [6, 7, 8])
+    # 蒸气机关：特大龙脉炭 = 燃料 1000
+    fuel = {f["item"]: f["fuel"] for f in facility("steamworks")["fuel"]}
+    assert fuel[items["特大龙脉炭"]] == 1000
+
+
+def by_name_key(rows: list[dict], key: str, zh: str) -> dict:
+    hits = [r for r in rows if r[key].get("zh-Hans") == zh]
+    assert hits, f"找不到 {zh}"
+    return hits[0]

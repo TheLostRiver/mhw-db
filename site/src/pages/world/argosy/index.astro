@@ -1,0 +1,90 @@
+---
+import SiteLayout from '../../../layouts/SiteLayout.astro';
+import FacilityTabs from '../../../components/site/FacilityTabs.astro';
+import FilterBox from '../../../components/site/FilterBox.astro';
+import ItemName from '../../../components/site/ItemName.astro';
+import { itemById, loadArgosy } from '../../../data/world/load';
+
+const goods = loadArgosy();
+// 进货需求的三类（文本 TRADE_TYPE01–03）
+const KINDS = [
+  { kind: 'goods', title: '消耗道具' },
+  { kind: 'material', title: '素材道具' },
+  { kind: 'value', title: '换金道具' },
+] as const;
+const STAGES = [1, 2, 3, 4, 5, 6];
+---
+
+<SiteLayout
+  title="交易船"
+  current="encyclopedia"
+  description="怪物猎人：世界 冰原 交易船（阿尔戈斯号）的进货：各阶段的道具与个数"
+  wide
+>
+  <nav class="s-crumbs" aria-label="位置">
+    <a href="/world/encyclopedia/">百科</a>
+    <span>交易船</span>
+  </nav>
+  <div class="s-head">
+    <h1>交易船</h1>
+    <p>
+      在交易船选择进货需求，用调查点数购买船带回的道具。数据按 6 个进度阶段给出每种道具的个数（「—」=
+      该阶段不出现）， 稀有进货单独列出。
+    </p>
+  </div>
+  <FacilityTabs current="argosy" />
+  <FilterBox label="按道具名筛选" placeholder="按道具名筛选" />
+
+  {KINDS.map((k) => (
+    <section class="s-section" data-filter-section>
+      <h2>{k.title}</h2>
+      <div class="s-table-wrap ag-wrap">
+        <table class="s-table">
+          <thead>
+            <tr>
+              <th class="s-left">道具</th>
+              {STAGES.map((s) => (
+                <th>阶段 {s}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {goods
+              .filter((g) => g.kind === k.kind)
+              .sort((a, b) => Number(a.rare) - Number(b.rare))
+              .map((g) => (
+                <tr data-filter-row data-text={(itemById(g.item)?.name['zh-Hans'] ?? '').toLowerCase()}>
+                  <td class="s-left">
+                    <ItemName id={g.item} />
+                    {g.rare && <span class="ag-rare">稀有</span>}
+                  </td>
+                  {g.qty.map((q) => (q ? <td class="s-num">{q}</td> : <td class="s-dim">—</td>))}
+                </tr>
+              ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  ))}
+
+  <p class="s-note">
+    数据来源：<code>common/facility/goods / material / value(_rare).trdr</code>。个数已与 Fextralife
+    的交易船表核对（后期数值： 爆裂果实 35、怪力种子 3、蜂蜜 6
+    等）。各阶段对应的剧情进度、出现权重的含义与价格（不在表里）未确认。
+  </p>
+</SiteLayout>
+
+<style>
+  .ag-wrap {
+    max-height: none;
+  }
+
+  .ag-rare {
+    margin-left: 6px;
+    padding: 0 5px;
+    border: 1px solid var(--c-amber);
+    border-radius: 3px;
+    color: var(--c-amber);
+    font-size: 10px;
+  }
+</style>

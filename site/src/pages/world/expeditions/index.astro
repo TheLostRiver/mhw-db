@@ -1,0 +1,121 @@
+---
+import SiteLayout from '../../../layouts/SiteLayout.astro';
+import FacilityTabs from '../../../components/site/FacilityTabs.astro';
+import ItemName from '../../../components/site/ItemName.astro';
+import { itemById, loadExpeditions, loadMaps } from '../../../data/world/load';
+
+const { rewards, targets } = loadExpeditions();
+const rewardById = new Map(rewards.map((r) => [r.id, r]));
+const stageNames = new Map<number, string>(loadMaps().map((s) => [s.id, s.name['zh-Hans']]));
+stageNames.set(109, '聚魔之地');
+const stages = [...new Set(targets.map((t) => t.stage))];
+const RANKS = { low: '下位', high: '上位', master: '大师' } as const;
+const GATHER = { ore: '矿脉', bone: '骨冢', plant: '植物', mushroom: '蘑菇', monster: '怪物' } as const;
+// 怪物目标没有名字：取第一种素材名「的」之前的部分（如「痹贼龙的鳞」→ 痹贼龙），推断
+const targetName = (rewardId: number): string => {
+  const r = rewardById.get(rewardId);
+  if (!r) return '—';
+  if (r.gather !== 'monster') return GATHER[r.gather];
+  const first = itemById(r.items[0]!.item)?.name['zh-Hans'] ?? '';
+  return first.includes('的') ? first.split('的')[0]! : '怪物';
+};
+---
+
+<SiteLayout
+  title="随从探险队"
+  current="encyclopedia"
+  description="怪物猎人：世界 冰原 随从探险队：各地图可派遣的目标与可能带回的道具"
+  wide
+>
+  <nav class="s-crumbs" aria-label="位置">
+    <a href="/world/encyclopedia/">百科</a>
+    <span>随从探险队</span>
+  </nav>
+  <div class="s-head">
+    <h1>随从探险队</h1>
+    <p>
+      派遣随从去各地图的采集点或追踪怪物，带回道具。下表按地图与等级列出可选的目标，以及可能带回的道具与权重。
+    </p>
+  </div>
+  <FacilityTabs current="expeditions" />
+  <nav class="s-tabs ex-jump" aria-label="地图">
+    {stages.map((s) => (
+      <a href={`#stage-${s}`}>{stageNames.get(s) ?? s}</a>
+    ))}
+  </nav>
+
+  {stages.map((s) => (
+    <section class="s-section ex-stage" id={`stage-${s}`}>
+      <h2>{stageNames.get(s) ?? s}</h2>
+      {(['low', 'high', 'master'] as const).map((rank) => {
+        const list = targets.filter((t) => t.stage === s && t.rank === rank);
+        return list.length ? (
+          <>
+            <h3>{RANKS[rank]}</h3>
+            <ul class="s-cards">
+              {list.map((t) => {
+                const r = rewardById.get(t.reward);
+                return (
+                  <li>
+                    <strong>{targetName(t.reward)}</strong>
+                    <ul class="ex-items">
+                      {r?.items.map((i) => (
+                        <li>
+                          <ItemName id={i.item} size={20} count={i.count} />
+                          <span class="ex-w">{i.weight}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </li>
+                );
+              })}
+            </ul>
+          </>
+        ) : null;
+      })}
+    </section>
+  ))}
+
+  <p class="s-note">
+    数据来源：<code>common/facility/expeditionSt*.ex_map</code>（各地图 × 等级的目标）、
+    <code>expeditionRem.ex_rem</code>（报酬抽选表）。 右侧数字为权重（同一目标内合计约
+    100，可近似看作百分比，推断）。怪物目标在数据里只有编号，名称按第一种素材名推断；
+    解锁所需的任务、随从能力对收获的影响未确认。
+  </p>
+</SiteLayout>
+
+<style>
+  .ex-stage {
+    scroll-margin-top: 72px;
+  }
+
+  .ex-stage h3 {
+    margin: var(--space-4) 0 var(--space-2);
+    color: var(--c-text-2);
+    font-size: var(--text-md);
+  }
+
+  .ex-items {
+    display: grid;
+    gap: 2px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .ex-items li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+    min-width: 0;
+    font-size: var(--text-sm);
+  }
+
+  .ex-w {
+    flex: none;
+    color: var(--c-accent);
+    font-family: var(--font-num);
+    font-size: var(--text-xs);
+  }
+</style>

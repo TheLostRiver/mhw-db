@@ -19,6 +19,7 @@ import {
   Moves,
   WeaponCustom,
 } from './schema';
+import { FACILITY_FILES } from './schema-facilities';
 
 const ROOT = new URL('../../../../data/world/', import.meta.url);
 const read = (rel: string): unknown => JSON.parse(readFileSync(fileURLToPath(new URL(rel, ROOT)), 'utf-8'));
@@ -53,6 +54,35 @@ describe('结构', () => {
       });
     });
   }
+});
+
+describe('据点设施', () => {
+  for (const [file, schema] of Object.entries(FACILITY_FILES)) {
+    it(file, () => {
+      schema.parse(read(file));
+    });
+  }
+
+  it('引用的物品都存在', () => {
+    const itemIds = new Set((rows['items.json'] ?? []).map((s) => s.id));
+    const missing: string[] = [];
+    const walk = (v: unknown, path: string): void => {
+      if (Array.isArray(v)) {
+        v.forEach((x, i) => walk(x, `${path}[${i}]`));
+        return;
+      }
+      if (!v || typeof v !== 'object') return;
+      for (const [k, x] of Object.entries(v)) {
+        if ((k === 'item' || k === 'rewardItem') && typeof x === 'number') {
+          if (!itemIds.has(x)) missing.push(`${path}.${k}=${x}`);
+        } else if (k === 'sources' && Array.isArray(x)) {
+          for (const [id] of x as [number][]) if (!itemIds.has(id)) missing.push(`${path}.sources ${id}`);
+        } else if (k !== '_src') walk(x, `${path}.${k}`);
+      }
+    };
+    for (const file of Object.keys(FACILITY_FILES)) walk(read(file), file);
+    expect(missing).toEqual([]);
+  });
 });
 
 describe('id 唯一', () => {

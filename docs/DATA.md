@@ -195,6 +195,23 @@ uv run mhdb nodes     # 大地图标记（采集点等）→ data/world/map-node
 | `pendants.json`（183） | `charm.ch_dat`（**文件名叫 charm，内容是武器挂饰**）+ `charm.eq_crt`（配方） | 名称 `steam/charm` 按行号；`cost` 为调查点数（Fextralife：铜章领巾 300 / 银 400 / 金 500）；`color` 为图标调色板；DUMMY / HARDUMMY 与 cost 1 的空行跳过。获得方式「奖励 / 活动」按 `unlock_flag` 推断 |
 | `weapon-layered.json`（1028） | 14 个 `customOuter*.cus_ou` + `customOuterRecipe.cus_otr`（都加密） | 名称 `steam/ou_<武器文本名>` 按行号；配方 `kind` 2 基本外观 3 外观零件 4 衍生外观（与名称后缀 Base / Parts / Unique 逐条一致）；`cost` 为调查点数（Game8 核对）；`unlock_monster` 为怪物 gameId；`sort = -1` 为空行。基本外观与零件的组合规则未确认 |
 
+### 3.7 据点设施（`data/world/facilities/*.json`，`mhdb/build/world_facilities.py`）
+
+都不加密，标准表头，长度校验通过。物品名用 `steam/item` 的 `id×2`。
+
+| 输出 | 来源 | 结论与核对 |
+|---|---|---|
+| `melder.json`（236） | `common/maka/maka_item.mkit`（成品）+ `maka_exchange.mkex`（素材 × 成品的炼金值矩阵，列数 = 成品数） | `research_points` 调查点数、`melding_points` 炼金值，与 Kiranico 一致（回复药·大 20 / 10、秘药 50 / 30、远古秘药 80 / 100、防御珠【1】1000 / 100）；铁矿石为回复药·大提供 2。`category` 1 道具 2 弹药 3 素材 4 饰品。无击珠【2】等 9 个饰品没有素材能提供炼金值，游戏内能否炼成未确认。`unlock`（剧情进度值）、`bonus`、`unk` 未确认 |
+| `shop.json`（56） | `common/facility/shopList.slt` | 陈列顺序 `sort`、上架条件 `unlock`（0 = 一开始）；价格用物品的买入价（回复药 66z）。`shopList00/01` 疑似旧版残留，不用 |
+| `deliveries.json`（105） | `l_delivery.stmp` + `steam/l_delivery`（每条 5 串：标题、委托人、正文、占位、报酬说明） | **两个物品 ID 在前、两个个数在后**（MHW-Editor 模板写反了）；`cost` 调查点数。核对：古代树森林营地计划之1 = 铁矿石 ×2 + 太古大骨 ×1、50 点；之2 = 1000 点 + 蛮颚龙的毛皮 ×1 + 龙骨【大】×2。`kind` 的分组名按内容归纳 |
+| `bounties.json`（184） | `l_mission.odr`（中间 1 字节字段，不对齐）+ `l_mission` 文本（`id×2` 标题、`+1` 条件） | `important` 重要 / 登记；`type`、`em_class` 已用每条文本核对；`rank` 0 下位 2 上位 3 大师；报酬与点数与 Kiranico 一致（矿脉 6 次 = 铠玉 ×1 + 40 点）。登记奖金的进度区间对应哪段剧情未确认 |
+| `steamworks.json` | `steamRewardList*.srl`（平时 + 5 个祭典）、`steamConvertList.scl` | 档位 0/1 = 第 1 档（两组区别未确认）、2 第 2 档、3 第 3 档、6 突破极限奖励、4 家具玩偶、5 未确认；物品组成与 Fextralife 一致；组内权重合计 100（当作百分比为推断）。燃料：龙脉炭 100、特大龙脉炭 1000 等已核对 |
+| `expeditions.json` | `expeditionRem.ex_rem`（报酬抽选表）+ `expeditionSt{地图}{L/H/G}.ex_map` | `gather` 22 矿脉 42 骨冢 4 植物 1 蘑菇 255 怪物；怪物目标的编号**不是** dtt_epg 的 gameId，页面按第一种素材名推断名称。`quest` 推断为解锁任务，`tier`、`b*` 未确认 |
+| `argosy.json`（235） | `goods / material / value(_rare).trdr` | 6 组（个数, 权重）= 6 个进度阶段（边界未确认）；后期个数与 Fextralife 一致。价格不在表里 |
+| `botany.json` | `common/plant/plant_item.plit`、`plant_fertilizer.plfe` | 任务数、三档收获量、肥料价格与持续与 GameWith / Fextralife 一致；肥料名、说明、效果名在 `cm_facility` 第 720 / 729 / 710 + 编号条。`start`（一开始可种）为推断，用活性剂后的任务数未确认 |
+
+**未做**：`swop*`（兽人族以物易物，语义不清）、`treasure*.trsr`（宝物情报）、限时奖金 `l_mission_sp.lms`、饰品炼金概率（`deco_grade_lot.dglt` / `deco_lot.diot`）。
+
 ## 4. 界面图标（游戏 UI 贴图）
 
 | 图集 | 内容 | 用到的格子 |

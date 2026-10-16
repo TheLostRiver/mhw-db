@@ -194,7 +194,7 @@ WEAPON_TYPES = [
 
 # 环境生物调查笔记（common/note/em_animal_note.emai，86 条）：第 i 条与 common/text/ec_info 的第 i 条
 # （NOTE_ECnnn_vv_DESC）对应，item 是捕获后的物品（绕行兔 659 ……）。stage_0–5 是出现的地图（101–105、108、
-# 109 导虫遗迹，0 为空）。group（0–4）、rare（稀有个体为 1，按名字推断）、large（鱼的大型个体物品）、
+# 109 聚魔之地，0 为空）。group（0–4）、rare（稀有个体为 1，按名字推断）、large（鱼的大型个体物品）、
 # cond_0 / cond_1（时间、天气？）含义未确认，不使用。
 ANIMAL_NOTE = spec(
     "em_animal_note.emai",
@@ -257,3 +257,40 @@ LAYERED_RECIPE = spec(
     + " ".join(f"mat_{k}:H mat_{k}_count:B" for k in range(1, 5))
     + " unk_5:B unk_6:B unk_7:B unk_8:B",
 )
+
+# ---------- 据点设施（都不加密；字段含义与核对见 docs/DATA.md 3.7） ----------
+
+# 神秘炼金：一行 = 一种可炼成的道具；research_points 消耗的调查点数，melding_points 需要凑满的炼金值；
+# category 1 道具 2 弹药 3 素材 4 饰品（0 空行）；unlock 为剧情进度值；unk 未确认
+MELDER_ITEM = spec("maka_item.mkit", "item:I research_points:I melding_points:I category:I unlock:I unk:B")
+# 补给物资所：unlock 为剧情进度值（0 = 一开始就有），sort 为显示顺序；价格用物品的 buy_price
+SHOP = spec("shopList.slt", "index:I item:I unlock:I sort:H")
+# 交货委托：注意两个物品 ID 在前、两个个数在后（MHW-Editor 模板写反了）；cost 为调查点数；kind 为委托种类（推断）
+DELIVERY = spec(
+    "l_delivery.stmp",
+    "id:I flag_a:I flag_b:I kind:i reward_item:I kind_param:I cost:I item_1:I item_2:I count_1:I count_2:I",
+)
+# 奖金：中间有 1 字节字段，记录不对齐；type / em_class 已逐条与文本核对；rank 0 下位 2 上位 3 大师
+BOUNTY = spec(
+    "l_mission.odr",
+    "id:I no:I important:B range_min:I range_max:I flag_c:i rank:I type:I unk_8:I em_class:i animal:I map:I "
+    "target:I item_1:I item_2:I item_3:I count_1:I count_2:I count_3:I research_points:I",
+)
+# 蒸气机关管理所：type 为奖励档位，weight 组内合计 100（推断为百分比）；rarity 未确认
+STEAM_REWARD = spec("steamRewardList.srl", "type:i item:I count:I weight:q rarity:I")
+STEAM_FUEL = spec("steamConvertList.scl", "item:I fuel:I")
+# 随从探险队：ex_rem 一行 = 一个报酬抽选表；gather 22 矿脉 42 骨冢 4 植物 1 蘑菇 255 怪物
+EXPEDITION_REWARD = spec(
+    "expeditionRem.ex_rem",
+    "id:I gather:I " + " ".join(f"item_{k}:I count_{k}:B weight_{k}:B" for k in range(16)),
+)
+# 地图 × 等级的派遣目标：rem 为 ex_rem 行号，quest 为解锁所需的任务编号（推断）；tier、b* 未确认
+EXPEDITION_TARGET = spec("*.ex_map", "rem:I quest:I tier:B " + " ".join(f"b{k}:B" for k in range(1, 8)))
+# 交易船：6 组 (个数, 权重) 对应 6 个进度阶段（阶段边界未确认）
+ARGOSY = spec("*.trdr", "idx:I item:I " + " ".join(f"qty_{k}:I weight_{k}:I" for k in range(6)))
+# 植生研究所：category 1 草与果实 2 虫与蜂蜜 3 蘑菇；time 所需任务数；amount / _s / _l 无肥料 / 小 / 大肥料的收获量
+PLANT = spec(
+    "plant_item.plit",
+    "category:I unk_1:I start:B item:I time:I time_catalyst:I unk_2:I amount:I amount_s:I amount_l:I",
+)
+FERTILIZER = spec("plant_fertilizer.plfe", "fert:I price:I duration:I effect:I grade:I unk:I")

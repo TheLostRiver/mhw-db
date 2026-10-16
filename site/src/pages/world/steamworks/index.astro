@@ -1,0 +1,179 @@
+---
+import SiteLayout from '../../../layouts/SiteLayout.astro';
+import FacilityTabs from '../../../components/site/FacilityTabs.astro';
+import ItemName from '../../../components/site/ItemName.astro';
+import { loadSteamworks } from '../../../data/world/load';
+
+const { rewards, fuel } = loadSteamworks();
+const TABLES = [
+  { key: 'base', title: '平时' },
+  { key: 'spring', title: '盛放祭' },
+  { key: 'summer', title: '热情祭' },
+  { key: 'autumn', title: '惊魂夜祭' },
+  { key: 'winter', title: '万福祭' },
+  { key: 'memorial', title: '大感谢祭' },
+] as const;
+// 档位按物品组成与 Fextralife 的 Steamworks 奖励档位对照归纳
+const TIERS: Record<number, { title: string; note?: string }> = {
+  0: { title: '第 1 档', note: '组 A' },
+  1: { title: '第 1 档', note: '组 B（与组 A 的区别未确认）' },
+  2: { title: '第 2 档' },
+  3: { title: '第 3 档' },
+  6: { title: '突破蒸气力极限的奖励' },
+  4: { title: '家具与玩偶' },
+  5: { title: '其他', note: '含义未确认' },
+};
+const ORDER = [0, 1, 2, 3, 6, 4, 5];
+---
+
+<SiteLayout
+  title="蒸气机关管理所"
+  current="encyclopedia"
+  description="怪物猎人：世界 冰原 蒸气机关管理所：各档奖励、祭典期间的奖励与燃料换算"
+  wide
+>
+  <nav class="s-crumbs" aria-label="位置">
+    <a href="/world/encyclopedia/">百科</a>
+    <span>蒸气机关管理所</span>
+  </nav>
+  <div class="s-head">
+    <h1>蒸气机关管理所</h1>
+    <p>
+      投入燃料运转蒸气机关，按结果档位获得奖励。下表列出各档可能得到的道具与权重（同档内合计约
+      100，可近似看作百分比）。
+    </p>
+  </div>
+  <FacilityTabs current="steamworks" />
+
+  {TABLES.map((t, i) => (
+    <details class="sw-table" open={i === 0}>
+      <summary>
+        <h2>{t.title}</h2>
+      </summary>
+      <div class="sw-tiers">
+        {ORDER.map((tier) => {
+          const list = rewards[t.key].filter((r) => r.tier === tier);
+          return list.length ? (
+            <section class="sw-tier">
+              <h3>
+                {TIERS[tier]?.title}
+                {TIERS[tier]?.note && <small>{TIERS[tier]?.note}</small>}
+              </h3>
+              <ul>
+                {list.map((r) => (
+                  <li>
+                    <ItemName id={r.item} size={22} count={r.count} />
+                    <span class="sw-w">{r.weight}</span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ) : null;
+        })}
+      </div>
+    </details>
+  ))}
+
+  <section class="s-section">
+    <h2>燃料换算</h2>
+    <div class="s-table-wrap sw-fuel">
+      <table class="s-table">
+        <thead>
+          <tr>
+            <th class="s-left">道具</th>
+            <th>1 个换算的燃料</th>
+          </tr>
+        </thead>
+        <tbody>
+          {fuel.map((f) => (
+            <tr>
+              <td class="s-left">
+                <ItemName id={f.item} />
+              </td>
+              <td class="s-num">{f.fuel}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <p class="s-note">
+    数据来源：<code>common/facility/steamRewardList*.srl</code>（平时与各祭典的奖励）、
+    <code>steamConvertList.scl</code>（燃料换算）。 档位的物品组成与 Fextralife 一致；燃料换算已核对（龙脉炭
+    100、特大龙脉炭 1000 等）。祭典对应关系按各表的家具名判断； 「权重 ≈ 百分比」、第 1
+    档两组的区别、稀有度字段未确认。
+  </p>
+</SiteLayout>
+
+<style>
+  .sw-table {
+    margin-bottom: var(--space-4);
+    border-radius: var(--radius);
+    background: var(--c-surface);
+    box-shadow: inset 0 0 0 1px var(--c-line);
+  }
+
+  .sw-table summary {
+    padding: var(--space-3) var(--space-4);
+    cursor: pointer;
+  }
+
+  .sw-table summary h2 {
+    display: inline;
+    margin: 0;
+    font-size: var(--text-lg);
+  }
+
+  .sw-tiers {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
+    gap: var(--space-3);
+    padding: 0 var(--space-4) var(--space-4);
+  }
+
+  .sw-tier h3 {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-2);
+    margin: 0 0 6px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--c-line);
+    font-size: var(--text-md);
+  }
+
+  .sw-tier h3 small {
+    color: var(--c-text-3);
+    font-size: var(--text-xs);
+    font-weight: 400;
+  }
+
+  .sw-tier ul {
+    display: grid;
+    gap: 3px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .sw-tier li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+    min-width: 0;
+    font-size: var(--text-sm);
+  }
+
+  .sw-w {
+    flex: none;
+    color: var(--c-accent);
+    font-family: var(--font-num);
+    font-size: var(--text-xs);
+  }
+
+  .sw-fuel {
+    max-width: 30rem;
+    max-height: none;
+  }
+</style>

@@ -1,0 +1,95 @@
+---
+import SiteLayout from '../../../layouts/SiteLayout.astro';
+import FacilityTabs from '../../../components/site/FacilityTabs.astro';
+import FilterBox from '../../../components/site/FilterBox.astro';
+import Materials from '../../../components/site/Materials.astro';
+import { itemById, loadDeliveries } from '../../../data/world/load';
+import type { Delivery } from '../../../data/world/schema-facilities';
+
+const deliveries = loadDeliveries();
+// 种类名按每组委托的内容与报酬归纳（数据里只有编号）
+const KINDS = [
+  { kind: 5, title: '营地' },
+  { kind: 8, title: '植生研究所' },
+  { kind: 7, title: '收获箱扩张' },
+  { kind: 6, title: '用餐地区的食材' },
+  { kind: 9, title: '缆车' },
+  { kind: 1, title: '特殊装备' },
+  { kind: 18, title: '特殊装备强化' },
+  { kind: 4, title: '外观装备' },
+  { kind: 17, title: '小屋的家具' },
+];
+const lines = (t?: string) => (t ?? '').replace(/\n/g, '');
+const text = (d: Delivery) =>
+  [
+    d.title['zh-Hans'],
+    d.client['zh-Hans'],
+    lines(d.reward['zh-Hans']),
+    ...d.materials.map((m) => itemById(m.item)?.name['zh-Hans'] ?? ''),
+  ]
+    .join(' ')
+    .toLowerCase();
+---
+
+<SiteLayout
+  title="交货委托"
+  current="encyclopedia"
+  description="怪物猎人：世界 冰原 交货委托：需要交付的素材、调查点数与报酬"
+  wide
+>
+  <nav class="s-crumbs" aria-label="位置">
+    <a href="/world/encyclopedia/">百科</a>
+    <span>交货委托</span>
+  </nav>
+  <div class="s-head">
+    <h1>
+      交货委托 <span class="b-label">{deliveries.length} 条</span>
+    </h1>
+    <p>在调查资源管理所接受的交货委托：交付素材、支付调查点数，换取营地、设施扩张、装备或家具。</p>
+  </div>
+  <FacilityTabs current="deliveries" />
+  <FilterBox label="按委托名、委托人或素材筛选" placeholder="按委托名、委托人或素材筛选" />
+
+  {KINDS.map((k) => {
+    const list = deliveries.filter((d) => d.kind === k.kind);
+    return list.length ? (
+      <section class="s-section" data-filter-section>
+        <h2>
+          {k.title} <small class="s-dim">{list.length} 条</small>
+        </h2>
+        <ul class="s-cards">
+          {list.map((d) => (
+            <li data-filter-row data-text={text(d)}>
+              <strong>{d.title['zh-Hans']}</strong>
+              <small>
+                {d.client['zh-Hans']}
+                {d.cost > 0 && ` · ${d.cost} 点`}
+              </small>
+              <Materials materials={d.materials} />
+              {d.reward['zh-Hans'] && <span class="dl-reward">{lines(d.reward['zh-Hans'])}</span>}
+            </li>
+          ))}
+        </ul>
+      </section>
+    ) : null;
+  })}
+
+  <p class="s-note">
+    数据来源：<code>common/facility/l_delivery.stmp</code>（素材、调查点数、种类）与委托文本{' '}
+    <code>steam/l_delivery</code>。 注意素材字段是「两个物品在前、两个个数在后」（MHW-Editor
+    的模板写反了）；已与攻略核对：古代树森林营地计划之1 = 铁矿石 ×2 + 太古大骨 ×1、50 点。
+    分组名按每组委托的内容归纳；出现条件未确认。
+  </p>
+</SiteLayout>
+
+<style>
+  .s-section h2 small {
+    font-size: var(--text-sm);
+    font-weight: 400;
+  }
+
+  .dl-reward {
+    color: var(--c-accent);
+    font-size: var(--text-sm);
+  }
+</style>

@@ -16,9 +16,9 @@ export const Text = z
     en: z.string().optional(),
   })
   .strict();
-const OptText = Text.partial();
+export const OptText = Text.partial();
 
-const Src = z
+export const Src = z
   .object({ file: z.string().startsWith('common/'), row: z.number().int().nonnegative() })
   .strict();
 const Rarity = z.number().int().min(1).max(12);

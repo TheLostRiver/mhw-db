@@ -1,0 +1,63 @@
+---
+import SiteLayout from '../../../layouts/SiteLayout.astro';
+import FacilityTabs from '../../../components/site/FacilityTabs.astro';
+import ItemName from '../../../components/site/ItemName.astro';
+import { itemById, loadShop } from '../../../data/world/load';
+
+const shop = loadShop();
+---
+
+<SiteLayout
+  title="补给物资所"
+  current="encyclopedia"
+  description="怪物猎人：世界 冰原 补给物资所出售的道具与价格"
+>
+  <nav class="s-crumbs" aria-label="位置">
+    <a href="/world/encyclopedia/">百科</a>
+    <span>补给物资所</span>
+  </nav>
+  <div class="s-head">
+    <h1>
+      补给物资所 <span class="b-label">{shop.length} 种商品</span>
+    </h1>
+    <p>按游戏内的陈列顺序列出出售的道具与价格。部分商品要随剧情推进才会上架。</p>
+  </div>
+  <FacilityTabs current="provisions" />
+
+  <div class="s-table-wrap pv-wrap">
+    <table class="s-table">
+      <thead>
+        <tr>
+          <th class="s-left">道具</th>
+          <th>价格</th>
+          <th class="s-left">上架</th>
+        </tr>
+      </thead>
+      <tbody>
+        {shop.map((s) => (
+          <tr>
+            <td class="s-left">
+              <ItemName id={s.item} />
+            </td>
+            <td class="s-num">{itemById(s.item)?.price.buy ?? 0}z</td>
+            <td class="s-left">{s.unlock ? <span class="s-dim">随剧情推进</span> : '一开始'}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+
+  <p class="s-note">
+    数据来源：<code>common/facility/shopList.slt</code>
+    （商品、陈列顺序、上架条件）；价格取物品数据的买入价（回复药 66z 已核对）。
+    上架条件是剧情进度编号，具体对应哪个任务未确认，只区分「一开始」与「随剧情推进」。
+    <code>shopList00/01.slt</code> 疑似旧版本残留，未使用。
+  </p>
+</SiteLayout>
+
+<style>
+  .pv-wrap {
+    max-width: 44rem;
+    max-height: none;
+  }
+</style>

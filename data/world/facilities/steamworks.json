@@ -1,0 +1,2154 @@
+{
+  "rewards": {
+    "base": [
+      {
+        "tier": 0,
+        "item": 15,
+        "count": 1,
+        "weight": 11,
+        "_src": {
+          "file": "common/facility/steamRewardList.srl",
+          "row": 0
+        }
+      },
+      {
+        "tier": 0,
+        "item": 2,
+        "count": 1,
+        "weight": 40,
+        "_src": {
+          "file": "common/facility/steamRewardList.srl",
+          "row": 1
+        }
+      },
+      {
+        "tier": 0,
+        "item": 59,
+        "count": 1,
+        "weight": 17,
+        "_src": {
+          "file": "common/facility/steamRewardList.srl",
+          "row": 2
+        }
+      },
+      {
+        "tier": 0,
+        "item": 221,
+        "count": 1,
+        "weight": 32,
+        "_src": {
+          "file": "common/facility/steamRewardList.srl",
+          "row": 3
+        }
+      },
+      {
+        "tier": 1,
+        "item": 15,
+        "count": 1,
+        "weight": 17,
+        "_src": {
+          "file": "common/facility/steamRewardList.srl",
+          "row": 4
+        }
+      },
+      {
+        "tier": 1,
+        "item": 2,
+        "count": 1,
+        "weight": 22,
+        "_src": {
+          "file": "common/facility/steamRewardList.srl",
+          "row": 5
+        }
+      },
+      {
+        "tier": 1,
+        "item": 59,
+        "count": 1,
+        "weight": 29,
+        "_src": {
+          "file": "common/facility/steamRewardList.srl",
+          "row": 6
+        }
+      },
+      {
+        "tier": 1,
+        "item": 221,
+        "count": 1,
+        "weight": 32,
+        "_src": {
+          "file": "common/facility/steamRewardList.srl",
+          "row": 7
+        }
+      },
+      {
+        "tier": 2,
+        "item": 1966,
+        "count": 1,
+        "weight": 7,
+        "_src": {
+          "file": "common/facility/steamRewardList.srl",
+          "row": 8
+        }
+      },
+      {
+        "tier": 2,
+        "item": 76,
+        "count": 1,
+        "weight": 12,
+        "_src": {
+          "file": "common/facility/steamRewardList.srl",
+          "row": 9
+        }
+      },
+      {
+        "tier": 2,
+        "item": 1008,
+        "count": 1,
+        "weight": 21,
+        "_src": {
+          "file": "common/facility/steamRewardList.srl",
+          "row": 10
+        }
+      },
+      {
+        "tier": 2,
+        "item": 3,
+        "count": 1,
+        "weight": 27,
+        "_src": {
+          "file": "common/facility/steamRewardList.srl",
+          "row": 11
+        }
+      },
+      {
+        "tier": 2,
+        "item": 222,
+        "count": 1,
+        "weight": 33,
+        "_src": {
+          "file": "common/facility/steamRewardList.srl",
+          "row": 12
+        }
+      },
+      {
+        "tier": 3,
+        "item": 1431,
+        "count": 1,
+        "weight": 1,
+        "_src": {
+          "file": "common/facility/steamRewardList.srl",
+          "row": 13
+        }
+      },
+      {
+        "tier": 3,
+        "item": 1003,
+        "count": 1,
+        "weight": 25,
+        "_src": {
+          "file": "common/facility/steamRewardList.srl",
+          "row": 14
+        }
+      },
+      {
+        "tier": 3,
+        "item": 224,
+        "count": 1,
+        "weight": 13,
+        "_src": {
+          "file": "common/facility/steamRewardList.srl",
+          "row": 15
+        }
+      },
+      {
+        "tier": 3,
+        "item": 223,
+        "count": 1,
+        "weight": 42,
+        "_src": {
+          "file": "common/facility/steamRewardList.srl",
+          "row": 16
+        }
+      },
+      {
+        "tier": 3,
+        "item": 593,
+        "count": 1,
+        "weight": 19,
+        "_src": {
+          "file": "common/facility/steamRewardList.srl",
+          "row": 17
+        }
+      },
+      {
+        "tier": 5,
+        "item": 3,
+        "count": 1,
+        "weight": 11,
+        "_src": {
+          "file": "common/facility/steamRewardList.srl",
+          "row": 18
+        }
+      },
+      {
+        "tier": 5,
+        "item": 1008,
+        "count": 1,
+        "weight": 11,
+        "_src": {
+          "file": "common/facility/steamRewardList.srl",
+          "row": 19
+        }
+      },
+      {
+        "tier": 5,
+        "item": 76,
+        "count": 1,
+        "weight": 11,
+        "_src": {
+          "file": "common/facility/steamRewardList.srl",
+          "row": 20
+        }
+      },
+      {
+        "tier": 5,
+        "item": 224,
+        "count": 1,
+        "weight": 13,
+        "_src": {
+          "file": "common/facility/steamRewardList.srl",
+          "row": 21
+        }
+      },
+      {
+        "tier": 5,
+        "item": 223,
+        "count": 1,
+        "weight": 18,
+        "_src": {
+          "file": "common/facility/steamRewardList.srl",
+          "row": 22
+        }
+      },
+      {
+        "tier": 5,
+        "item": 593,
+        "count": 1,
+        "weight": 18,
+        "_src": {
+          "file": "common/facility/steamRewardList.srl",
+          "row": 23
+        }
+      },
+      {
+        "tier": 5,
+        "item": 1003,
+        "count": 1,
+        "weight": 18,
+        "_src": {
+          "file": "common/facility/steamRewardList.srl",
+          "row": 24
+        }
+      },
+      {
+        "tier": 4,
+        "item": 1619,
+        "count": 1,
+        "weight": 1,
+        "_src": {
+          "file": "common/facility/steamRewardList.srl",
+          "row": 25
+        }
+      },
+      {
+        "tier": 4,
+        "item": 1616,
+        "count": 1,
+        "weight": 1,
+        "_src": {
+          "file": "common/facility/steamRewardList.srl",
+          "row": 26
+        }
+      },
+      {
+        "tier": 4,
+        "item": 1617,
+        "count": 1,
+        "weight": 1,
+        "_src": {
+          "file": "common/facility/steamRewardList.srl",
+          "row": 27
+        }
+      },
+      {
+        "tier": 4,
+        "item": 2645,
+        "count": 1,
+        "weight": 1,
+        "_src": {
+          "file": "common/facility/steamRewardList.srl",
+          "row": 28
+        }
+      },
+      {
+        "tier": 4,
+        "item": 2646,
+        "count": 1,
+        "weight": 1,
+        "_src": {
+          "file": "common/facility/steamRewardList.srl",
+          "row": 29
+        }
+      },
+      {
+        "tier": 4,
+        "item": 2647,
+        "count": 1,
+        "weight": 1,
+        "_src": {
+          "file": "common/facility/steamRewardList.srl",
+          "row": 30
+        }
+      },
+      {
+        "tier": 4,
+        "item": 2648,
+        "count": 1,
+        "weight": 1,
+        "_src": {
+          "file": "common/facility/steamRewardList.srl",
+          "row": 31
+        }
+      },
+      {
+        "tier": 4,
+        "item": 2649,
+        "count": 1,
+        "weight": 1,
+        "_src": {
+          "file": "common/facility/steamRewardList.srl",
+          "row": 32
+        }
+      },
+      {
+        "tier": 4,
+        "item": 2650,
+        "count": 1,
+        "weight": 1,
+        "_src": {
+          "file": "common/facility/steamRewardList.srl",
+          "row": 33
+        }
+      },
+      {
+        "tier": 4,
+        "item": 2651,
+        "count": 1,
+        "weight": 1,
+        "_src": {
+          "file": "common/facility/steamRewardList.srl",
+          "row": 34
+        }
+      },
+      {
+        "tier": 4,
+        "item": 2643,
+        "count": 1,
+        "weight": 1,
+        "_src": {
+          "file": "common/facility/steamRewardList.srl",
+          "row": 35
+        }
+      },
+      {
+        "tier": 4,
+        "item": 2653,
+        "count": 1,
+        "weight": 1,
+        "_src": {
+          "file": "common/facility/steamRewardList.srl",
+          "row": 36
+        }
+      },
+      {
+        "tier": 4,
+        "item": 2644,
+        "count": 1,
+        "weight": 1,
+        "_src": {
+          "file": "common/facility/steamRewardList.srl",
+          "row": 37
+        }
+      },
+      {
+        "tier": 4,
+        "item": 2654,
+        "count": 1,
+        "weight": 1,
+        "_src": {
+          "file": "common/facility/steamRewardList.srl",
+          "row": 38
+        }
+      },
+      {
+        "tier": 6,
+        "item": 1431,
+        "count": 1,
+        "weight": 1,
+        "_src": {
+          "file": "common/facility/steamRewardList.srl",
+          "row": 39
+        }
+      },
+      {
+        "tier": 6,
+        "item": 1040,
+        "count": 1,
+        "weight": 1,
+        "_src": {
+          "file": "common/facility/steamRewardList.srl",
+          "row": 40
+        }
+      }
+    ],
+    "spring": [
+      {
+        "tier": 0,
+        "item": 1008,
+        "count": 1,
+        "weight": 11,
+        "_src": {
+          "file": "common/facility/steamRewardListSpring.srl",
+          "row": 0
+        }
+      },
+      {
+        "tier": 0,
+        "item": 2,
+        "count": 1,
+        "weight": 40,
+        "_src": {
+          "file": "common/facility/steamRewardListSpring.srl",
+          "row": 1
+        }
+      },
+      {
+        "tier": 0,
+        "item": 59,
+        "count": 1,
+        "weight": 17,
+        "_src": {
+          "file": "common/facility/steamRewardListSpring.srl",
+          "row": 2
+        }
+      },
+      {
+        "tier": 0,
+        "item": 221,
+        "count": 1,
+        "weight": 32,
+        "_src": {
+          "file": "common/facility/steamRewardListSpring.srl",
+          "row": 3
+        }
+      },
+      {
+        "tier": 1,
+        "item": 1008,
+        "count": 1,
+        "weight": 17,
+        "_src": {
+          "file": "common/facility/steamRewardListSpring.srl",
+          "row": 4
+        }
+      },
+      {
+        "tier": 1,
+        "item": 2,
+        "count": 1,
+        "weight": 22,
+        "_src": {
+          "file": "common/facility/steamRewardListSpring.srl",
+          "row": 5
+        }
+      },
+      {
+        "tier": 1,
+        "item": 59,
+        "count": 1,
+        "weight": 29,
+        "_src": {
+          "file": "common/facility/steamRewardListSpring.srl",
+          "row": 6
+        }
+      },
+      {
+        "tier": 1,
+        "item": 221,
+        "count": 1,
+        "weight": 32,
+        "_src": {
+          "file": "common/facility/steamRewardListSpring.srl",
+          "row": 7
+        }
+      },
+      {
+        "tier": 2,
+        "item": 1966,
+        "count": 1,
+        "weight": 7,
+        "_src": {
+          "file": "common/facility/steamRewardListSpring.srl",
+          "row": 8
+        }
+      },
+      {
+        "tier": 2,
+        "item": 223,
+        "count": 1,
+        "weight": 12,
+        "_src": {
+          "file": "common/facility/steamRewardListSpring.srl",
+          "row": 9
+        }
+      },
+      {
+        "tier": 2,
+        "item": 2686,
+        "count": 1,
+        "weight": 21,
+        "_src": {
+          "file": "common/facility/steamRewardListSpring.srl",
+          "row": 10
+        }
+      },
+      {
+        "tier": 2,
+        "item": 76,
+        "count": 1,
+        "weight": 27,
+        "_src": {
+          "file": "common/facility/steamRewardListSpring.srl",
+          "row": 11
+        }
+      },
+      {
+        "tier": 2,
+        "item": 4,
+        "count": 1,
+        "weight": 33,
+        "_src": {
+          "file": "common/facility/steamRewardListSpring.srl",
+          "row": 12
+        }
+      },
+      {
+        "tier": 3,
+        "item": 1431,
+        "count": 1,
+        "weight": 1,
+        "_src": {
+          "file": "common/facility/steamRewardListSpring.srl",
+          "row": 13
+        }
+      },
+      {
+        "tier": 3,
+        "item": 2690,
+        "count": 1,
+        "weight": 1,
+        "_src": {
+          "file": "common/facility/steamRewardListSpring.srl",
+          "row": 14
+        }
+      },
+      {
+        "tier": 3,
+        "item": 1003,
+        "count": 1,
+        "weight": 11,
+        "_src": {
+          "file": "common/facility/steamRewardListSpring.srl",
+          "row": 15
+        }
+      },
+      {
+        "tier": 3,
+        "item": 2687,
+        "count": 1,
+        "weight": 37,
+        "_src": {
+          "file": "common/facility/steamRewardListSpring.srl",
+          "row": 16
+        }
+      },
+      {
+        "tier": 3,
+        "item": 224,
+        "count": 1,
+        "weight": 29,
+        "_src": {
+          "file": "common/facility/steamRewardListSpring.srl",
+          "row": 17
+        }
+      },
+      {
+        "tier": 3,
+        "item": 594,
+        "count": 1,
+        "weight": 21,
+        "_src": {
+          "file": "common/facility/steamRewardListSpring.srl",
+          "row": 18
+        }
+      },
+      {
+        "tier": 5,
+        "item": 1008,
+        "count": 1,
+        "weight": 11,
+        "_src": {
+          "file": "common/facility/steamRewardListSpring.srl",
+          "row": 19
+        }
+      },
+      {
+        "tier": 5,
+        "item": 1966,
+        "count": 1,
+        "weight": 11,
+        "_src": {
+          "file": "common/facility/steamRewardListSpring.srl",
+          "row": 20
+        }
+      },
+      {
+        "tier": 5,
+        "item": 76,
+        "count": 1,
+        "weight": 11,
+        "_src": {
+          "file": "common/facility/steamRewardListSpring.srl",
+          "row": 21
+        }
+      },
+      {
+        "tier": 5,
+        "item": 2687,
+        "count": 1,
+        "weight": 13,
+        "_src": {
+          "file": "common/facility/steamRewardListSpring.srl",
+          "row": 22
+        }
+      },
+      {
+        "tier": 5,
+        "item": 224,
+        "count": 1,
+        "weight": 18,
+        "_src": {
+          "file": "common/facility/steamRewardListSpring.srl",
+          "row": 23
+        }
+      },
+      {
+        "tier": 5,
+        "item": 594,
+        "count": 1,
+        "weight": 18,
+        "_src": {
+          "file": "common/facility/steamRewardListSpring.srl",
+          "row": 24
+        }
+      },
+      {
+        "tier": 5,
+        "item": 1003,
+        "count": 1,
+        "weight": 18,
+        "_src": {
+          "file": "common/facility/steamRewardListSpring.srl",
+          "row": 25
+        }
+      },
+      {
+        "tier": 4,
+        "item": 2532,
+        "count": 1,
+        "weight": 1,
+        "_src": {
+          "file": "common/facility/steamRewardListSpring.srl",
+          "row": 26
+        }
+      },
+      {
+        "tier": 6,
+        "item": 2690,
+        "count": 1,
+        "weight": 1,
+        "_src": {
+          "file": "common/facility/steamRewardListSpring.srl",
+          "row": 27
+        }
+      },
+      {
+        "tier": 6,
+        "item": 1040,
+        "count": 1,
+        "weight": 1,
+        "_src": {
+          "file": "common/facility/steamRewardListSpring.srl",
+          "row": 28
+        }
+      }
+    ],
+    "summer": [
+      {
+        "tier": 0,
+        "item": 1008,
+        "count": 1,
+        "weight": 11,
+        "_src": {
+          "file": "common/facility/steamRewardListSummer.srl",
+          "row": 0
+        }
+      },
+      {
+        "tier": 0,
+        "item": 2,
+        "count": 1,
+        "weight": 40,
+        "_src": {
+          "file": "common/facility/steamRewardListSummer.srl",
+          "row": 1
+        }
+      },
+      {
+        "tier": 0,
+        "item": 59,
+        "count": 1,
+        "weight": 17,
+        "_src": {
+          "file": "common/facility/steamRewardListSummer.srl",
+          "row": 2
+        }
+      },
+      {
+        "tier": 0,
+        "item": 221,
+        "count": 1,
+        "weight": 32,
+        "_src": {
+          "file": "common/facility/steamRewardListSummer.srl",
+          "row": 3
+        }
+      },
+      {
+        "tier": 1,
+        "item": 1008,
+        "count": 1,
+        "weight": 17,
+        "_src": {
+          "file": "common/facility/steamRewardListSummer.srl",
+          "row": 4
+        }
+      },
+      {
+        "tier": 1,
+        "item": 2,
+        "count": 1,
+        "weight": 22,
+        "_src": {
+          "file": "common/facility/steamRewardListSummer.srl",
+          "row": 5
+        }
+      },
+      {
+        "tier": 1,
+        "item": 59,
+        "count": 1,
+        "weight": 29,
+        "_src": {
+          "file": "common/facility/steamRewardListSummer.srl",
+          "row": 6
+        }
+      },
+      {
+        "tier": 1,
+        "item": 221,
+        "count": 1,
+        "weight": 32,
+        "_src": {
+          "file": "common/facility/steamRewardListSummer.srl",
+          "row": 7
+        }
+      },
+      {
+        "tier": 2,
+        "item": 1966,
+        "count": 1,
+        "weight": 7,
+        "_src": {
+          "file": "common/facility/steamRewardListSummer.srl",
+          "row": 8
+        }
+      },
+      {
+        "tier": 2,
+        "item": 223,
+        "count": 1,
+        "weight": 12,
+        "_src": {
+          "file": "common/facility/steamRewardListSummer.srl",
+          "row": 9
+        }
+      },
+      {
+        "tier": 2,
+        "item": 2686,
+        "count": 1,
+        "weight": 21,
+        "_src": {
+          "file": "common/facility/steamRewardListSummer.srl",
+          "row": 10
+        }
+      },
+      {
+        "tier": 2,
+        "item": 76,
+        "count": 1,
+        "weight": 27,
+        "_src": {
+          "file": "common/facility/steamRewardListSummer.srl",
+          "row": 11
+        }
+      },
+      {
+        "tier": 2,
+        "item": 4,
+        "count": 1,
+        "weight": 33,
+        "_src": {
+          "file": "common/facility/steamRewardListSummer.srl",
+          "row": 12
+        }
+      },
+      {
+        "tier": 3,
+        "item": 1431,
+        "count": 1,
+        "weight": 1,
+        "_src": {
+          "file": "common/facility/steamRewardListSummer.srl",
+          "row": 13
+        }
+      },
+      {
+        "tier": 3,
+        "item": 2690,
+        "count": 1,
+        "weight": 1,
+        "_src": {
+          "file": "common/facility/steamRewardListSummer.srl",
+          "row": 14
+        }
+      },
+      {
+        "tier": 3,
+        "item": 1003,
+        "count": 1,
+        "weight": 11,
+        "_src": {
+          "file": "common/facility/steamRewardListSummer.srl",
+          "row": 15
+        }
+      },
+      {
+        "tier": 3,
+        "item": 2687,
+        "count": 1,
+        "weight": 37,
+        "_src": {
+          "file": "common/facility/steamRewardListSummer.srl",
+          "row": 16
+        }
+      },
+      {
+        "tier": 3,
+        "item": 224,
+        "count": 1,
+        "weight": 29,
+        "_src": {
+          "file": "common/facility/steamRewardListSummer.srl",
+          "row": 17
+        }
+      },
+      {
+        "tier": 3,
+        "item": 594,
+        "count": 1,
+        "weight": 21,
+        "_src": {
+          "file": "common/facility/steamRewardListSummer.srl",
+          "row": 18
+        }
+      },
+      {
+        "tier": 5,
+        "item": 1008,
+        "count": 1,
+        "weight": 11,
+        "_src": {
+          "file": "common/facility/steamRewardListSummer.srl",
+          "row": 19
+        }
+      },
+      {
+        "tier": 5,
+        "item": 1966,
+        "count": 1,
+        "weight": 11,
+        "_src": {
+          "file": "common/facility/steamRewardListSummer.srl",
+          "row": 20
+        }
+      },
+      {
+        "tier": 5,
+        "item": 76,
+        "count": 1,
+        "weight": 11,
+        "_src": {
+          "file": "common/facility/steamRewardListSummer.srl",
+          "row": 21
+        }
+      },
+      {
+        "tier": 5,
+        "item": 2687,
+        "count": 1,
+        "weight": 13,
+        "_src": {
+          "file": "common/facility/steamRewardListSummer.srl",
+          "row": 22
+        }
+      },
+      {
+        "tier": 5,
+        "item": 224,
+        "count": 1,
+        "weight": 18,
+        "_src": {
+          "file": "common/facility/steamRewardListSummer.srl",
+          "row": 23
+        }
+      },
+      {
+        "tier": 5,
+        "item": 594,
+        "count": 1,
+        "weight": 18,
+        "_src": {
+          "file": "common/facility/steamRewardListSummer.srl",
+          "row": 24
+        }
+      },
+      {
+        "tier": 5,
+        "item": 1003,
+        "count": 1,
+        "weight": 18,
+        "_src": {
+          "file": "common/facility/steamRewardListSummer.srl",
+          "row": 25
+        }
+      },
+      {
+        "tier": 4,
+        "item": 2533,
+        "count": 1,
+        "weight": 1,
+        "_src": {
+          "file": "common/facility/steamRewardListSummer.srl",
+          "row": 26
+        }
+      },
+      {
+        "tier": 4,
+        "item": 2428,
+        "count": 1,
+        "weight": 1,
+        "_src": {
+          "file": "common/facility/steamRewardListSummer.srl",
+          "row": 27
+        }
+      },
+      {
+        "tier": 4,
+        "item": 2427,
+        "count": 1,
+        "weight": 1,
+        "_src": {
+          "file": "common/facility/steamRewardListSummer.srl",
+          "row": 28
+        }
+      },
+      {
+        "tier": 4,
+        "item": 2426,
+        "count": 1,
+        "weight": 1,
+        "_src": {
+          "file": "common/facility/steamRewardListSummer.srl",
+          "row": 29
+        }
+      },
+      {
+        "tier": 6,
+        "item": 2690,
+        "count": 1,
+        "weight": 1,
+        "_src": {
+          "file": "common/facility/steamRewardListSummer.srl",
+          "row": 30
+        }
+      },
+      {
+        "tier": 6,
+        "item": 1040,
+        "count": 1,
+        "weight": 1,
+        "_src": {
+          "file": "common/facility/steamRewardListSummer.srl",
+          "row": 31
+        }
+      }
+    ],
+    "autumn": [
+      {
+        "tier": 0,
+        "item": 1008,
+        "count": 1,
+        "weight": 11,
+        "_src": {
+          "file": "common/facility/steamRewardListAutumn.srl",
+          "row": 0
+        }
+      },
+      {
+        "tier": 0,
+        "item": 2,
+        "count": 1,
+        "weight": 40,
+        "_src": {
+          "file": "common/facility/steamRewardListAutumn.srl",
+          "row": 1
+        }
+      },
+      {
+        "tier": 0,
+        "item": 59,
+        "count": 1,
+        "weight": 17,
+        "_src": {
+          "file": "common/facility/steamRewardListAutumn.srl",
+          "row": 2
+        }
+      },
+      {
+        "tier": 0,
+        "item": 221,
+        "count": 1,
+        "weight": 32,
+        "_src": {
+          "file": "common/facility/steamRewardListAutumn.srl",
+          "row": 3
+        }
+      },
+      {
+        "tier": 1,
+        "item": 1008,
+        "count": 1,
+        "weight": 17,
+        "_src": {
+          "file": "common/facility/steamRewardListAutumn.srl",
+          "row": 4
+        }
+      },
+      {
+        "tier": 1,
+        "item": 2,
+        "count": 1,
+        "weight": 22,
+        "_src": {
+          "file": "common/facility/steamRewardListAutumn.srl",
+          "row": 5
+        }
+      },
+      {
+        "tier": 1,
+        "item": 59,
+        "count": 1,
+        "weight": 29,
+        "_src": {
+          "file": "common/facility/steamRewardListAutumn.srl",
+          "row": 6
+        }
+      },
+      {
+        "tier": 1,
+        "item": 221,
+        "count": 1,
+        "weight": 32,
+        "_src": {
+          "file": "common/facility/steamRewardListAutumn.srl",
+          "row": 7
+        }
+      },
+      {
+        "tier": 2,
+        "item": 1966,
+        "count": 1,
+        "weight": 7,
+        "_src": {
+          "file": "common/facility/steamRewardListAutumn.srl",
+          "row": 8
+        }
+      },
+      {
+        "tier": 2,
+        "item": 223,
+        "count": 1,
+        "weight": 12,
+        "_src": {
+          "file": "common/facility/steamRewardListAutumn.srl",
+          "row": 9
+        }
+      },
+      {
+        "tier": 2,
+        "item": 2686,
+        "count": 1,
+        "weight": 21,
+        "_src": {
+          "file": "common/facility/steamRewardListAutumn.srl",
+          "row": 10
+        }
+      },
+      {
+        "tier": 2,
+        "item": 76,
+        "count": 1,
+        "weight": 27,
+        "_src": {
+          "file": "common/facility/steamRewardListAutumn.srl",
+          "row": 11
+        }
+      },
+      {
+        "tier": 2,
+        "item": 4,
+        "count": 1,
+        "weight": 33,
+        "_src": {
+          "file": "common/facility/steamRewardListAutumn.srl",
+          "row": 12
+        }
+      },
+      {
+        "tier": 3,
+        "item": 1431,
+        "count": 1,
+        "weight": 1,
+        "_src": {
+          "file": "common/facility/steamRewardListAutumn.srl",
+          "row": 13
+        }
+      },
+      {
+        "tier": 3,
+        "item": 2690,
+        "count": 1,
+        "weight": 1,
+        "_src": {
+          "file": "common/facility/steamRewardListAutumn.srl",
+          "row": 14
+        }
+      },
+      {
+        "tier": 3,
+        "item": 1003,
+        "count": 1,
+        "weight": 11,
+        "_src": {
+          "file": "common/facility/steamRewardListAutumn.srl",
+          "row": 15
+        }
+      },
+      {
+        "tier": 3,
+        "item": 2687,
+        "count": 1,
+        "weight": 37,
+        "_src": {
+          "file": "common/facility/steamRewardListAutumn.srl",
+          "row": 16
+        }
+      },
+      {
+        "tier": 3,
+        "item": 224,
+        "count": 1,
+        "weight": 29,
+        "_src": {
+          "file": "common/facility/steamRewardListAutumn.srl",
+          "row": 17
+        }
+      },
+      {
+        "tier": 3,
+        "item": 594,
+        "count": 1,
+        "weight": 21,
+        "_src": {
+          "file": "common/facility/steamRewardListAutumn.srl",
+          "row": 18
+        }
+      },
+      {
+        "tier": 5,
+        "item": 1008,
+        "count": 1,
+        "weight": 11,
+        "_src": {
+          "file": "common/facility/steamRewardListAutumn.srl",
+          "row": 19
+        }
+      },
+      {
+        "tier": 5,
+        "item": 1966,
+        "count": 1,
+        "weight": 11,
+        "_src": {
+          "file": "common/facility/steamRewardListAutumn.srl",
+          "row": 20
+        }
+      },
+      {
+        "tier": 5,
+        "item": 76,
+        "count": 1,
+        "weight": 11,
+        "_src": {
+          "file": "common/facility/steamRewardListAutumn.srl",
+          "row": 21
+        }
+      },
+      {
+        "tier": 5,
+        "item": 2687,
+        "count": 1,
+        "weight": 13,
+        "_src": {
+          "file": "common/facility/steamRewardListAutumn.srl",
+          "row": 22
+        }
+      },
+      {
+        "tier": 5,
+        "item": 224,
+        "count": 1,
+        "weight": 18,
+        "_src": {
+          "file": "common/facility/steamRewardListAutumn.srl",
+          "row": 23
+        }
+      },
+      {
+        "tier": 5,
+        "item": 594,
+        "count": 1,
+        "weight": 18,
+        "_src": {
+          "file": "common/facility/steamRewardListAutumn.srl",
+          "row": 24
+        }
+      },
+      {
+        "tier": 5,
+        "item": 1003,
+        "count": 1,
+        "weight": 18,
+        "_src": {
+          "file": "common/facility/steamRewardListAutumn.srl",
+          "row": 25
+        }
+      },
+      {
+        "tier": 4,
+        "item": 2579,
+        "count": 1,
+        "weight": 1,
+        "_src": {
+          "file": "common/facility/steamRewardListAutumn.srl",
+          "row": 26
+        }
+      },
+      {
+        "tier": 4,
+        "item": 2477,
+        "count": 1,
+        "weight": 1,
+        "_src": {
+          "file": "common/facility/steamRewardListAutumn.srl",
+          "row": 27
+        }
+      },
+      {
+        "tier": 4,
+        "item": 2418,
+        "count": 1,
+        "weight": 1,
+        "_src": {
+          "file": "common/facility/steamRewardListAutumn.srl",
+          "row": 28
+        }
+      },
+      {
+        "tier": 6,
+        "item": 2690,
+        "count": 1,
+        "weight": 1,
+        "_src": {
+          "file": "common/facility/steamRewardListAutumn.srl",
+          "row": 29
+        }
+      },
+      {
+        "tier": 6,
+        "item": 1040,
+        "count": 1,
+        "weight": 1,
+        "_src": {
+          "file": "common/facility/steamRewardListAutumn.srl",
+          "row": 30
+        }
+      }
+    ],
+    "winter": [
+      {
+        "tier": 0,
+        "item": 1008,
+        "count": 1,
+        "weight": 11,
+        "_src": {
+          "file": "common/facility/steamRewardListWinter.srl",
+          "row": 0
+        }
+      },
+      {
+        "tier": 0,
+        "item": 2,
+        "count": 1,
+        "weight": 40,
+        "_src": {
+          "file": "common/facility/steamRewardListWinter.srl",
+          "row": 1
+        }
+      },
+      {
+        "tier": 0,
+        "item": 59,
+        "count": 1,
+        "weight": 17,
+        "_src": {
+          "file": "common/facility/steamRewardListWinter.srl",
+          "row": 2
+        }
+      },
+      {
+        "tier": 0,
+        "item": 221,
+        "count": 1,
+        "weight": 32,
+        "_src": {
+          "file": "common/facility/steamRewardListWinter.srl",
+          "row": 3
+        }
+      },
+      {
+        "tier": 1,
+        "item": 1008,
+        "count": 1,
+        "weight": 17,
+        "_src": {
+          "file": "common/facility/steamRewardListWinter.srl",
+          "row": 4
+        }
+      },
+      {
+        "tier": 1,
+        "item": 2,
+        "count": 1,
+        "weight": 22,
+        "_src": {
+          "file": "common/facility/steamRewardListWinter.srl",
+          "row": 5
+        }
+      },
+      {
+        "tier": 1,
+        "item": 59,
+        "count": 1,
+        "weight": 29,
+        "_src": {
+          "file": "common/facility/steamRewardListWinter.srl",
+          "row": 6
+        }
+      },
+      {
+        "tier": 1,
+        "item": 221,
+        "count": 1,
+        "weight": 32,
+        "_src": {
+          "file": "common/facility/steamRewardListWinter.srl",
+          "row": 7
+        }
+      },
+      {
+        "tier": 2,
+        "item": 1966,
+        "count": 1,
+        "weight": 7,
+        "_src": {
+          "file": "common/facility/steamRewardListWinter.srl",
+          "row": 8
+        }
+      },
+      {
+        "tier": 2,
+        "item": 223,
+        "count": 1,
+        "weight": 12,
+        "_src": {
+          "file": "common/facility/steamRewardListWinter.srl",
+          "row": 9
+        }
+      },
+      {
+        "tier": 2,
+        "item": 2686,
+        "count": 1,
+        "weight": 21,
+        "_src": {
+          "file": "common/facility/steamRewardListWinter.srl",
+          "row": 10
+        }
+      },
+      {
+        "tier": 2,
+        "item": 76,
+        "count": 1,
+        "weight": 27,
+        "_src": {
+          "file": "common/facility/steamRewardListWinter.srl",
+          "row": 11
+        }
+      },
+      {
+        "tier": 2,
+        "item": 4,
+        "count": 1,
+        "weight": 33,
+        "_src": {
+          "file": "common/facility/steamRewardListWinter.srl",
+          "row": 12
+        }
+      },
+      {
+        "tier": 3,
+        "item": 1431,
+        "count": 1,
+        "weight": 1,
+        "_src": {
+          "file": "common/facility/steamRewardListWinter.srl",
+          "row": 13
+        }
+      },
+      {
+        "tier": 3,
+        "item": 2690,
+        "count": 1,
+        "weight": 1,
+        "_src": {
+          "file": "common/facility/steamRewardListWinter.srl",
+          "row": 14
+        }
+      },
+      {
+        "tier": 3,
+        "item": 1003,
+        "count": 1,
+        "weight": 11,
+        "_src": {
+          "file": "common/facility/steamRewardListWinter.srl",
+          "row": 15
+        }
+      },
+      {
+        "tier": 3,
+        "item": 2687,
+        "count": 1,
+        "weight": 37,
+        "_src": {
+          "file": "common/facility/steamRewardListWinter.srl",
+          "row": 16
+        }
+      },
+      {
+        "tier": 3,
+        "item": 224,
+        "count": 1,
+        "weight": 29,
+        "_src": {
+          "file": "common/facility/steamRewardListWinter.srl",
+          "row": 17
+        }
+      },
+      {
+        "tier": 3,
+        "item": 594,
+        "count": 1,
+        "weight": 21,
+        "_src": {
+          "file": "common/facility/steamRewardListWinter.srl",
+          "row": 18
+        }
+      },
+      {
+        "tier": 5,
+        "item": 1008,
+        "count": 1,
+        "weight": 11,
+        "_src": {
+          "file": "common/facility/steamRewardListWinter.srl",
+          "row": 19
+        }
+      },
+      {
+        "tier": 5,
+        "item": 1966,
+        "count": 1,
+        "weight": 11,
+        "_src": {
+          "file": "common/facility/steamRewardListWinter.srl",
+          "row": 20
+        }
+      },
+      {
+        "tier": 5,
+        "item": 76,
+        "count": 1,
+        "weight": 11,
+        "_src": {
+          "file": "common/facility/steamRewardListWinter.srl",
+          "row": 21
+        }
+      },
+      {
+        "tier": 5,
+        "item": 2687,
+        "count": 1,
+        "weight": 13,
+        "_src": {
+          "file": "common/facility/steamRewardListWinter.srl",
+          "row": 22
+        }
+      },
+      {
+        "tier": 5,
+        "item": 224,
+        "count": 1,
+        "weight": 18,
+        "_src": {
+          "file": "common/facility/steamRewardListWinter.srl",
+          "row": 23
+        }
+      },
+      {
+        "tier": 5,
+        "item": 594,
+        "count": 1,
+        "weight": 18,
+        "_src": {
+          "file": "common/facility/steamRewardListWinter.srl",
+          "row": 24
+        }
+      },
+      {
+        "tier": 5,
+        "item": 1003,
+        "count": 1,
+        "weight": 18,
+        "_src": {
+          "file": "common/facility/steamRewardListWinter.srl",
+          "row": 25
+        }
+      },
+      {
+        "tier": 4,
+        "item": 2530,
+        "count": 1,
+        "weight": 1,
+        "_src": {
+          "file": "common/facility/steamRewardListWinter.srl",
+          "row": 26
+        }
+      },
+      {
+        "tier": 6,
+        "item": 2690,
+        "count": 1,
+        "weight": 1,
+        "_src": {
+          "file": "common/facility/steamRewardListWinter.srl",
+          "row": 27
+        }
+      },
+      {
+        "tier": 6,
+        "item": 1040,
+        "count": 1,
+        "weight": 1,
+        "_src": {
+          "file": "common/facility/steamRewardListWinter.srl",
+          "row": 28
+        }
+      }
+    ],
+    "memorial": [
+      {
+        "tier": 0,
+        "item": 1008,
+        "count": 1,
+        "weight": 11,
+        "_src": {
+          "file": "common/facility/steamRewardListMemorial.srl",
+          "row": 0
+        }
+      },
+      {
+        "tier": 0,
+        "item": 2,
+        "count": 1,
+        "weight": 40,
+        "_src": {
+          "file": "common/facility/steamRewardListMemorial.srl",
+          "row": 1
+        }
+      },
+      {
+        "tier": 0,
+        "item": 59,
+        "count": 1,
+        "weight": 17,
+        "_src": {
+          "file": "common/facility/steamRewardListMemorial.srl",
+          "row": 2
+        }
+      },
+      {
+        "tier": 0,
+        "item": 221,
+        "count": 1,
+        "weight": 32,
+        "_src": {
+          "file": "common/facility/steamRewardListMemorial.srl",
+          "row": 3
+        }
+      },
+      {
+        "tier": 1,
+        "item": 1008,
+        "count": 1,
+        "weight": 17,
+        "_src": {
+          "file": "common/facility/steamRewardListMemorial.srl",
+          "row": 4
+        }
+      },
+      {
+        "tier": 1,
+        "item": 2,
+        "count": 1,
+        "weight": 22,
+        "_src": {
+          "file": "common/facility/steamRewardListMemorial.srl",
+          "row": 5
+        }
+      },
+      {
+        "tier": 1,
+        "item": 59,
+        "count": 1,
+        "weight": 29,
+        "_src": {
+          "file": "common/facility/steamRewardListMemorial.srl",
+          "row": 6
+        }
+      },
+      {
+        "tier": 1,
+        "item": 221,
+        "count": 1,
+        "weight": 32,
+        "_src": {
+          "file": "common/facility/steamRewardListMemorial.srl",
+          "row": 7
+        }
+      },
+      {
+        "tier": 2,
+        "item": 1966,
+        "count": 1,
+        "weight": 7,
+        "_src": {
+          "file": "common/facility/steamRewardListMemorial.srl",
+          "row": 8
+        }
+      },
+      {
+        "tier": 2,
+        "item": 223,
+        "count": 1,
+        "weight": 12,
+        "_src": {
+          "file": "common/facility/steamRewardListMemorial.srl",
+          "row": 9
+        }
+      },
+      {
+        "tier": 2,
+        "item": 2686,
+        "count": 1,
+        "weight": 21,
+        "_src": {
+          "file": "common/facility/steamRewardListMemorial.srl",
+          "row": 10
+        }
+      },
+      {
+        "tier": 2,
+        "item": 76,
+        "count": 1,
+        "weight": 27,
+        "_src": {
+          "file": "common/facility/steamRewardListMemorial.srl",
+          "row": 11
+        }
+      },
+      {
+        "tier": 2,
+        "item": 4,
+        "count": 1,
+        "weight": 33,
+        "_src": {
+          "file": "common/facility/steamRewardListMemorial.srl",
+          "row": 12
+        }
+      },
+      {
+        "tier": 3,
+        "item": 1431,
+        "count": 1,
+        "weight": 1,
+        "_src": {
+          "file": "common/facility/steamRewardListMemorial.srl",
+          "row": 13
+        }
+      },
+      {
+        "tier": 3,
+        "item": 2690,
+        "count": 1,
+        "weight": 1,
+        "_src": {
+          "file": "common/facility/steamRewardListMemorial.srl",
+          "row": 14
+        }
+      },
+      {
+        "tier": 3,
+        "item": 1003,
+        "count": 1,
+        "weight": 11,
+        "_src": {
+          "file": "common/facility/steamRewardListMemorial.srl",
+          "row": 15
+        }
+      },
+      {
+        "tier": 3,
+        "item": 2687,
+        "count": 1,
+        "weight": 37,
+        "_src": {
+          "file": "common/facility/steamRewardListMemorial.srl",
+          "row": 16
+        }
+      },
+      {
+        "tier": 3,
+        "item": 224,
+        "count": 1,
+        "weight": 29,
+        "_src": {
+          "file": "common/facility/steamRewardListMemorial.srl",
+          "row": 17
+        }
+      },
+      {
+        "tier": 3,
+        "item": 594,
+        "count": 1,
+        "weight": 21,
+        "_src": {
+          "file": "common/facility/steamRewardListMemorial.srl",
+          "row": 18
+        }
+      },
+      {
+        "tier": 5,
+        "item": 1008,
+        "count": 1,
+        "weight": 11,
+        "_src": {
+          "file": "common/facility/steamRewardListMemorial.srl",
+          "row": 19
+        }
+      },
+      {
+        "tier": 5,
+        "item": 1966,
+        "count": 1,
+        "weight": 11,
+        "_src": {
+          "file": "common/facility/steamRewardListMemorial.srl",
+          "row": 20
+        }
+      },
+      {
+        "tier": 5,
+        "item": 76,
+        "count": 1,
+        "weight": 11,
+        "_src": {
+          "file": "common/facility/steamRewardListMemorial.srl",
+          "row": 21
+        }
+      },
+      {
+        "tier": 5,
+        "item": 2687,
+        "count": 1,
+        "weight": 13,
+        "_src": {
+          "file": "common/facility/steamRewardListMemorial.srl",
+          "row": 22
+        }
+      },
+      {
+        "tier": 5,
+        "item": 224,
+        "count": 1,
+        "weight": 18,
+        "_src": {
+          "file": "common/facility/steamRewardListMemorial.srl",
+          "row": 23
+        }
+      },
+      {
+        "tier": 5,
+        "item": 594,
+        "count": 1,
+        "weight": 18,
+        "_src": {
+          "file": "common/facility/steamRewardListMemorial.srl",
+          "row": 24
+        }
+      },
+      {
+        "tier": 5,
+        "item": 1003,
+        "count": 1,
+        "weight": 18,
+        "_src": {
+          "file": "common/facility/steamRewardListMemorial.srl",
+          "row": 25
+        }
+      },
+      {
+        "tier": 4,
+        "item": 2531,
+        "count": 1,
+        "weight": 1,
+        "_src": {
+          "file": "common/facility/steamRewardListMemorial.srl",
+          "row": 26
+        }
+      },
+      {
+        "tier": 4,
+        "item": 2586,
+        "count": 1,
+        "weight": 1,
+        "_src": {
+          "file": "common/facility/steamRewardListMemorial.srl",
+          "row": 27
+        }
+      },
+      {
+        "tier": 6,
+        "item": 2690,
+        "count": 1,
+        "weight": 1,
+        "_src": {
+          "file": "common/facility/steamRewardListMemorial.srl",
+          "row": 28
+        }
+      },
+      {
+        "tier": 6,
+        "item": 1040,
+        "count": 1,
+        "weight": 1,
+        "_src": {
+          "file": "common/facility/steamRewardListMemorial.srl",
+          "row": 29
+        }
+      }
+    ]
+  },
+  "fuel": [
+    {
+      "item": 205,
+      "fuel": 1,
+      "_src": {
+        "file": "common/facility/steamConvertList.scl",
+        "row": 0
+      }
+    },
+    {
+      "item": 206,
+      "fuel": 1,
+      "_src": {
+        "file": "common/facility/steamConvertList.scl",
+        "row": 1
+      }
+    },
+    {
+      "item": 207,
+      "fuel": 1,
+      "_src": {
+        "file": "common/facility/steamConvertList.scl",
+        "row": 2
+      }
+    },
+    {
+      "item": 208,
+      "fuel": 1,
+      "_src": {
+        "file": "common/facility/steamConvertList.scl",
+        "row": 3
+      }
+    },
+    {
+      "item": 1030,
+      "fuel": 2,
+      "_src": {
+        "file": "common/facility/steamConvertList.scl",
+        "row": 4
+      }
+    },
+    {
+      "item": 209,
+      "fuel": 2,
+      "_src": {
+        "file": "common/facility/steamConvertList.scl",
+        "row": 5
+      }
+    },
+    {
+      "item": 1031,
+      "fuel": 3,
+      "_src": {
+        "file": "common/facility/steamConvertList.scl",
+        "row": 6
+      }
+    },
+    {
+      "item": 1036,
+      "fuel": 2,
+      "_src": {
+        "file": "common/facility/steamConvertList.scl",
+        "row": 7
+      }
+    },
+    {
+      "item": 1037,
+      "fuel": 2,
+      "_src": {
+        "file": "common/facility/steamConvertList.scl",
+        "row": 8
+      }
+    },
+    {
+      "item": 210,
+      "fuel": 1,
+      "_src": {
+        "file": "common/facility/steamConvertList.scl",
+        "row": 9
+      }
+    },
+    {
+      "item": 211,
+      "fuel": 1,
+      "_src": {
+        "file": "common/facility/steamConvertList.scl",
+        "row": 10
+      }
+    },
+    {
+      "item": 212,
+      "fuel": 1,
+      "_src": {
+        "file": "common/facility/steamConvertList.scl",
+        "row": 11
+      }
+    },
+    {
+      "item": 1032,
+      "fuel": 2,
+      "_src": {
+        "file": "common/facility/steamConvertList.scl",
+        "row": 12
+      }
+    },
+    {
+      "item": 213,
+      "fuel": 1,
+      "_src": {
+        "file": "common/facility/steamConvertList.scl",
+        "row": 13
+      }
+    },
+    {
+      "item": 214,
+      "fuel": 2,
+      "_src": {
+        "file": "common/facility/steamConvertList.scl",
+        "row": 14
+      }
+    },
+    {
+      "item": 1034,
+      "fuel": 5,
+      "_src": {
+        "file": "common/facility/steamConvertList.scl",
+        "row": 15
+      }
+    },
+    {
+      "item": 215,
+      "fuel": 2,
+      "_src": {
+        "file": "common/facility/steamConvertList.scl",
+        "row": 16
+      }
+    },
+    {
+      "item": 216,
+      "fuel": 1,
+      "_src": {
+        "file": "common/facility/steamConvertList.scl",
+        "row": 17
+      }
+    },
+    {
+      "item": 217,
+      "fuel": 1,
+      "_src": {
+        "file": "common/facility/steamConvertList.scl",
+        "row": 18
+      }
+    },
+    {
+      "item": 218,
+      "fuel": 2,
+      "_src": {
+        "file": "common/facility/steamConvertList.scl",
+        "row": 19
+      }
+    },
+    {
+      "item": 219,
+      "fuel": 3,
+      "_src": {
+        "file": "common/facility/steamConvertList.scl",
+        "row": 20
+      }
+    },
+    {
+      "item": 1038,
+      "fuel": 5,
+      "_src": {
+        "file": "common/facility/steamConvertList.scl",
+        "row": 21
+      }
+    },
+    {
+      "item": 1039,
+      "fuel": 10,
+      "_src": {
+        "file": "common/facility/steamConvertList.scl",
+        "row": 22
+      }
+    },
+    {
+      "item": 1478,
+      "fuel": 20,
+      "_src": {
+        "file": "common/facility/steamConvertList.scl",
+        "row": 23
+      }
+    },
+    {
+      "item": 1479,
+      "fuel": 100,
+      "_src": {
+        "file": "common/facility/steamConvertList.scl",
+        "row": 24
+      }
+    },
+    {
+      "item": 1480,
+      "fuel": 500,
+      "_src": {
+        "file": "common/facility/steamConvertList.scl",
+        "row": 25
+      }
+    },
+    {
+      "item": 1967,
+      "fuel": 1000,
+      "_src": {
+        "file": "common/facility/steamConvertList.scl",
+        "row": 26
+      }
+    }
+  ]
+}

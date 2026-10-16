@@ -1,0 +1,100 @@
+---
+import SiteLayout from '../../../layouts/SiteLayout.astro';
+import FacilityTabs from '../../../components/site/FacilityTabs.astro';
+import FilterBox from '../../../components/site/FilterBox.astro';
+import Materials from '../../../components/site/Materials.astro';
+import { itemById, loadBounties } from '../../../data/world/load';
+import type { Bounty } from '../../../data/world/schema-facilities';
+
+const bounties = loadBounties();
+const GROUPS = [
+  { title: '重要奖金', note: '剧情与调查中出现的一次性奖金', match: (b: Bounty) => b.important },
+  {
+    title: '登记奖金 · 下位',
+    note: '按剧情进度轮换',
+    match: (b: Bounty) => !b.important && b.rank === 'low',
+  },
+  {
+    title: '登记奖金 · 上位',
+    note: '按剧情进度轮换',
+    match: (b: Bounty) => !b.important && b.rank === 'high',
+  },
+  {
+    title: '登记奖金 · 大师',
+    note: '按剧情进度轮换',
+    match: (b: Bounty) => !b.important && b.rank === 'master',
+  },
+];
+const lines = (t?: string) => (t ?? '').replace(/\n/g, '');
+const text = (b: Bounty) =>
+  [
+    b.title['zh-Hans'],
+    lines(b.desc['zh-Hans']),
+    ...b.rewards.map((m) => itemById(m.item)?.name['zh-Hans'] ?? ''),
+  ]
+    .join(' ')
+    .toLowerCase();
+---
+
+<SiteLayout
+  title="奖金"
+  current="encyclopedia"
+  description="怪物猎人：世界 冰原 奖金一览：重要奖金与登记奖金的条件、报酬与调查点数"
+  wide
+>
+  <nav class="s-crumbs" aria-label="位置">
+    <a href="/world/encyclopedia/">百科</a>
+    <span>奖金</span>
+  </nav>
+  <div class="s-head">
+    <h1>
+      奖金 <span class="b-label">{bounties.length} 条</span>
+    </h1>
+    <p>调查资源管理所的奖金：完成条件即可领取报酬与调查点数。登记奖金按剧情进度分段轮换。</p>
+  </div>
+  <FacilityTabs current="bounties" />
+  <FilterBox label="按奖金名、条件或报酬筛选" placeholder="按奖金名、条件或报酬筛选" />
+
+  {GROUPS.map((g) => {
+    const list = bounties.filter(g.match);
+    return list.length ? (
+      <section class="s-section" data-filter-section>
+        <h2>
+          {g.title}{' '}
+          <small class="s-dim">
+            {list.length} 条 · {g.note}
+          </small>
+        </h2>
+        <ul class="s-cards">
+          {list.map((b) => (
+            <li data-filter-row data-text={text(b)}>
+              <strong>{b.title['zh-Hans']}</strong>
+              <span class="bt-desc">{lines(b.desc['zh-Hans'])}</span>
+              <Materials materials={b.rewards} />
+              <small>调查点数 {b.points}</small>
+            </li>
+          ))}
+        </ul>
+      </section>
+    ) : null;
+  })}
+
+  <p class="s-note">
+    数据来源：<code>common/facility/l_mission.odr</code>（条件种类、目标、报酬、调查点数）与奖金文本{' '}
+    <code>l_mission</code>。 已与 Kiranico 核对：在矿脉采掘 6 次 = 铠玉 ×1 + 40 点、12 次 100
+    点。登记奖金所属的剧情进度段对应哪段任务未确认； 活动期间的限时奖金（<code>l_mission_sp.lms</code>
+    ）结构未完全弄清，未收录。
+  </p>
+</SiteLayout>
+
+<style>
+  .s-section h2 small {
+    font-size: var(--text-sm);
+    font-weight: 400;
+  }
+
+  .bt-desc {
+    color: var(--c-text-2);
+    font-size: var(--text-sm);
+  }
+</style>

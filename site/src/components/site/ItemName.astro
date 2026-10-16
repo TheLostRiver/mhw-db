@@ -1,0 +1,23 @@
+---
+/** 物品：图标 + 名称，链接到道具页对应的行 */
+import { itemById } from '../../data/world/load';
+import { ITEM_TYPES, itemIconUrl } from '../../lib/world/encyclopedia';
+
+interface Props {
+  id: number;
+  size?: number;
+  count?: number;
+}
+const { id, size = 24, count } = Astro.props;
+const item = itemById(id);
+const slug = item ? ITEM_TYPES.find((t) => t.type === item.type)?.slug : undefined;
+const href = item && slug ? `/world/items/${slug}/#item-${item.id}` : undefined;
+---
+
+{item && (
+  <a class="s-item" href={href}>
+    <img src={itemIconUrl(item)} alt="" width={size} height={size} loading="lazy" />
+    <span>{item.name['zh-Hans']}</span>
+    {count != null && <b>×{count}</b>}
+  </a>
+)}

@@ -1,0 +1,178 @@
+---
+import SiteLayout from '../../../layouts/SiteLayout.astro';
+import FacilityTabs from '../../../components/site/FacilityTabs.astro';
+import FilterBox from '../../../components/site/FilterBox.astro';
+import ItemName from '../../../components/site/ItemName.astro';
+import { itemById, loadMelder } from '../../../data/world/load';
+import type { MelderTarget } from '../../../data/world/schema-facilities';
+
+const targets = loadMelder();
+const GROUPS = [
+  { key: 'item', title: '道具' },
+  { key: 'ammo', title: '弹药' },
+  { key: 'material', title: '素材' },
+  { key: 'decoration', title: '饰品' },
+] as const;
+const SHOWN = 6;
+const name = (id: number) => itemById(id)?.name['zh-Hans'] ?? '';
+const text = (t: MelderTarget) =>
+  [name(t.item), ...t.sources.map(([id]) => name(id))].join(' ').toLowerCase();
+---
+
+<SiteLayout
+  title="神秘炼金"
+  current="encyclopedia"
+  description="怪物猎人：世界 冰原 神秘炼金：可炼成的道具、消耗的调查点数、需要的炼金值与可投入的素材"
+  wide
+>
+  <nav class="s-crumbs" aria-label="位置">
+    <a href="/world/encyclopedia/">百科</a>
+    <span>神秘炼金</span>
+  </nav>
+  <div class="s-head">
+    <h1>
+      神秘炼金 <span class="b-label">{targets.length} 种成品</span>
+    </h1>
+    <p>
+      选择要炼成的道具，消耗调查点数，再投入素材凑满「炼金值」。每种素材提供的炼金值因目标而异；
+      右侧数字为投入 1 个提供的值，括号里是只用这种素材时需要的个数。可按素材名筛选，查看它能炼成什么。
+    </p>
+  </div>
+  <FacilityTabs current="melder" />
+  <FilterBox label="按成品或素材筛选" placeholder="按成品或素材筛选（如 铁矿石）" />
+
+  {GROUPS.map((g) => {
+    const list = targets.filter((t) => t.category === g.key);
+    return (
+      <section class="s-section" data-filter-section>
+        <h2>
+          {g.title} <small class="s-dim">{list.length} 种</small>
+        </h2>
+        <ul class="s-cards">
+          {list.map((t) => (
+            <li data-filter-row data-text={text(t)}>
+              <div class="md-head">
+                <ItemName id={t.item} size={30} />
+                <span class="md-cost">
+                  <b>{t.points}</b> 点 · 炼金值 <b>{t.melding}</b>
+                </span>
+              </div>
+              {t.sources.length ? (
+                <>
+                  <ol class="md-sources">
+                    {t.sources.slice(0, SHOWN).map(([id, v]) => (
+                      <li>
+                        <ItemName id={id} size={20} />
+                        <span class="md-val">
+                          +{v}
+                          <small>（{Math.ceil(t.melding / v)}）</small>
+                        </span>
+                      </li>
+                    ))}
+                  </ol>
+                  {t.sources.length > SHOWN && (
+                    <details class="md-more">
+                      <summary>其余 {t.sources.length - SHOWN} 种素材</summary>
+                      <p class="md-rest">
+                        {t.sources
+                          .slice(SHOWN)
+                          .map(([id, v]) => `${name(id)} +${v}`)
+                          .join('、')}
+                      </p>
+                    </details>
+                  )}
+                </>
+              ) : (
+                <small>数据里没有素材能为它提供炼金值（游戏内能否炼成未确认）</small>
+              )}
+            </li>
+          ))}
+        </ul>
+      </section>
+    );
+  })}
+
+  <p class="s-note">
+    数据来源：<code>common/maka/maka_item.mkit</code>（成品、调查点数、炼金值）、
+    <code>maka_exchange.mkex</code>（每种素材对每个成品的炼金值）。 已与 Kiranico 核对：回复药·大 20 点 /
+    炼金值 10、秘药 50 / 30、远古秘药 80 / 100、防御珠【1】1000 / 100；铁矿石为回复药·大提供 2。
+    解锁所需的剧情进度、额外炼金素材的加成倍率未确认，未显示。饰品炼金（宝珠）的概率表另见后续页面。
+  </p>
+</SiteLayout>
+
+<style>
+  .s-section h2 small {
+    font-size: var(--text-sm);
+    font-weight: 400;
+  }
+
+  .md-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--c-line);
+  }
+
+  .md-head :global(.s-item span) {
+    font-weight: 700;
+  }
+
+  .md-cost {
+    color: var(--c-text-3);
+    font-size: var(--text-xs);
+  }
+
+  .md-cost b {
+    color: var(--c-text);
+    font-family: var(--font-num);
+    font-weight: 500;
+  }
+
+  .md-sources {
+    display: grid;
+    gap: 2px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .md-sources li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+    min-width: 0;
+    font-size: var(--text-sm);
+  }
+
+  .md-val {
+    flex: none;
+    color: var(--c-accent);
+    font-family: var(--font-num);
+    font-size: var(--text-xs);
+  }
+
+  .md-val small {
+    color: var(--c-text-3);
+  }
+
+  .md-more summary {
+    color: var(--c-text-2);
+    font-size: var(--text-xs);
+    cursor: pointer;
+  }
+
+  .md-more[open] summary {
+    margin-bottom: 4px;
+  }
+
+  .md-rest {
+    margin: 0;
+    color: var(--c-text-2);
+    font-size: var(--text-xs);
+    line-height: 1.7;
+  }
+</style>

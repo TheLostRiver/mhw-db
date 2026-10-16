@@ -27,6 +27,16 @@ import type {
   WeaponCustom,
   WeaponType,
 } from './schema';
+import type {
+  ArgosyItem,
+  Botany,
+  Bounty,
+  Delivery,
+  Expeditions,
+  MelderTarget,
+  ShopItem,
+  Steamworks,
+} from './schema-facilities';
 
 const ROOT = new URL('../../../../data/world/', import.meta.url);
 // 按修改时间缓存：开发服务器常驻时，重新运行 mhdb parse 后能读到新数据
@@ -71,6 +81,14 @@ export const loadKinsects = () => read<{ kinsects: Kinsect[] }>('kinsects.json')
 export const loadMelodies = () => read<{ melodies: Melody[] }>('melodies.json').melodies;
 export const loadPendants = () => read<{ pendants: Pendant[] }>('pendants.json').pendants;
 export const loadLayeredWeapons = () => read<Partial<Record<WeaponType, LayeredWeapon[]>>>('weapon-layered.json');
+export const loadMelder = () => read<{ melder: MelderTarget[] }>('facilities/melder.json').melder;
+export const loadShop = () => read<{ shop: ShopItem[] }>('facilities/shop.json').shop;
+export const loadDeliveries = () => read<{ deliveries: Delivery[] }>('facilities/deliveries.json').deliveries;
+export const loadBounties = () => read<{ bounties: Bounty[] }>('facilities/bounties.json').bounties;
+export const loadArgosy = () => read<{ argosy: ArgosyItem[] }>('facilities/argosy.json').argosy;
+export const loadSteamworks = () => read<Steamworks>('facilities/steamworks.json');
+export const loadExpeditions = () => read<Expeditions>('facilities/expeditions.json');
+export const loadBotany = () => read<Botany>('facilities/botany.json');
 /** 怪物 gameId（解锁条件等字段里的编号）→ 怪物名；同一 gameId 取第一个有名字的 */
 export function monsterNameByGameId(id: number): string | undefined {
   return loadMonsters().find((m) => m.gameId === id && m.name)?.name?.['zh-Hans'];

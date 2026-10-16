@@ -1,0 +1,26 @@
+---
+/** 据点设施各页之间的切换标签（图标为游戏菜单图形） */
+interface Props {
+  current: string;
+}
+const { current } = Astro.props;
+const TABS = [
+  { key: 'melder', label: '神秘炼金', glyph: 'melder' },
+  { key: 'provisions', label: '补给物资所', glyph: 'provisions' },
+  { key: 'deliveries', label: '交货委托', glyph: 'delivery' },
+  { key: 'bounties', label: '奖金', glyph: 'bounty' },
+  { key: 'steamworks', label: '蒸气机关管理所', glyph: 'steamworks' },
+  { key: 'expeditions', label: '随从探险队', glyph: 'expedition' },
+  { key: 'argosy', label: '交易船', glyph: 'argosy' },
+  { key: 'botany', label: '植生研究所', glyph: 'botany' },
+];
+---
+
+<nav class="s-tabs" aria-label="据点设施">
+  {TABS.map((t) => (
+    <a href={`/world/${t.key}/`} aria-current={t.key === current ? 'page' : undefined}>
+      <img src={`/assets/game/world/glyph/${t.glyph}.webp`} alt="" width="22" height="22" />
+      {t.label}
+    </a>
+  ))}
+</nav>

@@ -16,6 +16,16 @@ from mhdb.build.world_custom import (
     read_crit,
     read_sharpness_multipliers,
 )
+from mhdb.build.world_facilities import (
+    build_argosy,
+    build_botany,
+    build_bounties,
+    build_deliveries,
+    build_expeditions,
+    build_melder,
+    build_shop,
+    build_steamworks,
+)
 from mhdb.build.world_gear import (
     build_kinsects,
     build_layered_weapons,
@@ -440,6 +450,16 @@ def build(raw: Path, out: Path, log=print) -> dict:
     melodies = build_melodies(s)
     pendants = build_pendants(s)
     layered_weapons = build_layered_weapons(s)
+    facilities = {
+        "melder": build_melder(s),
+        "shop": build_shop(s),
+        "deliveries": build_deliveries(s),
+        "bounties": build_bounties(s),
+        "steamworks": build_steamworks(s),
+        "expeditions": build_expeditions(s),
+        "argosy": build_argosy(s),
+        "botany": build_botany(s),
+    }
     crit = read_crit(crypto.decrypt_file(PLP_REL, s.path(PLP_REL).read_bytes()))
 
     write_json(out / "meta.json", meta)
@@ -460,6 +480,10 @@ def build(raw: Path, out: Path, log=print) -> dict:
     write_records(out / "melodies.json", "melodies", melodies["melodies"])
     write_records(out / "pendants.json", "pendants", pendants)
     write_json(out / "weapon-layered.json", layered_weapons)
+    for key in ("melder", "shop", "deliveries", "bounties", "argosy"):
+        write_records(out / "facilities" / f"{key}.json", key, facilities[key])
+    for key in ("steamworks", "expeditions", "botany"):
+        write_json(out / "facilities" / f"{key}.json", facilities[key])
     write_json(
         out / "constants.json",
         {
@@ -494,6 +518,9 @@ def build(raw: Path, out: Path, log=print) -> dict:
         "melodies": len(melodies["melodies"]),
         "pendants": len(pendants),
         "layeredWeapons": sum(len(v) for v in layered_weapons.values()),
+        "melder": len(facilities["melder"]),
+        "deliveries": len(facilities["deliveries"]),
+        "bounties": len(facilities["bounties"]),
     }
     write_json(out / "counts.json", counts)
     log(f"写入 {out}：{counts}")
