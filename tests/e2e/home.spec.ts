@@ -32,6 +32,23 @@ for (const theme of ['light', 'dark'] as const) {
   });
 }
 
+test('今日猎物随机抽取，「换一只」换成另一只且不与上次打开的重复', async ({ page }) => {
+  await page.goto('/', { waitUntil: 'networkidle' });
+  const today = page.locator('[data-today]');
+  const name = today.locator('[data-f="name"]');
+  await expect(today).not.toHaveAttribute('data-pending');
+  const first = await name.textContent();
+  await page.reload({ waitUntil: 'networkidle' });
+  await expect(today).not.toHaveAttribute('data-pending');
+  expect(await name.textContent()).not.toBe(first);
+  const before = await name.textContent();
+  await today.getByRole('button', { name: '换一只' }).click();
+  await expect(name).not.toHaveText(before ?? '');
+  await expect(today).not.toHaveAttribute('data-pending');
+  await expect(today.locator('.td-el')).toHaveCount(5);
+  await expect(today.locator('[data-f="more"]')).toHaveAttribute('href', /^\/world\/monsters\/em\d+_\d+\/$/);
+});
+
 test('减少动效时导虫只画静态一帧，长卷不滚动', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/', { waitUntil: 'networkidle' });

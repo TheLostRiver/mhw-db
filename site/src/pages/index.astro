@@ -1,7 +1,7 @@
 ---
 /**
  * 首页「导虫之径」：古代树森林的地图插画作底，一群导虫漂游，一条发光的路径串起六个入口；
- * 往下是今日猎物（按日期轮换，数据取自 monsters.json）、怪物图鉴长卷、数据刻度带。
+ * 往下是今日猎物（每次打开随机抽一只，数据取自 monsters.json）、怪物图鉴长卷、数据刻度带。
  */
 import '@fontsource-variable/noto-serif-sc';
 import SiteLayout from '../layouts/SiteLayout.astro';
@@ -191,12 +191,12 @@ const stats = [
       <p class="sec-kicker">Today's Quarry</p>
       <h2 id="td-title">今日猎物</h2>
     </header>
-    <article class="td-card" data-today>
+    <article class="td-card" data-today data-pending>
       <div class="td-icon">
-        <img src={first.icon} alt="" width="192" height="192" data-f="icon" />
+        <img src={first.icon} alt="" width="192" height="192" loading="lazy" data-f="icon" />
       </div>
       <div class="td-body">
-        <h3>
+        <h3 aria-live="polite">
           <a href={`/world/monsters/${first.key}/`} data-f="link">
             <span data-f="name">{first.name}</span>
           </a>
@@ -235,12 +235,27 @@ const stats = [
             </li>
           ))}
         </ul>
-        <a class="td-more" href={`/world/monsters/${first.key}/`} data-f="more">
-          查看完整资料 →
-        </a>
+        <div class="td-actions">
+          <a class="td-more" href={`/world/monsters/${first.key}/`} data-f="more">
+            查看完整资料 →
+          </a>
+          <button type="button" class="td-reroll" data-reroll hidden>
+            <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+              <path d="M13 8a5 5 0 1 1-1.6-3.7M13 2.5v2.8h-2.8" />
+            </svg>
+            换一只
+          </button>
+        </div>
       </div>
     </article>
     <script type="application/json" data-featured set:html={JSON.stringify(featured)} />
+    <noscript>
+      <style is:inline>
+        .td-card[data-pending] > * {
+          opacity: 1 !important;
+        }
+      </style>
+    </noscript>
   </section>
 
   <section class="mq" aria-labelledby="mq-title">
@@ -309,7 +324,10 @@ const stats = [
     }
   }
 
-  // 今日猎物：按日期轮换（同一天所有人看到同一只）
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // 今日猎物：每次打开随机抽一只，不与上次看到的重复；「换一只」再抽。
+  // 卡片先带着 data-pending 隐藏，等新图标解码好再淡入，免得先闪一下服务端渲染的那只
   interface Featured {
     key: string;
     name: string;
@@ -321,14 +339,18 @@ const stats = [
     hz: number[];
     stars: [string, string, number][];
   }
+  const LAST_KEY = 'mhdb:quarry';
   const data = document.querySelector<HTMLScriptElement>('[data-featured]');
   const card = document.querySelector<HTMLElement>('[data-today]');
+  const reroll = document.querySelector<HTMLButtonElement>('[data-reroll]');
   if (data && card) {
     const list = JSON.parse(data.textContent ?? '[]') as Featured[];
-    const day = Math.floor((Date.now() - new Date().getTimezoneOffset() * 60000) / 86400000);
-    const m = list[day % list.length];
-    if (m) {
-      const f = (k: string) => card.querySelector<HTMLElement>(`[data-f="${k}"]`)!;
+    const f = (k: string) => card.querySelector<HTMLElement>(`[data-f="${k}"]`)!;
+    const pick = (avoid: string | null): Featured | undefined => {
+      const pool = list.length > 1 ? list.filter((m) => m.key !== avoid) : list;
+      return pool[Math.floor(Math.random() * pool.length)];
+    };
+    const fill = (m: Featured) => {
       (f('icon') as HTMLImageElement).src = m.icon;
       f('name').textContent = m.name;
       f('alt').textContent = m.alt;
@@ -349,11 +371,43 @@ const stats = [
           return li;
         }),
       );
+      try {
+        localStorage.setItem(LAST_KEY, m.key);
+      } catch {
+        // 隐私模式等存不了，只是下次可能抽到同一只
+      }
+    };
+    const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+    let current: string | null = null;
+    try {
+      current = localStorage.getItem(LAST_KEY);
+    } catch {
+      current = null;
+    }
+    let busy = false;
+    const show = async (fade: boolean) => {
+      const m = pick(current);
+      if (!m || busy) return;
+      busy = true;
+      current = m.key;
+      const img = new Image();
+      img.src = m.icon;
+      card.toggleAttribute('data-pending', true);
+      await Promise.all([img.decode().catch(() => undefined), sleep(fade && !reduce ? 220 : 0)]);
+      fill(m);
+      requestAnimationFrame(() => {
+        card.toggleAttribute('data-pending', false);
+        busy = false;
+      });
+    };
+    void show(false);
+    if (reroll) {
+      reroll.hidden = false;
+      reroll.addEventListener('click', () => void show(true));
     }
   }
 
   // 数据刻度：进入视野时从 0 数上去
-  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const nums = [...document.querySelectorAll<HTMLElement>('[data-count]')];
   if (!reduce && 'IntersectionObserver' in window) {
     const io = new IntersectionObserver((entries) => {
@@ -850,6 +904,27 @@ const stats = [
     place-items: center;
   }
 
+  /* 换一只：图标与文字一起淡出、淡入（数据还没填好时也是这个状态） */
+  .td-icon,
+  .td-body {
+    transition:
+      opacity var(--dur-base) var(--ease-out),
+      transform var(--dur-base) var(--ease-out);
+  }
+
+  .td-card[data-pending] > .td-icon,
+  .td-card[data-pending] > .td-body {
+    opacity: 0;
+  }
+
+  .td-card[data-pending] > .td-icon {
+    transform: scale(0.96);
+  }
+
+  .td-card[data-pending] > .td-body {
+    transform: translateY(4px);
+  }
+
   .td-icon::before {
     content: '';
     position: absolute;
@@ -974,10 +1049,63 @@ const stats = [
     --el: var(--el-dragon);
   }
 
+  .td-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-3) var(--space-5);
+  }
+
   .td-more {
     color: var(--c-accent);
     font-weight: 600;
     text-decoration: none;
+  }
+
+  .td-reroll {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 14px;
+    border: 1px solid var(--c-line-strong);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--c-text-2);
+    font: inherit;
+    font-size: var(--text-sm);
+    cursor: pointer;
+    transition:
+      color var(--dur-fast),
+      border-color var(--dur-fast),
+      background-color var(--dur-fast);
+  }
+
+  .td-reroll[hidden] {
+    display: none;
+  }
+
+  .td-reroll:hover {
+    border-color: var(--c-accent);
+    background: color-mix(in oklab, var(--c-accent) 8%, transparent);
+    color: var(--c-text);
+  }
+
+  .td-reroll:focus-visible {
+    outline: 2px solid var(--c-focus);
+    outline-offset: 2px;
+  }
+
+  .td-reroll svg {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: transform var(--dur-base) var(--ease-out);
+  }
+
+  .td-reroll:hover svg {
+    transform: rotate(90deg);
   }
 
   /* ---------- 图鉴长卷 ---------- */
@@ -1166,6 +1294,12 @@ const stats = [
     .hx-scroll span,
     .td-icon::before {
       animation: none;
+    }
+
+    .td-card[data-pending] > .td-icon,
+    .td-card[data-pending] > .td-body,
+    .td-reroll:hover svg {
+      transform: none;
     }
 
     .mq-track {
