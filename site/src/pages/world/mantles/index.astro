@@ -1,0 +1,89 @@
+---
+import SiteLayout from '../../../layouts/SiteLayout.astro';
+import { loadMantles } from '../../../data/world/load';
+import { mantleIconUrl, socketIconUrl } from '../../../lib/world/encyclopedia';
+
+const mantles = [...loadMantles()].sort((a, b) => a.sort - b.sort);
+const lines = (t?: string) => (t ?? '').replace(/\n/g, '');
+---
+
+<SiteLayout
+  title="衣装"
+  current="encyclopedia"
+  description="怪物猎人：世界 冰原 衣装与烟筒一览：效果说明、强化后名称、镶嵌槽"
+>
+  <nav class="s-crumbs" aria-label="位置">
+    <a href="/world/encyclopedia/">百科</a>
+    <span>衣装</span>
+  </nav>
+  <div class="s-head">
+    <h1>
+      衣装 <span class="b-label">{mantles.length} 件</span>
+    </h1>
+    <p>衣装与烟筒的效果说明（游戏内文本）、强化后的名称与镶嵌槽。</p>
+  </div>
+  <ul class="mt-list">
+    {mantles.map((m) => (
+      <li class="mt-card">
+        <img src={mantleIconUrl(m.icon.id, m.icon.color)} alt="" width="40" height="40" loading="lazy" />
+        <div>
+          <h2>
+            {m.name['zh-Hans']}
+            {m.upgradedName?.['zh-Hans'] && <small>强化后：{m.upgradedName['zh-Hans']}</small>}
+          </h2>
+          {m.desc?.['zh-Hans'] && <p>{lines(m.desc['zh-Hans'])}</p>}
+        </div>
+        <span class="mt-slots">
+          {m.slots.map((s) => (
+            <img src={socketIconUrl(s)} alt={`${s} 级槽`} width="20" height="20" />
+          ))}
+        </span>
+      </li>
+    ))}
+  </ul>
+  <p class="s-note">
+    数据来源：<code>common/equip/a_skill.ask</code> 与衣装说明文本。
+  </p>
+</SiteLayout>
+
+<style>
+  .mt-list {
+    display: grid;
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .mt-card {
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr) auto;
+    align-items: start;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius);
+    background: var(--c-surface);
+    box-shadow: inset 0 0 0 1px var(--c-line);
+  }
+
+  .mt-card h2 {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--space-2);
+    font-size: var(--text-md);
+    font-weight: 700;
+  }
+
+  .mt-card small {
+    color: var(--c-text-3);
+    font-size: var(--text-xs);
+    font-weight: 400;
+  }
+
+  .mt-card p {
+    margin-top: 2px;
+    color: var(--c-text-2);
+    font-size: var(--text-sm);
+  }
+</style>

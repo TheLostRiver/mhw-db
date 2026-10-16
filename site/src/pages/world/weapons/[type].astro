@@ -1,0 +1,263 @@
+---
+import SiteLayout from '../../../layouts/SiteLayout.astro';
+import FilterBox from '../../../components/site/FilterBox.astro';
+import { loadColors, loadConstants, loadSkills, loadWeapons } from '../../../data/world/load';
+import { RANGED, type Weapon, type WeaponType } from '../../../data/world/schema';
+import { SHARPNESS_COLORS, sharpnessBar } from '../../../lib/world/builder';
+import { ELDERSEAL, ELEMENT_NAMES, socketIconUrl } from '../../../lib/world/encyclopedia';
+import { WEAPON_ORDER, WEAPON_TYPE_NAMES, weaponIconUrl } from '../../../lib/world/weapons';
+
+export function getStaticPaths() {
+  return WEAPON_ORDER.map((type) => ({ params: { type } }));
+}
+
+const type = Astro.params.type as WeaponType;
+const title = WEAPON_TYPE_NAMES[type];
+const weapons = loadWeapons(type).filter((w) => w.duplicateOf == null);
+const bloat = loadConstants().weaponBloat[type];
+const rarityColors = loadColors().rarity;
+const skillNames = new Map(loadSkills().map((s) => [s.id, s.name['zh-Hans']]));
+const rarities = [...new Set(weapons.map((w) => w.rarity))].sort((a, b) => a - b);
+const ranged = RANGED.has(type);
+const element = (e: Weapon['element']) => (e ? `${ELEMENT_NAMES[e.type] ?? e.type} ${e.value * 10}` : '');
+const FULL = 400;
+---
+
+<SiteLayout
+  title={`${title} · 武器`}
+  current="encyclopedia"
+  description={`怪物猎人：世界 冰原 ${title}一览：攻击力、会心率、属性、锐利度、镶嵌槽`}
+  wide
+>
+  <nav class="s-crumbs" aria-label="位置">
+    <a href="/world/encyclopedia/">百科</a>
+    <a href="/world/weapons/">武器</a>
+    <span>{title}</span>
+  </nav>
+  <div class="s-head">
+    <h1>
+      {title} <span class="b-label">{weapons.length} 把</span>
+    </h1>
+    <p>
+      攻击力为显示值（真实值 × {bloat}），属性为显示值；括号里的属性需要「属性解放」类技能。
+      {!ranged && '锐利度条上层为不带匠、下层为匠 5 的长度（按配装器的推断规则，见配装器说明）。'}
+    </p>
+  </div>
+
+  <nav class="s-tabs" aria-label="武器种类">
+    {WEAPON_ORDER.map((w) => (
+      <a href={`/world/weapons/${w}/`} aria-current={w === type ? 'page' : undefined}>
+        <img src={weaponIconUrl(w, 0)} alt="" width="22" height="22" loading="lazy" />
+        {WEAPON_TYPE_NAMES[w]}
+      </a>
+    ))}
+  </nav>
+
+  <FilterBox label="按武器名筛选" placeholder="按武器名筛选（中文、日文、英文）" />
+
+  {rarities.map((r) => (
+    <section class="s-section" data-filter-section>
+      <h2 style={`--rarity: ${rarityColors[r - 1]}`} class="wp-rarity">
+        稀有度 {r}
+      </h2>
+      <div class="s-table-wrap wp-wrap">
+        <table class="s-table">
+          <thead>
+            <tr>
+              <th class="s-left">武器</th>
+              <th>攻击</th>
+              <th>会心</th>
+              <th>属性</th>
+              {!ranged && <th class="s-left">锐利度</th>}
+              <th>镶嵌槽</th>
+              <th>防御</th>
+              <th>龙封力</th>
+              <th class="s-left">技能</th>
+            </tr>
+          </thead>
+          <tbody>
+            {weapons
+              .filter((w) => w.rarity === r)
+              .map((w) => {
+                const base = w.sharpness
+                  ? sharpnessBar(w.sharpness.bars, w.sharpness.handicraftSteps, 0)
+                  : null;
+                const max = w.sharpness
+                  ? sharpnessBar(w.sharpness.bars, w.sharpness.handicraftSteps, 5)
+                  : null;
+                return (
+                  <tr
+                    data-filter-row
+                    data-text={[w.name['zh-Hans'], w.name.ja, w.name.en]
+                      .filter(Boolean)
+                      .join(' ')
+                      .toLowerCase()}
+                  >
+                    <td class="s-left wp-name">
+                      <span class="s-icon-cell">
+                        <img
+                          src={weaponIconUrl(type, w.rarity)}
+                          alt=""
+                          width="28"
+                          height="28"
+                          loading="lazy"
+                        />
+                        <span title={w.desc?.['zh-Hans']}>{w.name['zh-Hans']}</span>
+                      </span>
+                    </td>
+                    <td class="s-num wp-strong">{Math.round(w.attack * bloat)}</td>
+                    <td class:list={['s-num', { 's-hot': w.affinity > 0, 's-dim': w.affinity === 0 }]}>
+                      {w.affinity > 0 ? `+${w.affinity}` : w.affinity}%
+                    </td>
+                    <td class="s-num">
+                      {w.element && (
+                        <span class={`wp-el wp-el--${w.element.type}`}>{element(w.element)}</span>
+                      )}
+                      {w.hiddenElement && (
+                        <span class={`wp-el wp-el--${w.hiddenElement.type} wp-hidden`}>
+                          （{element(w.hiddenElement)}）
+                        </span>
+                      )}
+                      {!w.element && !w.hiddenElement && <span class="s-dim">—</span>}
+                    </td>
+                    {!ranged && (
+                      <td class="s-left">
+                        {base && max ? (
+                          <span
+                            class="wp-sharp"
+                            aria-label={`锐利度长度 ${base.length}，匠 5 时 ${max.length}`}
+                          >
+                            {[base, max].map((bar) => (
+                              <span class="wp-sharp__bar">
+                                {bar.segments.map((len, i) =>
+                                  len > 0 ? (
+                                    <span
+                                      style={`width:${(len / FULL) * 100}%;background:var(--sharp-${SHARPNESS_COLORS[i]})`}
+                                    />
+                                  ) : null,
+                                )}
+                              </span>
+                            ))}
+                          </span>
+                        ) : (
+                          <span class="s-dim">—</span>
+                        )}
+                      </td>
+                    )}
+                    <td class="wp-slots">
+                      {w.slots.length ? (
+                        w.slots.map((s) => (
+                          <img src={socketIconUrl(s)} alt={`${s} 级槽`} width="20" height="20" />
+                        ))
+                      ) : (
+                        <span class="s-dim">—</span>
+                      )}
+                    </td>
+                    <td class="s-num">{w.defense || <span class="s-dim">—</span>}</td>
+                    <td>{w.elderseal ? ELDERSEAL[w.elderseal] : <span class="s-dim">—</span>}</td>
+                    <td class="s-left">
+                      {w.skill != null ? skillNames.get(w.skill) : <span class="s-dim">—</span>}
+                    </td>
+                  </tr>
+                );
+              })}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  ))}
+
+  <p class="s-note">
+    数据来源：<code>common/equip/*.wp_dat</code>（近战）、<code>*.wp_dat_g</code>（远程）、
+    <code>common/equip/kireaji.kire</code>（锐利度）；
+    武器倍率取自游戏程序数据。龙封力「大」已核对，「小」「中」按顺序推断。
+  </p>
+</SiteLayout>
+
+<style>
+  .wp-rarity::before {
+    content: '';
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    background: var(--rarity);
+    align-self: center;
+  }
+
+  .wp-wrap {
+    max-height: none;
+  }
+
+  .wp-name {
+    min-width: 200px;
+  }
+
+  .wp-strong {
+    color: var(--c-text);
+    font-weight: 700;
+  }
+
+  .wp-el--fire {
+    color: var(--el-fire);
+  }
+
+  .wp-el--water {
+    color: var(--el-water);
+  }
+
+  .wp-el--ice {
+    color: var(--el-ice);
+  }
+
+  .wp-el--thunder {
+    color: var(--el-thunder);
+  }
+
+  .wp-el--dragon {
+    color: var(--el-dragon);
+  }
+
+  .wp-el--poison {
+    color: var(--st-poison);
+  }
+
+  .wp-el--paralysis {
+    color: var(--st-para);
+  }
+
+  .wp-el--sleep {
+    color: var(--st-sleep);
+  }
+
+  .wp-el--blast {
+    color: var(--st-blast);
+  }
+
+  .wp-hidden {
+    opacity: 0.75;
+  }
+
+  .wp-sharp {
+    display: grid;
+    gap: 2px;
+    width: 140px;
+  }
+
+  .wp-sharp__bar {
+    display: flex;
+    height: 6px;
+    border-radius: 1px;
+    background: var(--c-surface-2);
+    box-shadow: inset 0 0 0 1px var(--c-line);
+    overflow: hidden;
+  }
+
+  .wp-sharp__bar + .wp-sharp__bar {
+    height: 4px;
+    opacity: 0.8;
+  }
+
+  .wp-slots img {
+    vertical-align: middle;
+  }
+</style>

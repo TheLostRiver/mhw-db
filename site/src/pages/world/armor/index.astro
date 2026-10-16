@@ -1,0 +1,40 @@
+---
+import SiteLayout from '../../../layouts/SiteLayout.astro';
+import { loadArmor } from '../../../data/world/load';
+import { equipIconUrl } from '../../../lib/world/encyclopedia';
+
+const armor = loadArmor();
+const rarities = [...new Set(armor.map((a) => a.rarity))].sort((a, b) => a - b);
+const rank = (r: number) => (r <= 4 ? '下位' : r <= 8 ? '上位' : '大师级');
+---
+
+<SiteLayout
+  title="防具"
+  current="encyclopedia"
+  description="怪物猎人：世界 冰原 防具一览（按稀有度）：防御力、耐性、镶嵌槽、技能、套装技能"
+>
+  <nav class="s-crumbs" aria-label="位置">
+    <a href="/world/encyclopedia/">百科</a>
+    <span>防具</span>
+  </nav>
+  <div class="s-head">
+    <h1>
+      防具 <span class="b-label">{armor.length} 件</span>
+    </h1>
+    <p>按稀有度分页，每页按系列列出防御力、耐性、镶嵌槽、技能与套装技能。</p>
+  </div>
+  <ul class="s-grid">
+    {rarities.map((r) => (
+      <li>
+        <a class="s-card" href={`/world/armor/${r}/`}>
+          <img src={equipIconUrl('chest', r)} alt="" width="44" height="44" loading="lazy" />
+          <strong>稀有度 {r}</strong>
+          <small>
+            {rank(r)} · {armor.filter((a) => a.rarity === r).length} 件
+          </small>
+        </a>
+      </li>
+    ))}
+  </ul>
+  <p class="s-note">「下位 / 上位 / 大师级」按稀有度 1–4 / 5–8 / 9–12 划分，仅作导航。</p>
+</SiteLayout>

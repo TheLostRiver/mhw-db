@@ -1,79 +1,197 @@
 ---
-import '@fontsource-variable/noto-sans-sc';
-import '@fontsource-variable/noto-serif-sc';
-import '../styles/tokens.css';
-import '../styles/base.css';
-import ThemeScript from '../components/design/ThemeScript.astro';
-import { disclaimer } from '../data/design-mock';
+import SiteLayout from '../layouts/SiteLayout.astro';
+import { loadMeta, loadMonsters, loadMoves, loadMaps } from '../data/world/load';
+import { weaponIconUrl } from '../lib/world/weapons';
+
+const meta = loadMeta();
+const tools = [
+  {
+    href: '/world/builder/',
+    title: '配装器',
+    desc: '贴近游戏装备界面的手动配装，按想要的技能自动搜索组合；含自定义强化、冥赤龙觉醒。',
+    icon: '/assets/game/world/equip/chest-10.webp',
+  },
+  {
+    href: '/world/damage/',
+    title: '伤害计算',
+    desc: '武器数值 × 招式动作值 × 怪物肉质，算物理、属性与期望伤害；可直接导入当前配装。',
+    icon: weaponIconUrl('great-sword', 10),
+  },
+  {
+    href: '/world/monsters/',
+    title: '怪物',
+    desc: `${loadMonsters().filter((m) => m.name).length} 种大型怪物的肉质、部位怯缩值、切断值、异常耐性与弱点星级。`,
+    icon: '/assets/game/world/monster/em002.webp',
+  },
+  {
+    href: '/world/moves/',
+    title: '武器招式',
+    desc: `${loadMoves().length} 条攻击参数：动作值、属性 / 异常补正、卡肉、眩晕、减气、骑乘。`,
+    icon: weaponIconUrl('dual-blades', 10),
+  },
+  {
+    href: '/world/maps/',
+    title: '交互地图',
+    desc: `${loadMaps().length} 张地图的采集点、营地、环境生物、钓点与寻宝线索，点标记看掉落与概率。`,
+    icon: '/assets/game/world/ui/treasure.webp',
+  },
+  {
+    href: '/world/encyclopedia/',
+    title: '百科',
+    desc: '武器、防具、护石、饰品、技能、衣装、道具一览，全部来自游戏数据。',
+    icon: '/assets/game/world/skill/5.webp',
+  },
+];
+const built = meta.extractedAt?.slice(0, 10);
 ---
 
-<!doctype html>
-<html lang="zh-CN">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="怪物猎人系列资料站，建设中。" />
-    <title>mhw-db · 建设中</title>
-    <ThemeScript />
-    <style is:global>
-      :root {
-        --c-bg: #f2f1ee;
-        --c-text: #16181b;
-        --c-focus: #16181b;
-        --c-accent-soft: rgb(0 0 0 / 0.1);
-        --font-body: 'Noto Sans SC Variable', sans-serif;
-      }
-      html[data-theme='dark'] {
-        --c-bg: #121315;
-        --c-text: #eceef0;
-        --c-focus: #eceef0;
-      }
-    </style>
-  </head>
-  <body>
-    <main>
-      <h1>mhw-db</h1>
-      <p>怪物猎人：世界 冰原 资料与工具站，建设中。</p>
-      <p>
-        <a href="/world/builder/">配装器（v0）→</a>
-      </p>
-      <p>
-        <a href="/design/">视觉方向静态稿 →</a>
-      </p>
-    </main>
-    <footer>{disclaimer}</footer>
-    <style>
-      body {
-        display: grid;
-        grid-template-rows: 1fr auto;
-        min-height: 100dvh;
-        padding: 24px;
-      }
-      main {
-        align-self: center;
-        justify-self: center;
-        text-align: center;
-      }
-      h1 {
-        font-family: 'Noto Serif SC Variable', serif;
-        font-weight: 800;
-        font-size: 3rem;
-      }
-      p {
-        margin-top: 8px;
-        opacity: 0.75;
-      }
-      a {
-        text-decoration: underline;
-        text-underline-offset: 4px;
-      }
-      footer {
-        max-width: 60em;
-        margin-inline: auto;
-        font-size: 12px;
-        opacity: 0.6;
-        text-align: center;
-      }
-    </style>
-  </body>
-</html>
+<SiteLayout
+  title="首页"
+  current="home"
+  description="怪物猎人：世界 冰原 资料站与工具：配装器、伤害计算、怪物肉质、武器招式、交互地图、百科（非官方）"
+>
+  <section class="home-hero">
+    <p class="b-label">Monster Hunter World: Iceborne</p>
+    <h1>
+      怪物猎人：世界 冰原
+      <br />
+      资料与工具
+    </h1>
+    <p>数值与文本都由本站从游戏文件解包整理，每页注明来源；推断或未确认的地方会标出来。</p>
+  </section>
+
+  <ul class="home-grid">
+    {tools.map((t) => (
+      <li>
+        <a class="home-card" href={t.href}>
+          <img src={t.icon} alt="" width="56" height="56" />
+          <h2>{t.title}</h2>
+          <p>{t.desc}</p>
+        </a>
+      </li>
+    ))}
+  </ul>
+
+  <section class="home-meta">
+    <dl>
+      <div>
+        <dt>数据版本</dt>
+        <dd>Steam 构建 {meta.steamBuildId ?? '—'}</dd>
+      </div>
+      {built && (
+        <div>
+          <dt>解包日期</dt>
+          <dd>{built}</dd>
+        </div>
+      )}
+      <div>
+        <dt>语言</dt>
+        <dd>简体中文（游戏内文本），附日文 / 英文原名</dd>
+      </div>
+    </dl>
+  </section>
+</SiteLayout>
+
+<style>
+  .home-hero {
+    max-width: 52rem;
+    padding: var(--space-8) 0 var(--space-6);
+  }
+
+  .home-hero h1 {
+    margin: var(--space-2) 0 var(--space-3);
+    font-size: var(--text-4xl);
+    font-weight: 800;
+    line-height: var(--leading-tight);
+    letter-spacing: -0.01em;
+  }
+
+  .home-hero p:last-child {
+    max-width: 40em;
+    color: var(--c-text-2);
+  }
+
+  .home-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: var(--space-3);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .home-card {
+    display: grid;
+    grid-template-columns: 56px minmax(0, 1fr);
+    gap: var(--space-1) var(--space-4);
+    height: 100%;
+    padding: var(--space-5);
+    border-radius: var(--radius);
+    background: var(--c-surface);
+    box-shadow: inset 0 0 0 1px var(--c-line);
+    color: inherit;
+    text-decoration: none;
+    transition:
+      box-shadow var(--dur-fast),
+      transform var(--dur-base) var(--ease-out);
+  }
+
+  .home-card:hover {
+    box-shadow:
+      inset 0 0 0 1px var(--c-accent),
+      var(--shadow-pop);
+    transform: translateY(-2px);
+  }
+
+  .home-card:focus-visible {
+    outline: 2px solid var(--c-focus);
+    outline-offset: 2px;
+  }
+
+  .home-card img {
+    grid-row: 1 / span 2;
+    width: 56px;
+    height: 56px;
+  }
+
+  .home-card h2 {
+    font-size: var(--text-lg);
+    font-weight: 700;
+  }
+
+  .home-card p {
+    color: var(--c-text-2);
+    font-size: var(--text-sm);
+  }
+
+  .home-meta {
+    margin-top: var(--space-8);
+  }
+
+  .home-meta dl {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3) var(--space-8);
+    margin: 0;
+  }
+
+  .home-meta dt {
+    color: var(--c-text-3);
+    font-size: var(--text-xs);
+  }
+
+  .home-meta dd {
+    margin: 0;
+    font-weight: 600;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .home-card {
+      transition: none;
+    }
+
+    .home-card:hover {
+      transform: none;
+    }
+  }
+</style>

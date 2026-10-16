@@ -1,0 +1,141 @@
+---
+import SiteLayout from '../../../layouts/SiteLayout.astro';
+import {
+  loadArmor,
+  loadCharms,
+  loadDecorations,
+  loadItems,
+  loadMantles,
+  loadMaps,
+  loadMonsters,
+  loadMoves,
+  loadSkills,
+  loadWeapons,
+} from '../../../data/world/load';
+import { WEAPON_TYPES } from '../../../data/world/schema';
+import { ITEM_TYPES, equipIconUrl } from '../../../lib/world/encyclopedia';
+import { weaponIconUrl } from '../../../lib/world/weapons';
+
+const items = loadItems();
+const weaponCount = WEAPON_TYPES.reduce(
+  (s, t) => s + loadWeapons(t).filter((w) => w.duplicateOf == null).length,
+  0,
+);
+const groups = [
+  {
+    title: '怪物与地图',
+    cards: [
+      {
+        href: '/world/monsters/',
+        label: '怪物',
+        note: `${loadMonsters().filter((m) => m.name).length} 种 · 肉质、部位、异常耐性`,
+        icon: '/assets/game/world/monster/em001.webp',
+      },
+      {
+        href: '/world/maps/',
+        label: '地图',
+        note: `${loadMaps().length} 张 · 采集点、环境生物、钓点`,
+        icon: '/assets/game/world/ui/treasure.webp',
+      },
+    ],
+  },
+  {
+    title: '武器',
+    cards: [
+      {
+        href: '/world/weapons/',
+        label: '武器',
+        note: `${weaponCount} 把 · 攻击、会心、属性、锐利度`,
+        icon: weaponIconUrl('long-sword', 8),
+      },
+      {
+        href: '/world/moves/',
+        label: '武器招式',
+        note: `${loadMoves().length} 条 · 动作值、补正、卡肉`,
+        icon: weaponIconUrl('dual-blades', 8),
+      },
+    ],
+  },
+  {
+    title: '防具与技能',
+    cards: [
+      {
+        href: '/world/armor/',
+        label: '防具',
+        note: `${loadArmor().length} 件 · 防御、耐性、技能`,
+        icon: equipIconUrl('head', 8),
+      },
+      {
+        href: '/world/charms/',
+        label: '护石',
+        note: `${loadCharms().length} 个`,
+        icon: equipIconUrl('charm', 8),
+      },
+      {
+        href: '/world/decorations/',
+        label: '饰品',
+        note: `${loadDecorations().length} 种`,
+        icon: '/assets/game/world/deco/4-1.webp',
+      },
+      {
+        href: '/world/skills/',
+        label: '技能',
+        note: `${loadSkills().length} 个 · 每级效果、来源`,
+        icon: '/assets/game/world/skill/5.webp',
+      },
+      {
+        href: '/world/mantles/',
+        label: '衣装',
+        note: `${loadMantles().length} 件`,
+        icon: '/assets/game/world/mantle/empty.webp',
+      },
+    ],
+  },
+  {
+    title: '道具',
+    cards: ITEM_TYPES.map((t) => {
+      const first = items.find(
+        (i) => i.type === t.type && i.rarity > 0 && !i.name['zh-Hans'].startsWith('－'),
+      );
+      return {
+        href: `/world/items/${t.slug}/`,
+        label: t.label,
+        note: `${items.filter((i) => i.type === t.type).length} 种 · ${t.note}`,
+        icon: first ? `/assets/game/world/item/${first.icon.id}-${first.icon.color}.webp` : '',
+      };
+    }),
+  },
+];
+---
+
+<SiteLayout
+  title="百科"
+  current="encyclopedia"
+  description="怪物猎人：世界 冰原 资料百科：怪物、地图、武器、招式、防具、护石、饰品、技能、衣装、道具"
+>
+  <div class="s-head">
+    <h1>
+      百科 <span class="b-label">数据均来自游戏文件</span>
+    </h1>
+    <p>
+      各类资料的目录。数值与文本都由本站从游戏数据解包整理（简体中文为游戏内文本），每页底部注明来源文件；
+      推断或未确认的字段会在页面上标出。
+    </p>
+  </div>
+  {groups.map((g) => (
+    <section class="s-section">
+      <h2>{g.title}</h2>
+      <ul class="s-grid">
+        {g.cards.map((c) => (
+          <li>
+            <a class="s-card" href={c.href}>
+              {c.icon ? <img src={c.icon} alt="" width="44" height="44" loading="lazy" /> : <span />}
+              <strong>{c.label}</strong>
+              <small>{c.note}</small>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
+  ))}
+</SiteLayout>

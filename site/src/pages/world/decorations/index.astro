@@ -1,0 +1,94 @@
+---
+import SiteLayout from '../../../layouts/SiteLayout.astro';
+import FilterBox from '../../../components/site/FilterBox.astro';
+import { loadDecorations, loadSkills } from '../../../data/world/load';
+import { decoIconUrl } from '../../../lib/world/encyclopedia';
+
+const decos = loadDecorations();
+const skills = new Map(loadSkills().map((s) => [s.id, s.name['zh-Hans']]));
+const sizes = [1, 2, 3, 4];
+---
+
+<SiteLayout
+  title="饰品"
+  current="encyclopedia"
+  description="怪物猎人：世界 冰原 饰品（珠子）一览：等级、稀有度、技能"
+  wide
+>
+  <nav class="s-crumbs" aria-label="位置">
+    <a href="/world/encyclopedia/">百科</a>
+    <span>饰品</span>
+  </nav>
+  <div class="s-head">
+    <h1>
+      饰品 <span class="b-label">{decos.length} 种</span>
+    </h1>
+    <p>按饰品等级（能放进几级的镶嵌槽）分组；4 级饰品可带两个技能。</p>
+  </div>
+  <FilterBox label="按饰品名或技能筛选" placeholder="按饰品名或技能筛选" />
+  {sizes.map((size) => (
+    <section class="s-section" data-filter-section>
+      <h2>
+        {size} 级饰品 <span class="b-label">{decos.filter((d) => d.size === size).length} 种</span>
+      </h2>
+      <div class="s-table-wrap de-wrap">
+        <table class="s-table">
+          <thead>
+            <tr>
+              <th class="s-left">饰品</th>
+              <th>稀有度</th>
+              <th class="s-left">技能</th>
+            </tr>
+          </thead>
+          <tbody>
+            {decos
+              .filter((d) => d.size === size)
+              .sort((a, b) => a.rarity - b.rarity || a.id - b.id)
+              .map((d) => {
+                const names = d.skills.map((s) => `${skills.get(s.id) ?? `#${s.id}`} Lv${s.level}`);
+                return (
+                  <tr
+                    data-filter-row
+                    data-text={[d.name['zh-Hans'], d.name.ja, d.name.en, ...names]
+                      .filter(Boolean)
+                      .join(' ')
+                      .toLowerCase()}
+                  >
+                    <td class="s-left de-name">
+                      <span class="s-icon-cell">
+                        <img
+                          src={decoIconUrl(d.size, d.icon.color)}
+                          alt=""
+                          width="26"
+                          height="26"
+                          loading="lazy"
+                        />
+                        {d.name['zh-Hans']}
+                      </span>
+                    </td>
+                    <td class="s-num">{d.rarity}</td>
+                    <td class="s-left">{names.join('、')}</td>
+                  </tr>
+                );
+              })}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  ))}
+  <p class="s-note">
+    数据来源：<code>common/item/skillGemParam.sgpa</code>；名字为游戏内文本。
+  </p>
+</SiteLayout>
+
+<style>
+  .de-wrap {
+    max-height: none;
+    width: fit-content;
+    max-width: 100%;
+  }
+
+  .de-name {
+    min-width: 220px;
+  }
+</style>

@@ -1,0 +1,562 @@
+/* 伤害计算器：左侧输入（武器、技能、招式），右侧怪物与结果；下方两张对比表横跨两栏 */
+
+.dc {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: var(--space-4);
+  align-items: start;
+}
+
+.dc-inputs,
+.dc-side {
+  display: grid;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.dc-wide {
+  grid-column: 1 / -1;
+}
+
+.dc-card {
+  padding: var(--space-4);
+  border-radius: var(--radius);
+  background: var(--c-surface);
+  box-shadow: inset 0 0 0 1px var(--c-line);
+  min-width: 0;
+}
+
+.dc-card__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.dc-card__head h2 {
+  margin-right: auto;
+  font-size: var(--text-md);
+  font-weight: 700;
+}
+
+.dc-btn {
+  padding: 6px 12px;
+  border: 1px solid var(--c-accent);
+  border-radius: var(--radius);
+  background: var(--c-accent-soft);
+  color: var(--c-text);
+  font: inherit;
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: background-color var(--dur-fast);
+}
+
+.dc-btn:hover {
+  background: color-mix(in srgb, var(--c-accent) 28%, transparent);
+}
+
+.dc-note {
+  margin-bottom: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-left: 2px solid var(--c-accent);
+  background: var(--c-surface-2);
+  color: var(--c-text-2);
+  font-size: var(--text-sm);
+}
+
+.dc button:focus-visible,
+.dc input:focus-visible,
+.dc select:focus-visible {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 1px;
+}
+
+/* 武器种类 */
+.dc-weapons {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+  margin-bottom: var(--space-4);
+}
+
+.dc-weapons button {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  padding: 6px 2px;
+  border: 0;
+  border-radius: calc(var(--radius) - 2px);
+  background: var(--c-surface-2);
+  color: var(--c-text-2);
+  font: inherit;
+  font-size: var(--text-2xs);
+  cursor: pointer;
+  transition:
+    background-color var(--dur-fast),
+    color var(--dur-fast),
+    box-shadow var(--dur-fast);
+}
+
+.dc-weapons button:hover {
+  color: var(--c-text);
+}
+
+.dc-weapons button[aria-checked='true'] {
+  background: var(--c-accent-soft);
+  color: var(--c-text);
+  box-shadow: inset 0 0 0 1px var(--c-accent);
+}
+
+.dc-weapons span {
+  white-space: nowrap;
+}
+
+/* 数值输入 */
+.dc-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.dc-fields label {
+  display: grid;
+  gap: 4px;
+  font-size: var(--text-sm);
+}
+
+.dc-fields label > span {
+  color: var(--c-text-2);
+}
+
+.dc-fields small {
+  color: var(--c-text-3);
+  font-size: var(--text-2xs);
+}
+
+.dc input[type='number'],
+.dc select,
+.dc-search {
+  width: 100%;
+  padding: 7px 10px;
+  border: 1px solid var(--c-line-strong);
+  border-radius: calc(var(--radius) - 2px);
+  background: var(--c-bg);
+  color: var(--c-text);
+  font: inherit;
+  font-family: var(--font-num);
+}
+
+.dc input:disabled {
+  opacity: 0.5;
+}
+
+.dc-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.dc-row__label {
+  min-width: 5em;
+  color: var(--c-text-2);
+  font-size: var(--text-sm);
+}
+
+.dc-check {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+  color: var(--c-text-2);
+  font-size: var(--text-sm);
+}
+
+/* 分段按钮 */
+.dc-seg {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  padding: 3px;
+  border-radius: var(--radius);
+  background: var(--c-surface-2);
+}
+
+.dc-seg button {
+  padding: 4px 10px;
+  border: 0;
+  border-radius: calc(var(--radius) - 3px);
+  background: none;
+  color: var(--c-text-2);
+  font: inherit;
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition:
+    background-color var(--dur-fast),
+    color var(--dur-fast);
+}
+
+.dc-seg button[aria-checked='true'] {
+  background: var(--c-accent-soft);
+  color: var(--c-text);
+  box-shadow: inset 0 0 0 1px var(--c-accent);
+}
+
+/* 锐利度 */
+.dc-sharp {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.dc-sharp button {
+  position: relative;
+  min-width: 38px;
+  padding: 4px 8px 8px;
+  border: 0;
+  border-radius: calc(var(--radius) - 3px);
+  background: var(--c-surface-2);
+  color: var(--c-text-2);
+  font: inherit;
+  font-size: var(--text-sm);
+  cursor: pointer;
+}
+
+.dc-sharp button::after {
+  content: '';
+  position: absolute;
+  inset: auto 6px 3px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--sharp);
+}
+
+.dc-sharp button[aria-checked='true'] {
+  color: var(--c-text);
+  box-shadow: inset 0 0 0 1px var(--sharp);
+}
+
+.dc-sharp--red {
+  --sharp: var(--sharp-red);
+}
+
+.dc-sharp--orange {
+  --sharp: var(--sharp-orange);
+}
+
+.dc-sharp--yellow {
+  --sharp: var(--sharp-yellow);
+}
+
+.dc-sharp--green {
+  --sharp: var(--sharp-green);
+}
+
+.dc-sharp--blue {
+  --sharp: var(--sharp-blue);
+}
+
+.dc-sharp--white {
+  --sharp: var(--sharp-white);
+}
+
+.dc-sharp--purple {
+  --sharp: var(--sharp-purple);
+}
+
+/* 招式列表 */
+.dc-search {
+  margin-bottom: var(--space-2);
+  font-family: inherit;
+}
+
+.dc-list,
+.dc-monsters {
+  max-height: 320px;
+  margin: 0;
+  padding: 0;
+  overflow: auto;
+  list-style: none;
+  scrollbar-width: thin;
+}
+
+.dc-list button {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  width: 100%;
+  padding: 6px 10px;
+  border: 0;
+  border-radius: calc(var(--radius) - 3px);
+  background: none;
+  color: var(--c-text);
+  font: inherit;
+  font-size: var(--text-sm);
+  text-align: left;
+  cursor: pointer;
+}
+
+.dc-list button:hover {
+  background: var(--c-surface-2);
+}
+
+.dc-list button[aria-pressed='true'] {
+  background: var(--c-accent-soft);
+  box-shadow: inset 2px 0 0 var(--c-accent);
+}
+
+.dc-list__meta {
+  flex: none;
+  color: var(--c-text-3);
+  font-family: var(--font-num);
+  font-size: var(--text-xs);
+}
+
+.dc-empty {
+  padding: var(--space-3);
+  color: var(--c-text-3);
+}
+
+/* 怪物 */
+.dc-monsters {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 2px;
+  max-height: 240px;
+  margin-bottom: var(--space-3);
+}
+
+.dc-monsters button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 3px 6px;
+  border: 0;
+  border-radius: calc(var(--radius) - 3px);
+  background: none;
+  color: var(--c-text-2);
+  font: inherit;
+  font-size: var(--text-xs);
+  text-align: left;
+  cursor: pointer;
+}
+
+.dc-monsters button span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dc-monsters button:hover {
+  background: var(--c-surface-2);
+  color: var(--c-text);
+}
+
+.dc-monsters button[aria-pressed='true'] {
+  background: var(--c-accent-soft);
+  color: var(--c-text);
+  box-shadow: inset 0 0 0 1px var(--c-accent);
+}
+
+.dc-targets {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 4px;
+}
+
+.dc-targets button {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: 6px 10px;
+  border: 0;
+  border-radius: calc(var(--radius) - 3px);
+  background: var(--c-surface-2);
+  color: var(--c-text-2);
+  font: inherit;
+  font-size: var(--text-sm);
+  text-align: left;
+  cursor: pointer;
+}
+
+.dc-targets button[aria-checked='true'] {
+  background: var(--c-accent-soft);
+  color: var(--c-text);
+  box-shadow: inset 0 0 0 1px var(--c-accent);
+}
+
+.dc-targets em,
+.dc-bar__label em {
+  margin-left: 4px;
+  color: var(--c-amber);
+  font-size: var(--text-2xs);
+  font-style: normal;
+}
+
+.dc-targets__hz {
+  color: var(--c-text-3);
+  font-family: var(--font-num);
+  font-size: var(--text-xs);
+}
+
+/* 结果 */
+.dc-result {
+  box-shadow:
+    inset 0 0 0 1px var(--c-accent),
+    var(--shadow-pop);
+}
+
+.dc-result__meta {
+  margin-bottom: var(--space-3);
+  color: var(--c-text-2);
+  font-size: var(--text-sm);
+}
+
+.dc-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-num);
+  font-variant-numeric: tabular-nums;
+}
+
+.dc-table th,
+.dc-table td {
+  padding: 7px 10px;
+  border-bottom: 1px solid var(--c-line);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.dc-table thead th {
+  color: var(--c-text-2);
+  font-family: var(--font-body, inherit);
+  font-weight: 600;
+}
+
+.dc-table tbody th {
+  color: var(--c-text-2);
+  font-family: var(--font-body, inherit);
+  font-weight: 600;
+  text-align: left;
+}
+
+.dc-table__total td {
+  color: var(--c-text);
+  font-size: var(--text-lg);
+  font-weight: 800;
+}
+
+.dc-table .dc-left {
+  text-align: left;
+  font-family: var(--font-body, inherit);
+}
+
+.dc-table-wrap {
+  max-height: 520px;
+  overflow: auto;
+  scrollbar-width: thin;
+}
+
+.dc-table--moves thead th {
+  position: sticky;
+  top: 0;
+  background: var(--c-surface);
+}
+
+.dc-table--moves tbody tr {
+  cursor: pointer;
+  transition: background-color var(--dur-fast);
+}
+
+.dc-table--moves tbody tr:hover {
+  background: var(--c-surface-2);
+}
+
+.dc-table--moves tr.is-current {
+  background: var(--c-accent-soft);
+}
+
+.dc-strong {
+  color: var(--c-text);
+  font-weight: 800;
+}
+
+/* 各部位对比条 */
+.dc-bars {
+  display: grid;
+  gap: 4px;
+}
+
+.dc-bar {
+  display: grid;
+  grid-template-columns: minmax(7em, 14em) minmax(0, 1fr) 5em;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 4px 8px;
+  border: 0;
+  border-radius: calc(var(--radius) - 3px);
+  background: none;
+  color: var(--c-text-2);
+  font: inherit;
+  font-size: var(--text-sm);
+  text-align: left;
+  cursor: pointer;
+}
+
+.dc-bar:hover,
+.dc-bar[aria-pressed='true'] {
+  background: var(--c-surface-2);
+  color: var(--c-text);
+}
+
+.dc-bar__track {
+  height: 10px;
+  border-radius: 5px;
+  background: var(--c-surface-2);
+  overflow: hidden;
+}
+
+.dc-bar__track span {
+  display: block;
+  height: 100%;
+  border-radius: 5px;
+  background: var(--c-accent);
+  transition: width var(--dur-base) var(--ease-out);
+}
+
+.dc-bar__value {
+  font-family: var(--font-num);
+  text-align: right;
+}
+
+.dc-loading,
+.dc-error {
+  padding: var(--space-6);
+  color: var(--c-text-2);
+}
+
+@media (max-width: 1000px) {
+  .dc {
+    grid-template-columns: 1fr;
+  }
+
+  .dc-bar {
+    grid-template-columns: minmax(4.5em, 7em) minmax(0, 1fr) 4em;
+    gap: var(--space-2);
+  }
+
+  .dc-weapons {
+    grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dc-bar__track span,
+  .dc button {
+    transition: none;
+  }
+}

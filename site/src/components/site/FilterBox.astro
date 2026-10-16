@@ -1,0 +1,42 @@
+---
+/**
+ * 列表页的搜索框：按 data-text 过滤同一页里的 [data-filter-row]，整组都不匹配时隐藏 [data-filter-section]。
+ */
+interface Props {
+  placeholder?: string;
+  label: string;
+}
+const { placeholder = '按名字筛选', label } = Astro.props;
+---
+
+<div class="s-toolbar">
+  <input class="s-search" type="search" placeholder={placeholder} aria-label={label} data-filter-input />
+  <span data-filter-count aria-live="polite"></span>
+</div>
+
+<script>
+  for (const input of document.querySelectorAll<HTMLInputElement>('[data-filter-input]')) {
+    const counter = input.parentElement?.querySelector<HTMLElement>('[data-filter-count]');
+    const rows = [...document.querySelectorAll<HTMLElement>('[data-filter-row]')];
+    const sections = [...document.querySelectorAll<HTMLElement>('[data-filter-section]')];
+    const texts = rows.map((r) => (r.dataset.text ?? r.textContent ?? '').toLowerCase());
+    input.addEventListener('input', () => {
+      const q = input.value.trim().toLowerCase();
+      let shown = 0;
+      rows.forEach((r, i) => {
+        const hit = !q || texts[i]!.includes(q);
+        r.hidden = !hit;
+        if (hit) shown++;
+      });
+      for (const s of sections) s.hidden = !s.querySelector('[data-filter-row]:not([hidden])');
+      if (counter) counter.textContent = q ? `${shown} 条匹配` : '';
+    });
+  }
+</script>
+
+<style is:global>
+  [data-filter-row][hidden],
+  [data-filter-section][hidden] {
+    display: none;
+  }
+</style>

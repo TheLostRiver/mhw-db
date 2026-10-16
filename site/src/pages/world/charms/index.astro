@@ -1,0 +1,72 @@
+---
+import SiteLayout from '../../../layouts/SiteLayout.astro';
+import FilterBox from '../../../components/site/FilterBox.astro';
+import { loadCharms, loadSkills } from '../../../data/world/load';
+import { equipIconUrl } from '../../../lib/world/encyclopedia';
+
+const charms = [...loadCharms()].sort((a, b) => a.order - b.order);
+const skills = new Map(loadSkills().map((s) => [s.id, s.name['zh-Hans']]));
+---
+
+<SiteLayout title="护石" current="encyclopedia" description="怪物猎人：世界 冰原 护石一览：稀有度与技能" wide>
+  <nav class="s-crumbs" aria-label="位置">
+    <a href="/world/encyclopedia/">百科</a>
+    <span>护石</span>
+  </nav>
+  <div class="s-head">
+    <h1>
+      护石 <span class="b-label">{charms.length} 个</span>
+    </h1>
+    <p>全部护石的稀有度与技能（每个强化等级单独一行）。</p>
+  </div>
+  <FilterBox label="按护石名或技能筛选" placeholder="按护石名或技能筛选" />
+  <div class="s-table-wrap ch-wrap">
+    <table class="s-table">
+      <thead>
+        <tr>
+          <th class="s-left">护石</th>
+          <th>稀有度</th>
+          <th class="s-left">技能</th>
+        </tr>
+      </thead>
+      <tbody>
+        {charms.map((c) => {
+          const names = c.skills.map((s) => `${skills.get(s.id) ?? `#${s.id}`} Lv${s.level}`);
+          return (
+            <tr
+              data-filter-row
+              data-text={[c.name['zh-Hans'], c.name.ja, c.name.en, ...names]
+                .filter(Boolean)
+                .join(' ')
+                .toLowerCase()}
+            >
+              <td class="s-left ch-name">
+                <span class="s-icon-cell">
+                  <img src={equipIconUrl('charm', c.rarity)} alt="" width="26" height="26" loading="lazy" />
+                  <span title={c.desc?.['zh-Hans']}>{c.name['zh-Hans']}</span>
+                </span>
+              </td>
+              <td class="s-num">{c.rarity}</td>
+              <td class="s-left">{names.join('、') || <span class="s-dim">—</span>}</td>
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
+  </div>
+  <p class="s-note">
+    数据来源：<code>common/equip/armor.am_dat</code>（护石与防具同表）；名字为游戏内文本。
+  </p>
+</SiteLayout>
+
+<style>
+  .ch-wrap {
+    max-height: none;
+    width: fit-content;
+    max-width: 100%;
+  }
+
+  .ch-name {
+    min-width: 220px;
+  }
+</style>

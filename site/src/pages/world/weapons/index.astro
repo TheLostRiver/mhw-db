@@ -1,0 +1,31 @@
+---
+import SiteLayout from '../../../layouts/SiteLayout.astro';
+import { loadWeapons } from '../../../data/world/load';
+import { WEAPON_ORDER, WEAPON_TYPE_NAMES, weaponIconUrl } from '../../../lib/world/weapons';
+---
+
+<SiteLayout
+  title="武器"
+  current="encyclopedia"
+  description="怪物猎人：世界 冰原 14 种武器一览：攻击力、会心率、属性、锐利度、镶嵌槽"
+>
+  <nav class="s-crumbs" aria-label="位置">
+    <a href="/world/encyclopedia/">百科</a>
+    <span>武器</span>
+  </nav>
+  <div class="s-head">
+    <h1>武器</h1>
+    <p>按武器种类列出全部武器的攻击力（显示值）、会心率、属性、锐利度、镶嵌槽、防御加成与龙封力。</p>
+  </div>
+  <ul class="s-grid">
+    {WEAPON_ORDER.map((w) => (
+      <li>
+        <a class="s-card" href={`/world/weapons/${w}/`}>
+          <img src={weaponIconUrl(w, 8)} alt="" width="44" height="44" loading="lazy" />
+          <strong>{WEAPON_TYPE_NAMES[w]}</strong>
+          <small>{loadWeapons(w).filter((x) => x.duplicateOf == null).length} 把</small>
+        </a>
+      </li>
+    ))}
+  </ul>
+</SiteLayout>

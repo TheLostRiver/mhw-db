@@ -1,0 +1,101 @@
+---
+import SiteLayout from '../../../layouts/SiteLayout.astro';
+import FilterBox from '../../../components/site/FilterBox.astro';
+import { loadItems } from '../../../data/world/load';
+import { ITEM_TYPES, itemIconUrl } from '../../../lib/world/encyclopedia';
+
+export function getStaticPaths() {
+  return ITEM_TYPES.map((t) => ({ params: { type: t.slug } }));
+}
+
+const kind = ITEM_TYPES.find((t) => t.slug === Astro.params.type)!;
+// 名字为占位线（－－－－）的空条目不列出
+const items = loadItems()
+  .filter((i) => i.type === kind.type && !/^[－-]+$/.test(i.name['zh-Hans']))
+  .sort((a, b) => a.sort - b.sort || a.id - b.id);
+const lines = (t?: string) => (t ?? '').replace(/\n/g, '');
+---
+
+<SiteLayout
+  title={`${kind.label} · 道具`}
+  current="encyclopedia"
+  description={`怪物猎人：世界 冰原 ${kind.label}一览：稀有度、携带上限、价格、说明`}
+  wide
+>
+  <nav class="s-crumbs" aria-label="位置">
+    <a href="/world/encyclopedia/">百科</a>
+    <span>{kind.label}</span>
+  </nav>
+  <div class="s-head">
+    <h1>
+      {kind.label} <span class="b-label">{items.length} 种</span>
+    </h1>
+    <p>{kind.note}。稀有度、携带上限、卖出 / 买入价格与游戏内说明。分类名按物品数据的类型字段归纳。</p>
+  </div>
+  <nav class="s-tabs" aria-label="道具分类">
+    {ITEM_TYPES.map((t) => (
+      <a href={`/world/items/${t.slug}/`} aria-current={t.slug === kind.slug ? 'page' : undefined}>
+        {t.label}
+      </a>
+    ))}
+    <a href="/world/decorations/">饰品</a>
+  </nav>
+  <FilterBox label="按名字或说明筛选" placeholder="按名字或说明筛选" />
+  <div class="s-table-wrap it-wrap">
+    <table class="s-table">
+      <thead>
+        <tr>
+          <th class="s-left">名称</th>
+          <th>稀有度</th>
+          <th title="道具箱外最多携带的个数">携带</th>
+          <th>卖出</th>
+          <th>买入</th>
+          <th class="s-left">说明</th>
+        </tr>
+      </thead>
+      <tbody>
+        {items.map((i) => (
+          <tr
+            data-filter-row
+            data-text={[i.name['zh-Hans'], i.name.ja, i.name.en, lines(i.desc?.['zh-Hans'])]
+              .filter(Boolean)
+              .join(' ')
+              .toLowerCase()}
+          >
+            <td class="s-left it-name">
+              <span class="s-icon-cell">
+                <img src={itemIconUrl(i)} alt="" width="26" height="26" loading="lazy" />
+                {i.name['zh-Hans']}
+              </span>
+            </td>
+            <td class="s-num">{i.rarity}</td>
+            <td class="s-num">{i.carry || <span class="s-dim">—</span>}</td>
+            <td class="s-num">{i.price.sell ? `${i.price.sell}z` : <span class="s-dim">—</span>}</td>
+            <td class="s-num">{i.price.buy ? `${i.price.buy}z` : <span class="s-dim">—</span>}</td>
+            <td class="s-left it-desc">{lines(i.desc?.['zh-Hans'])}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+  <p class="s-note">
+    数据来源：<code>common/item/itemData.itm</code> 与物品文本（<code>common/text/steam/item_*</code>）。
+  </p>
+</SiteLayout>
+
+<style>
+  .it-wrap {
+    max-height: none;
+  }
+
+  .it-name {
+    min-width: 200px;
+  }
+
+  .it-desc {
+    min-width: 280px;
+    color: var(--c-text-2);
+    font-size: var(--text-sm);
+    white-space: normal;
+  }
+</style>

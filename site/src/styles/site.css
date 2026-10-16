@@ -210,6 +210,18 @@
   font-size: var(--text-xs);
 }
 
+/* 表格里「图标 + 名字」的单元格：flex 放在内层，td 保持表格单元格的行为 */
+.s-icon-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.s-table td img {
+  display: inline-block;
+  vertical-align: middle;
+}
+
 /* 卡片网格 */
 .s-grid {
   display: grid;

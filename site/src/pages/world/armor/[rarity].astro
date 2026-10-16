@@ -1,0 +1,215 @@
+---
+import SiteLayout from '../../../layouts/SiteLayout.astro';
+import FilterBox from '../../../components/site/FilterBox.astro';
+import { loadArmor, loadColors, loadSkills } from '../../../data/world/load';
+import type { Armor } from '../../../data/world/schema';
+import { SLOT_NAMES, SLOT_ORDER, equipIconUrl, socketIconUrl } from '../../../lib/world/encyclopedia';
+
+export function getStaticPaths() {
+  return [...new Set(loadArmor().map((a) => a.rarity))].map((r) => ({ params: { rarity: String(r) } }));
+}
+
+const rarity = Number(Astro.params.rarity);
+const all = loadArmor();
+const rarities = [...new Set(all.map((a) => a.rarity))].sort((a, b) => a - b);
+const armor = all.filter((a) => a.rarity === rarity);
+const skills = new Map(loadSkills().map((s) => [s.id, s]));
+const color = loadColors().rarity[rarity - 1];
+// 按系列分组（系列编号顺序），组内按部位
+const series = new Map<number, Armor[]>();
+for (const a of [...armor].sort((x, y) => x.order - y.order)) {
+  const list = series.get(a.series.id) ?? [];
+  list.push(a);
+  series.set(a.series.id, list);
+}
+const groups = [...series.values()].map((list) =>
+  list.sort((x, y) => SLOT_ORDER.indexOf(x.slot) - SLOT_ORDER.indexOf(y.slot)),
+);
+const skillText = (id: number, level: number) => `${skills.get(id)?.name['zh-Hans'] ?? `#${id}`} Lv${level}`;
+const RESIST = [
+  ['fire', '火'],
+  ['water', '水'],
+  ['thunder', '雷'],
+  ['ice', '冰'],
+  ['dragon', '龙'],
+] as const;
+---
+
+<SiteLayout
+  title={`防具 · 稀有度 ${rarity}`}
+  current="encyclopedia"
+  description={`怪物猎人：世界 冰原 稀有度 ${rarity} 的防具：防御力、耐性、镶嵌槽、技能`}
+  wide
+>
+  <nav class="s-crumbs" aria-label="位置">
+    <a href="/world/encyclopedia/">百科</a>
+    <a href="/world/armor/">防具</a>
+    <span>稀有度 {rarity}</span>
+  </nav>
+  <div class="s-head">
+    <h1 style={`--rarity: ${color}`} class="am-title">
+      防具 · 稀有度 {rarity}{' '}
+      <span class="b-label">
+        {armor.length} 件 · {groups.length} 个系列
+      </span>
+    </h1>
+    <p>防御力为初始值（未强化）。套装技能写在系列名旁（几件发动哪个技能）。</p>
+  </div>
+
+  <nav class="s-tabs" aria-label="稀有度">
+    {rarities.map((r) => (
+      <a href={`/world/armor/${r}/`} aria-current={r === rarity ? 'page' : undefined}>
+        <img src={equipIconUrl('chest', r)} alt="" width="22" height="22" loading="lazy" />
+        {r}
+      </a>
+    ))}
+  </nav>
+
+  <FilterBox label="按防具名或技能筛选" placeholder="按防具名、系列或技能筛选" />
+
+  <div class="s-table-wrap am-wrap">
+    <table class="s-table">
+      <thead>
+        <tr>
+          <th class="s-left">防具</th>
+          <th>防御</th>
+          {RESIST.map(([, l]) => (
+            <th>{l}</th>
+          ))}
+          <th>镶嵌槽</th>
+          <th class="s-left">技能</th>
+        </tr>
+      </thead>
+      {groups.map((list) => {
+        const head = list[0]!;
+        const set = list.find((a) => a.setSkill)?.setSkill;
+        const setName = set && skills.get(set.id)?.name['zh-Hans'];
+        return (
+          <tbody data-filter-section>
+            <tr class="am-series">
+              <th class="s-left" colspan="9">
+                {head.series.name['zh-Hans'] ?? `系列 ${head.series.id}`}
+                {setName && (
+                  <span class="am-set">
+                    {setName}：
+                    {skills
+                      .get(set!.id)!
+                      .levels.map((l) => `${l.level} 件 ${l.name?.['zh-Hans'] ?? ''}`)
+                      .join('、')}
+                  </span>
+                )}
+              </th>
+            </tr>
+            {list.map((a) => {
+              const text = [
+                a.name['zh-Hans'],
+                a.name.ja,
+                a.name.en,
+                head.series.name['zh-Hans'],
+                setName,
+                ...a.skills.map((s) => skills.get(s.id)?.name['zh-Hans']),
+              ]
+                .filter(Boolean)
+                .join(' ')
+                .toLowerCase();
+              return (
+                <tr data-filter-row data-text={text}>
+                  <td class="s-left am-name">
+                    <span class="s-icon-cell">
+                      <img
+                        src={equipIconUrl(a.slot, a.rarity)}
+                        alt={SLOT_NAMES[a.slot]}
+                        width="26"
+                        height="26"
+                        loading="lazy"
+                      />
+                      <span title={a.desc?.['zh-Hans']}>{a.name['zh-Hans']}</span>
+                    </span>
+                  </td>
+                  <td class="s-num am-strong">{a.defense}</td>
+                  {RESIST.map(([k]) => (
+                    <td class:list={['s-num', { 's-dim': a.resist[k] === 0, 'am-neg': a.resist[k] < 0 }]}>
+                      {a.resist[k] > 0 ? `+${a.resist[k]}` : a.resist[k]}
+                    </td>
+                  ))}
+                  <td class="am-slots">
+                    {a.slots.length ? (
+                      a.slots.map((s) => (
+                        <img src={socketIconUrl(s)} alt={`${s} 级槽`} width="20" height="20" />
+                      ))
+                    ) : (
+                      <span class="s-dim">—</span>
+                    )}
+                  </td>
+                  <td class="s-left">
+                    {a.skills.length ? (
+                      a.skills.map((s) => <span class="am-skill">{skillText(s.id, s.level)}</span>)
+                    ) : (
+                      <span class="s-dim">—</span>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        );
+      })}
+    </table>
+  </div>
+
+  <p class="s-note">
+    数据来源：<code>common/equip/armor.am_dat</code>；名字、系列名为游戏内文本。
+  </p>
+</SiteLayout>
+
+<style>
+  .am-title::before {
+    content: '';
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    background: var(--rarity);
+    align-self: center;
+  }
+
+  .am-wrap {
+    max-height: none;
+  }
+
+  .am-series th {
+    position: static;
+    background: var(--c-surface);
+    color: var(--c-text);
+    font-weight: 700;
+    text-align: left;
+  }
+
+  .am-set {
+    margin-left: var(--space-3);
+    color: var(--c-accent);
+    font-weight: 500;
+    font-size: var(--text-sm);
+  }
+
+  .am-name {
+    min-width: 220px;
+  }
+
+  .am-strong {
+    color: var(--c-text);
+    font-weight: 700;
+  }
+
+  .am-neg {
+    color: var(--el-fire);
+  }
+
+  .am-slots img {
+    vertical-align: middle;
+  }
+
+  .am-skill {
+    display: inline-block;
+    margin-right: var(--space-3);
+  }
+</style>
