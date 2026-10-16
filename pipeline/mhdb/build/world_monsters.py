@@ -221,8 +221,9 @@ def build_monsters(s: Source, log=print) -> list[dict]:
             "sub": int(sub),
             "gameId": e.monster_id,
             "name": name,
-            "desc": _text(info, f"{note_key}_DESC"),
-            "tips": _text(info, f"{note_key}_STRTG"),
+            # 冰原新增的怪物键名没有下划线（NOTE_EM032DESC）
+            "desc": _text(info, f"{note_key}_DESC") or _text(info, f"{note_key}DESC"),
+            "tips": _text(info, f"{note_key}_STRTG") or _text(info, f"{note_key}STRTG"),
             "icon": icon if icon in micons else None,
             "hp": e.hp,
             "parts": parts,
