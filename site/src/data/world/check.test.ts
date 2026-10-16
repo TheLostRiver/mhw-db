@@ -21,6 +21,7 @@ import {
 } from './schema';
 import { FACILITY_FILES } from './schema-facilities';
 import { PALICO_FILES } from './schema-palico';
+import { MonsterRewards, Quests } from './schema-quests';
 
 const ROOT = new URL('../../../../data/world/', import.meta.url);
 const read = (rel: string): unknown => JSON.parse(readFileSync(fileURLToPath(new URL(rel, ROOT)), 'utf-8'));
@@ -83,6 +84,27 @@ describe('据点设施与随从', () => {
     };
     for (const file of [...Object.keys(FACILITY_FILES), ...Object.keys(PALICO_FILES)]) walk(read(file), file);
     expect(missing).toEqual([]);
+  });
+});
+
+describe('任务与怪物报酬', () => {
+  it('quests.json / monster-rewards.json', () => {
+    const q = Quests.parse(read('quests.json'));
+    const r = MonsterRewards.parse(read('monster-rewards.json'));
+    const itemIds = new Set((rows['items.json'] ?? []).map((s) => s.id));
+    const tables = new Set(q.rewards.map((t) => t.id));
+    const items = [
+      ...q.rewards.flatMap((t) => t.items.map((i) => i.item)),
+      ...q.quests.flatMap((x) => (x.supply ?? []).map((i) => i.item)),
+      ...r.rewards.flatMap((t) => t.items.map((i) => i.item)),
+    ];
+    expect(items.filter((i) => !itemIds.has(i))).toEqual([]);
+    for (const x of q.quests) {
+      for (const id of x.rewards) expect(tables.has(id), `任务 ${x.id} 的报酬表 ${id}`).toBe(true);
+      for (const o of x.objectives)
+        if (o.type === 'deliver') expect(itemIds.has(o.target), `任务 ${x.id} 的交纳物品`).toBe(true);
+        else if (o.type !== 'all') expect(q.monsters[o.target], `任务 ${x.id} 的目标怪物 ${o.target}`).toBeDefined();
+    }
   });
 });
 

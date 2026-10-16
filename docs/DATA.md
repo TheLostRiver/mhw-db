@@ -220,6 +220,20 @@ uv run mhdb nodes     # 大地图标记（采集点等）→ data/world/map-node
 
 **未做**：`swop*`（兽人族以物易物，语义不清）、`treasure*.trsr`（宝物情报）、限时奖金 `l_mission_sp.lms`、饰品炼金概率（`deco_grade_lot.dglt` / `deco_lot.diot`）。
 
+### 3.9 任务与怪物报酬（`mhdb/formats/mib.py`、`mhdb/build/world_quests.py`）
+
+| 输出 | 来源 | 结论与核对 |
+|---|---|---|
+| `quests.json`（512 个任务、292 张报酬表） | `quest/questData_*.mib`（加密，解密后固定 1104 字节，无条数字段；字段顺序参照公开的 QuestDataDump `MIBTemplate-Iceborne.bt`，只读格式）、`common/text/quest/q*.gmd`（每个 11 条：名称、主目标、失败条件、委托人、委托内容、副目标……） | 星级（大师级存 11–16）、等级、地图（`other_names` 的 `ST{n}_NAME`）、时间、报酬金、HR 点数、目标（0x31 狩猎 0x21 讨伐 0x11 捕获 0x02 交纳 0x01 全部）与 Kiranico 逐项一致（00101、00102、00655、01101、01235、51612）。**可倒地次数 = 报酬金 ÷ 每次力尽扣款**（512 个带「N 次力尽」文本的任务全部吻合）。占位 / 测试任务（名称 Unavailable / DUMMY）跳过 |
+| 怪物体力 / 攻击 | `common/em/em_difficulty.dtt_dif`（单人 1000 行 + 多人 1000 行 × 9 个 float） | 任务里每个倍率字段是单人表**各自那一列**的行号；体力 = 基础体力 × 单人倍率，3–4 人再 × 多人倍率。核对：大贼龙 2200 × 0.64 = 1408、雌火龙 3000 × 1.9 = 5700（3–4 人 12540）、大师雌火龙 18300、冰鱼龙 12296。Kiranico 的「2 人」倍率（× 0.67）不在表里，来源未确认 |
+| 怪物名 | 大型怪 `monsters.json` 的 gameId；小型怪各自的 `em/ems*/*/data/ems*.dtt_epg` | `em_names` 的「编号 × 2」只在 0–60 成立，构建时先用已知对应核对再作后备（古代鹿首精 51 的 dtt_epg 与鹿首精共用 23，只能这样取） |
+| 报酬表 | `quest/rem/remData_*.rem`（114 字节：16 × 物品、个数、权重） | 权重合计 100；第 1 项 Kiranico 显示为「固定」，页面照此标注（推断）。00101 的 30000 表与 Kiranico 一致 |
+| 补给箱 | `quest/supp/suppData_*.supp` | 24 格道具 + 16 格弹药，单人显示前 8 格（多人追加），只输出单人份；10001 与 Kiranico 一致 |
+| `monster-rewards.json`（890） | `quest/bui/brRR_emXXX_YY_PP.brem`（67 字节） | RR 下位 / 上位 / 大师，PP 00 捕获、01–09 部位破坏、10 狩猎、11–14 指引之地低 / 中 / 高 / 历战；`label` 是 `em_parts` 的条目号（「捕获%s」「破坏%s的头部」）。雌火龙、蛮颚龙、轰龙与 Kiranico 一致 |
+
+**未确认 / 未做**：参加门槛 `hr_restrict` 是档位编号（22 → MR1、54 → MR125……），完整对照表不在数据里；任务类别（主线 / 自由 / 活动）没有直接字段，图标位的含义未确认，均未显示。
+剥取、掉落、痕迹等（`common/item/em*.itlot`）的行 → 类别在原作怪物的前 20 行每只不同，映射不在数据文件里，暂未收录。
+
 ## 4. 界面图标（游戏 UI 贴图）
 
 | 图集 | 内容 | 用到的格子 |

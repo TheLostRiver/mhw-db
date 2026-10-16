@@ -1,0 +1,157 @@
+---
+import SiteLayout from '../../../layouts/SiteLayout.astro';
+import FilterBox from '../../../components/site/FilterBox.astro';
+import { itemById, loadQuests } from '../../../data/world/load';
+import type { Quest } from '../../../data/world/schema-quests';
+import { OBJECTIVE_LABEL, RANK_LABEL, monsterRef, questUrl, starLabel } from '../../../lib/world/quests';
+
+const data = loadQuests();
+const quests = [...data.quests].sort((a, b) => a.stars - b.stars || a.id - b.id);
+const RANKS = ['low', 'high', 'master'] as const;
+const goal = (q: Quest) =>
+  q.objectives
+    .map((o) =>
+      o.type === 'all'
+        ? OBJECTIVE_LABEL.all
+        : o.type === 'deliver'
+          ? `交纳 ${itemById(o.target)?.name['zh-Hans'] ?? '?'} ×${o.count}`
+          : `${OBJECTIVE_LABEL[o.type]}${monsterRef(data, o.target).name}${o.count > 1 ? ` ×${o.count}` : ''}`,
+    )
+    .join('、');
+const text = (q: Quest) =>
+  [
+    q.name['zh-Hans'],
+    q.name.ja,
+    q.name.en,
+    goal(q),
+    q.mapName?.['zh-Hans'],
+    ...q.monsters.map((m) => monsterRef(data, m.id).name),
+    String(q.id),
+  ]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
+---
+
+<SiteLayout
+  title="任务"
+  current="encyclopedia"
+  description="怪物猎人：世界 冰原 全部任务：目标、地图、时间、报酬金、可倒地次数、出现怪物的体力与报酬"
+  wide
+>
+  <nav class="s-crumbs" aria-label="位置">
+    <a href="/world/encyclopedia/">百科</a>
+    <span>任务</span>
+  </nav>
+  <div class="s-head">
+    <h1>
+      任务 <span class="b-label">{quests.length} 个</span>
+    </h1>
+    <p>
+      主线、自由、活动与挑战任务。按等级与星级排列；点击任务查看目标、出现怪物的体力倍率、报酬表与补给箱。
+      可按任务名、目标怪物、地图或编号筛选。
+    </p>
+  </div>
+  <nav class="s-tabs" aria-label="等级">
+    {RANKS.map((r) => (
+      <a href={`#rank-${r}`}>{RANK_LABEL[r]}</a>
+    ))}
+  </nav>
+  <FilterBox label="按任务名、怪物、地图或编号筛选" placeholder="按任务名、怪物、地图或编号筛选" />
+
+  {RANKS.map((rank) => {
+    const list = quests.filter((q) => q.rank === rank);
+    const stars = [...new Set(list.map((q) => q.stars))];
+    return (
+      <section class="s-section qs-rank" id={`rank-${rank}`}>
+        <h2>
+          {RANK_LABEL[rank]} <small class="s-dim">{list.length} 个</small>
+        </h2>
+        {stars.map((st) => (
+          <div class="qs-star" data-filter-section>
+            <h3>{starLabel({ rank, stars: st })}</h3>
+            <div class="s-table-wrap qs-wrap">
+              <table class="s-table">
+                <thead>
+                  <tr>
+                    <th class="s-left">任务</th>
+                    <th class="s-left">目标</th>
+                    <th class="s-left">地图</th>
+                    <th>时间</th>
+                    <th>报酬金</th>
+                    <th title="可倒地次数">倒地</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {list
+                    .filter((q) => q.stars === st)
+                    .map((q) => (
+                      <tr data-filter-row data-text={text(q)}>
+                        <td class="s-left qs-name">
+                          <a href={questUrl(q.id)}>{q.name['zh-Hans']}</a>
+                        </td>
+                        <td class="s-left qs-goal">{goal(q)}</td>
+                        <td class="s-left">{q.mapName?.['zh-Hans'] ?? <span class="s-dim">—</span>}</td>
+                        <td class="s-num">{q.time} 分</td>
+                        <td class="s-num">{q.reward.toLocaleString('en-US')}z</td>
+                        <td class="s-num">{q.faints ?? '—'}</td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ))}
+      </section>
+    );
+  })}
+
+  <p class="s-note">
+    数据来源：<code>quest/questData_*.mib</code>（任务本体，整文件加密）、
+    <code>common/text/quest/q*.gmd</code>（任务文本）。 结构参照公开的 QuestDataDump
+    格式说明；星级、地图、目标、时间、报酬金、倒地次数、HR 点数与 Kiranico 抽查一致 （可倒地次数 = 报酬金 ÷
+    每次力尽扣款，与全部带「N 次力尽」文本的任务吻合）。测试与占位任务未列出。
+  </p>
+</SiteLayout>
+
+<style>
+  .s-section h2 small {
+    font-size: var(--text-sm);
+    font-weight: 400;
+  }
+
+  .qs-rank {
+    scroll-margin-top: 72px;
+  }
+
+  .qs-star h3 {
+    margin: var(--space-4) 0 var(--space-2);
+    color: var(--c-amber);
+    font-family: var(--font-num);
+    font-size: var(--text-md);
+  }
+
+  .qs-wrap {
+    max-height: none;
+  }
+
+  .qs-name {
+    min-width: 14rem;
+  }
+
+  .qs-name a {
+    color: var(--c-text);
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .qs-name a:hover {
+    color: var(--c-accent);
+  }
+
+  .qs-goal {
+    min-width: 14rem;
+    color: var(--c-text-2);
+    white-space: normal;
+  }
+</style>

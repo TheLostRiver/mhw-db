@@ -1,0 +1,387 @@
+---
+import SiteLayout from '../../../layouts/SiteLayout.astro';
+import ItemName from '../../../components/site/ItemName.astro';
+import { itemById, loadMonsters, loadQuests } from '../../../data/world/load';
+import type { Quest } from '../../../data/world/schema-quests';
+import { OBJECTIVE_LABEL, RANK_LABEL, monsterRef, starLabel } from '../../../lib/world/quests';
+
+export function getStaticPaths() {
+  return loadQuests().quests.map((q) => ({ params: { id: String(q.id) }, props: { q } }));
+}
+
+const { q } = Astro.props as { q: Quest };
+const data = loadQuests();
+const tables = new Map(data.rewards.map((r) => [r.id, r]));
+const baseHp = new Map(loadMonsters().map((m) => [m.gameId, m.hp]));
+const lines = (t?: string) => (t ?? '').split('\n');
+const goalText = (o: Quest['objectives'][number]) =>
+  o.type === 'all'
+    ? OBJECTIVE_LABEL.all
+    : o.type === 'deliver'
+      ? `交纳 ${itemById(o.target)?.name['zh-Hans'] ?? '?'} ×${o.count}`
+      : `${OBJECTIVE_LABEL[o.type]} ${monsterRef(data, o.target).name}${o.count > 1 ? ` ×${o.count}` : ''}`;
+const REWARD_TITLES = ['主要报酬', '追加报酬', '追加报酬'];
+const facts = [
+  ['等级', `${RANK_LABEL[q.rank]} ${starLabel(q)}`],
+  ['地图', q.mapName?.['zh-Hans'] ?? '—'],
+  ['时间限制', `${q.time} 分`],
+  ['报酬金', `${q.reward.toLocaleString('en-US')}z`],
+  ['可倒地次数', q.faints ?? '—'],
+  [q.rank === 'master' ? 'MR 点数' : 'HR 点数', q.hrPoints],
+] as const;
+---
+
+<SiteLayout
+  title={`${q.name['zh-Hans']} · 任务`}
+  current="encyclopedia"
+  description={`怪物猎人：世界 冰原 任务「${q.name['zh-Hans']}」：${q.objective['zh-Hans'] ?? ''}`}
+  wide
+>
+  <nav class="s-crumbs" aria-label="位置">
+    <a href="/world/encyclopedia/">百科</a>
+    <a href="/world/quests/">任务</a>
+    <span>{q.name['zh-Hans']}</span>
+  </nav>
+  <header class="qd-head">
+    <p class="qd-star">
+      {RANK_LABEL[q.rank]} <b>{starLabel(q)}</b> <span class="s-dim">No.{String(q.id).padStart(5, '0')}</span>
+    </p>
+    <h1>{q.name['zh-Hans']}</h1>
+    {q.name.en && <p class="qd-alt">{[q.name.ja, q.name.en].filter(Boolean).join(' · ')}</p>}
+  </header>
+
+  <div class="qd-layout">
+    <div class="qd-main">
+      <section class="qd-scroll" aria-label="委托书">
+        <dl>
+          <div>
+            <dt>主要目标</dt>
+            <dd>
+              {lines(q.objective['zh-Hans']).map((l) => (
+                <span>{l}</span>
+              ))}
+            </dd>
+          </div>
+          {q.subObjective['zh-Hans'] && (
+            <div>
+              <dt>辅助目标</dt>
+              <dd>
+                {lines(q.subObjective['zh-Hans']).map((l) => (
+                  <span>{l}</span>
+                ))}
+              </dd>
+            </div>
+          )}
+          <div>
+            <dt>失败条件</dt>
+            <dd>
+              {lines(q.failure['zh-Hans']).map((l) => (
+                <span>{l}</span>
+              ))}
+            </dd>
+          </div>
+          {q.client['zh-Hans'] && (
+            <div>
+              <dt>委托人</dt>
+              <dd>{q.client['zh-Hans']}</dd>
+            </div>
+          )}
+        </dl>
+        {q.desc['zh-Hans'] && (
+          <blockquote>
+            {lines(q.desc['zh-Hans']).map((l) => (
+              <span>{l}</span>
+            ))}
+          </blockquote>
+        )}
+      </section>
+
+      {q.monsters.length > 0 && (
+        <section class="s-section">
+          <h2>出现的大型怪物</h2>
+          <div class="s-table-wrap qd-wrap">
+            <table class="s-table">
+              <thead>
+                <tr>
+                  <th class="s-left">怪物</th>
+                  <th title="基础体力 × 单人倍率">体力</th>
+                  <th title="再乘多人倍率">3–4 人</th>
+                  <th>攻击倍率</th>
+                  <th title="部位耐久的倍率">部位耐久</th>
+                </tr>
+              </thead>
+              <tbody>
+                {q.monsters.map((m) => {
+                  const ref = monsterRef(data, m.id);
+                  const base = baseHp.get(m.id);
+                  return (
+                    <tr>
+                      <td class="s-left">{ref.href ? <a href={ref.href}>{ref.name}</a> : ref.name}</td>
+                      <td class="s-num">
+                        {base ? Math.round(base * m.hp).toLocaleString('en-US') : `×${m.hp}`}
+                      </td>
+                      <td class="s-num">
+                        {base ? Math.round(base * m.hp * q.multiHp).toLocaleString('en-US') : `×${q.multiHp}`}
+                      </td>
+                      <td class="s-num">×{m.atk}</td>
+                      <td class="s-num">×{m.partHp}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
+
+      {q.rewards.map((id, i) => {
+        const t = tables.get(id);
+        return t ? (
+          <section class="s-section">
+            <h2>
+              {REWARD_TITLES[i] ?? '报酬'} <small class="s-dim">报酬表 {id}</small>
+            </h2>
+            <ul class="qd-rewards">
+              {t.items.map((r, k) => (
+                <li class:list={{ 'qd-fixed': i === 0 && k === 0 }}>
+                  <ItemName id={r.item} count={r.count} />
+                  <span>{i === 0 && k === 0 ? '固定' : `${r.weight}%`}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null;
+      })}
+    </div>
+
+    <aside class="qd-side">
+      <dl class="qd-facts">
+        {facts.map(([k, v]) => (
+          <div>
+            <dt>{k}</dt>
+            <dd>{v}</dd>
+          </div>
+        ))}
+      </dl>
+      <ul class="qd-goals">
+        {q.objectives.map((o) => (
+          <li>{goalText(o)}</li>
+        ))}
+        {q.subObjectives.map((o) => (
+          <li class="qd-sub">辅助：{goalText(o)}</li>
+        ))}
+      </ul>
+      {q.supply && q.supply.length > 0 && (
+        <section>
+          <h2>补给箱</h2>
+          <ul class="qd-supply">
+            {q.supply.map((s) => (
+              <li>
+                <ItemName id={s.item} size={20} count={s.count} />
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+    </aside>
+  </div>
+
+  <p class="s-note">
+    数据来源：<code>{q._src.file}</code>、<code>{q._src.text}_*.gmd</code>、
+    <code>quest/rem/remData_*.rem</code>（报酬表）、
+    <code>quest/supp/</code>（补给箱，单人份）、<code>common/em/em_difficulty.dtt_dif</code>（体力 /
+    攻击倍率）。 体力 = 怪物基础体力 × 任务的单人倍率，3–4 人再乘多人倍率（与 Kiranico 核对一致；2
+    人的倍率来源未确认，未显示）。 报酬表第 1 项按 Kiranico
+    的显示视为固定报酬（推断）；参加等级门槛（数据里是档位编号）未确认，未显示。
+  </p>
+</SiteLayout>
+
+<style>
+  .qd-head {
+    margin-bottom: var(--space-5);
+  }
+
+  .qd-star {
+    margin: 0;
+    color: var(--c-text-2);
+  }
+
+  .qd-star b {
+    color: var(--c-amber);
+    font-family: var(--font-num);
+  }
+
+  .qd-head h1 {
+    margin: var(--space-1) 0;
+    font-family: 'MHDB Display', 'Noto Serif SC Variable', serif;
+    font-size: clamp(2rem, 1.4rem + 2.5vw, 3.2rem);
+    font-weight: 400;
+  }
+
+  .qd-alt {
+    margin: 0;
+    color: var(--c-text-3);
+    font-size: var(--text-sm);
+  }
+
+  .qd-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 300px;
+    gap: var(--space-6);
+    align-items: start;
+  }
+
+  /* 委托书：羊皮纸色调的卡片 */
+  .qd-scroll {
+    position: relative;
+    margin-bottom: var(--space-6);
+    padding: var(--space-5) var(--space-6);
+    border-radius: var(--radius);
+    background:
+      linear-gradient(180deg, color-mix(in oklab, var(--c-amber) 10%, transparent), transparent 70%),
+      var(--c-surface);
+    box-shadow:
+      inset 0 0 0 1px color-mix(in oklab, var(--c-amber) 30%, var(--c-line)),
+      0 18px 40px -28px rgb(0 0 0 / 0.6);
+  }
+
+  .qd-scroll dl {
+    display: grid;
+    gap: var(--space-3);
+    margin: 0;
+  }
+
+  .qd-scroll dl div {
+    display: grid;
+    grid-template-columns: 6em minmax(0, 1fr);
+    gap: var(--space-3);
+  }
+
+  .qd-scroll dt {
+    color: var(--c-amber);
+    font-size: var(--text-sm);
+  }
+
+  .qd-scroll dd {
+    display: grid;
+    margin: 0;
+  }
+
+  .qd-scroll blockquote {
+    display: grid;
+    margin: var(--space-4) 0 0;
+    padding: var(--space-3) 0 0;
+    border-top: 1px dashed color-mix(in oklab, var(--c-amber) 35%, var(--c-line));
+    color: var(--c-text-2);
+    font-family: 'Noto Serif SC Variable', serif;
+    line-height: 1.9;
+  }
+
+  .s-section h2 small {
+    font-size: var(--text-sm);
+    font-weight: 400;
+  }
+
+  .qd-wrap {
+    max-height: none;
+  }
+
+  .qd-rewards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
+    gap: 4px var(--space-4);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .qd-rewards li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+    min-width: 0;
+    padding: 4px 0;
+    border-bottom: 1px solid var(--c-line);
+    font-size: var(--text-sm);
+  }
+
+  .qd-rewards li > span {
+    flex: none;
+    color: var(--c-accent);
+    font-family: var(--font-num);
+    font-size: var(--text-xs);
+  }
+
+  .qd-fixed > span {
+    color: var(--c-amber) !important;
+  }
+
+  .qd-side {
+    position: sticky;
+    top: 80px;
+    display: grid;
+    gap: var(--space-4);
+    padding: var(--space-4);
+    border-radius: var(--radius);
+    background: var(--c-surface);
+    box-shadow: inset 0 0 0 1px var(--c-line);
+  }
+
+  .qd-facts {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-3);
+    margin: 0;
+  }
+
+  .qd-facts dt {
+    color: var(--c-text-3);
+    font-size: var(--text-xs);
+  }
+
+  .qd-facts dd {
+    margin: 0;
+    font-family: var(--font-num);
+  }
+
+  .qd-goals {
+    display: grid;
+    gap: 4px;
+    margin: 0;
+    padding: var(--space-3) 0 0;
+    border-top: 1px solid var(--c-line);
+    list-style: none;
+    font-weight: 600;
+  }
+
+  .qd-sub {
+    color: var(--c-text-2);
+    font-weight: 400;
+  }
+
+  .qd-side h2 {
+    margin: 0 0 var(--space-2);
+    font-size: var(--text-md);
+  }
+
+  .qd-supply {
+    display: grid;
+    gap: 3px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: var(--text-sm);
+  }
+
+  @media (max-width: 900px) {
+    .qd-layout {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .qd-side {
+      position: static;
+      order: -1;
+    }
+  }
+</style>

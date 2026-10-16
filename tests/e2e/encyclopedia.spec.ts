@@ -45,6 +45,9 @@ const PAGES = [
   ['/world/botany/', '植生研究所'],
   ['/world/palico/', '随从艾露猫'],
   ['/world/canteen/', '食堂'],
+  ['/world/quests/', '任务'],
+  ['/world/quests/655/', '沉睡之森的女王'],
+  ['/world/quests/51612/', '黑龙'],
 ] as const;
 
 for (const [path, heading] of PAGES) {
@@ -137,4 +140,16 @@ test('神秘炼金可以按素材反查能炼成什么', async ({ page }) => {
   const shown = page.locator('[data-filter-row]:not([hidden])');
   expect(await shown.count()).toBeGreaterThan(0);
   expect(await shown.count()).toBeLessThan(all);
+});
+
+test('任务详情：怪物体力按倍率换算，可跳到怪物页并看到报酬', async ({ page }) => {
+  await page.goto('/world/quests/655/', { waitUntil: 'networkidle' });
+  // 雌火龙 基础 3000 × 上位★6 倍率 1.9 = 5700，3–4 人再 × 2.2 = 12540（与 Kiranico 一致）
+  const row = page.locator('tr', { hasText: '雌火龙' }).first();
+  await expect(row).toContainText('5,700');
+  await expect(row).toContainText('12,540');
+  await row.getByRole('link', { name: '雌火龙' }).click();
+  await expect(page).toHaveURL(/\/world\/monsters\/em001_00\/$/);
+  await expect(page.getByRole('heading', { name: /报酬/ })).toBeVisible();
+  await expect(page.locator('.mo-rewards').first()).toContainText('捕获雌火龙');
 });

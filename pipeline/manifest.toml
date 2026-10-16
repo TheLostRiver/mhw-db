@@ -31,8 +31,10 @@ patterns = [
   # 每只怪物的数据表（不含 THK 与动画）
   '^/em/em\d+/\d+/data/em\d+\.(dtt\w*|em\d+_dmg|em\d+_pbc)$',
 
-  # 任务
+  # 任务：本体、主要报酬、捕获 / 破坏 / 狩猎报酬、补给箱；小型怪物的编号（任务目标里用到）
   '^/quest/questData_\d+\.mib$',
+  '^/quest/(rem|bui|supp)/',
+  '^/em/ems\d+/\d+/data/ems\d+\.dtt_epg$',
 
   # 界面贴图
   '^/ui/(common|common_menu|equip|status|item_menu|note|map)/tex/.*\.tex$',

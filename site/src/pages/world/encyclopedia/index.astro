@@ -25,6 +25,7 @@ import {
   loadMoves,
   loadPalicoGear,
   loadPendants,
+  loadQuests,
   loadShop,
   loadSkills,
   loadWeaponCustom,
@@ -285,7 +286,13 @@ const chapters: Chapter[] = [
     hue: '#d8c27a',
     lead: '任务的目标、地图、限时与报酬；调查任务。',
     entries: [
-      { label: '任务', note: '目标、地图、报酬', glyph: 'quest' },
+      {
+        label: '任务',
+        note: '目标、体力倍率、报酬与补给',
+        glyph: 'quest',
+        href: '/world/quests/',
+        count: loadQuests().quests.length,
+      },
       { label: '调查任务', note: '生成条件与报酬', glyph: 'investigation' },
     ],
   },

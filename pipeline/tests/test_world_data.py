@@ -272,3 +272,45 @@ def test_palico_and_canteen_match_public_data() -> None:
     canteen = json.loads((WORLD / "canteen.json").read_text(encoding="utf-8"))
     brave = sorted((s["tier"], s["name"]["zh-Hans"]) for s in canteen["skills"] if s["group"] == 0)
     assert brave == [(1, "猫的研磨术"), (2, "猫的骑乘好手"), (3, "猫的击晕术")]
+
+
+def test_quests_match_kiranico() -> None:
+    data = json.loads((WORLD / "quests.json").read_text(encoding="utf-8"))
+    quests = {q["id"]: q for q in data["quests"]}
+    base = {m["gameId"]: m["hp"] for m in load("monsters.json", "monsters")}
+    # 00102 冠突龙骚动中：下位★2、50 分、1200z、3 次力尽、140 HRP；大贼龙 2200 × 0.64 = 1408
+    q = quests[102]
+    assert (q["rank"], q["stars"], q["time"], q["reward"], q["faints"], q["hrPoints"]) == (
+        "low",
+        2,
+        50,
+        1200,
+        3,
+        140,
+    )
+    gj = q["monsters"][0]
+    assert round(base[gj["id"]] * gj["hp"]) == 1408 and gj["atk"] == 0.7
+    # 51612 黑龙：大师★6、30 分、57600z、5 次力尽、4410 MRP
+    q = quests[51612]
+    assert (q["rank"], q["stars"], q["time"], q["reward"], q["faints"], q["hrPoints"]) == (
+        "master",
+        6,
+        30,
+        57600,
+        5,
+        4410,
+    )
+    # 00101 的主要报酬表 30000：第 1 项铠玉
+    tables = {t["id"]: t for t in data["rewards"]}
+    items = {i["id"]: i["name"]["zh-Hans"] for i in load("items.json", "items")}
+    assert items[tables[quests[101]["rewards"][0]]["items"][0]["item"]] == "铠玉"
+    # 古代鹿首精（51）只能按 em_names 的「编号 × 2」取名
+    assert data["monsters"]["51"]["name"]["zh-Hans"] == "古代鹿首精"
+
+
+def test_monster_rewards_match_kiranico() -> None:
+    rewards = load("monster-rewards.json", "rewards")
+    items = {i["id"]: i["name"]["zh-Hans"] for i in load("items.json", "items")}
+    cap = next(r for r in rewards if r["em"] == "em001_00" and r["rank"] == "low" and r["slot"] == 0)
+    assert cap["label"]["zh-Hans"] == "捕获%s"
+    assert {items[i["item"]]: i["weight"] for i in cap["items"]}["雌火龙的鳞"] == 35
