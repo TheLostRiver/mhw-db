@@ -75,6 +75,22 @@ export const Item = z
   })
   .strict();
 
+/** 调和列表：category 0 药品、1 道具与陷阱、2 弹药与瓶（按内容归纳）；canAuto 含义未在游戏内核对 */
+export const Combination = z
+  .object({
+    id: z.number().int().nonnegative(),
+    materials: z.array(z.number().int().positive()).min(1).max(2),
+    result: z.number().int().positive(),
+    quantity: z.number().int().min(1),
+    category: z.union([z.literal(0), z.literal(1), z.literal(2)]),
+    canAuto: z.boolean(),
+    unk: z.number().int(),
+    _src: Src,
+  })
+  .strict();
+export const Combinations = z.object({ combinations: z.array(Combination).min(1) }).strict();
+export type Combination = z.infer<typeof Combination>;
+
 const SkillLevel = z
   .object({
     level: z.number().int().min(1),

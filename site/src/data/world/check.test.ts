@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import {
   Colors,
+  Combinations,
   Constants,
   FILES,
   LANGS,
@@ -37,6 +38,7 @@ describe('结构', () => {
     MapNodes.parse(read('map-nodes.json'));
     Moves.parse(read('moves.json'));
     Monsters.parse(read('monsters.json'));
+    Combinations.parse(read('combinations.json'));
   });
 
   for (const [file, { schema }] of Object.entries(FILES)) {
@@ -116,6 +118,12 @@ describe('引用完整', () => {
   it('饰品、衣装对应的物品存在', () => {
     for (const d of rows['decorations.json'] ?? []) expect(itemIds.has(d.id), `饰品 ${d.id}`).toBe(true);
     for (const m of rows['mantles.json'] ?? []) expect(itemIds.has(m.itemId as number), `衣装 ${m.id}`).toBe(true);
+  });
+
+  it('调和的素材与成品都存在', () => {
+    for (const c of Combinations.parse(read('combinations.json')).combinations) {
+      for (const id of [...c.materials, c.result]) expect(itemIds.has(id), `调和 ${c.id} 的物品 ${id}`).toBe(true);
+    }
   });
 
   it('觉醒能力的系列技能与升级链存在', () => {

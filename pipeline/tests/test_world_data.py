@@ -188,3 +188,15 @@ def test_mantle_names_follow_row_order() -> None:
     glider = by_name(m, "滑空衣装")
     assert glider["slots"] == [4, 4]
     assert all(x["slots"] == [] for x in m if x["name"]["zh-Hans"].endswith("烟筒"))
+
+
+def test_combinations_match_game() -> None:
+    # 游戏内调和列表：回复药 = 药草（单一素材）、回复药·大 = 回复药 + 蜂蜜、汉方药 = 解毒药 + 蓝蘑菇
+    items = {i["id"]: i["name"]["zh-Hans"] for i in load("items.json", "items")}
+    recipes = {
+        items[c["result"]]: ([items[m] for m in c["materials"]], c["quantity"])
+        for c in load("combinations.json", "combinations")
+    }
+    assert recipes["回复药"] == (["药草"], 1)
+    assert recipes["回复药·大"] == (["回复药", "蜂蜜"], 1)
+    assert recipes["汉方药"] == (["解毒药", "蓝蘑菇"], 1)

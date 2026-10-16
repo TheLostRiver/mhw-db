@@ -7,6 +7,7 @@ import type {
   Armor,
   Charm,
   Colors,
+  Combination,
   Constants,
   Decoration,
   Item,
@@ -41,6 +42,8 @@ function read<T>(rel: string): T {
 export const loadMeta = () => read<Meta>('meta.json');
 export const loadColors = () => read<Colors>('colors.json');
 export const loadItems = () => read<{ items: Item[] }>('items.json').items;
+export const loadCombinations = () =>
+  read<{ combinations: Combination[] }>('combinations.json').combinations;
 export const loadSkills = () => read<{ skills: Skill[] }>('skills.json').skills;
 export const loadDecorations = () => read<{ decorations: Decoration[] }>('decorations.json').decorations;
 export const loadArmor = () => read<{ armor: Armor[] }>('armor.json').armor;

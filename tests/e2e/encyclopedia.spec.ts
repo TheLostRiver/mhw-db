@@ -24,6 +24,7 @@ const PAGES = [
   ['/world/mantles/', '衣装'],
   ['/world/items/materials/', '素材'],
   ['/world/items/consumables/', '道具'],
+  ['/world/combinations/', '调和列表'],
 ] as const;
 
 for (const [path, heading] of PAGES) {
@@ -60,4 +61,17 @@ test('武器页显示攻击力为显示值', async ({ page }) => {
   await page.goto('/world/weapons/long-sword/', { waitUntil: 'networkidle' });
   // 铁刀1：真实攻击 80 × 3.3 = 264
   await expect(page.locator('tr', { hasText: '铁刀1' }).first()).toContainText('264');
+});
+
+test('调和列表按素材筛选，点成品跳到道具页对应行', async ({ page }) => {
+  await page.goto('/world/combinations/', { waitUntil: 'networkidle' });
+  await page.getByRole('searchbox', { name: '按素材或成品筛选' }).fill('蓝蘑菇');
+  const rows = page.locator('[data-filter-row]:not([hidden])');
+  expect(await rows.count()).toBeGreaterThan(1);
+  for (const t of await rows.allTextContents()) expect(t).toContain('蓝蘑菇');
+  const herbal = rows.filter({ hasText: '汉方药' }).first();
+  await expect(herbal).toContainText('解毒药');
+  await herbal.locator('.cb-result a').click();
+  await expect(page).toHaveURL(/\/world\/items\/consumables\/#item-\d+$/);
+  await expect(page.locator('tr:target')).toContainText('汉方药');
 });

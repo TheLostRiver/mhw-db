@@ -1,0 +1,198 @@
+---
+import SiteLayout from '../../../layouts/SiteLayout.astro';
+import FilterBox from '../../../components/site/FilterBox.astro';
+import { loadCombinations, loadItems } from '../../../data/world/load';
+import type { Item } from '../../../data/world/schema';
+import { ITEM_TYPES, itemIconUrl } from '../../../lib/world/encyclopedia';
+
+const items = new Map(loadItems().map((i) => [i.id, i]));
+const combos = loadCombinations();
+// 分组名按各组内容归纳（数据里只有 0 / 1 / 2 的编号）
+const GROUPS = [
+  { category: 0, title: '药品', note: '回复、解毒、强化类的药与粉尘' },
+  { category: 1, title: '道具与陷阱', note: '爆弹、烟雾球、投射器弹、生肉、陷阱、飞刀' },
+  { category: 2, title: '弹药与瓶', note: '弩弹、弓的瓶、火药粉' },
+] as const;
+const slugOf = new Map(ITEM_TYPES.map((t) => [t.type, t.slug]));
+const item = (id: number) => items.get(id)!;
+const href = (i: Item) => {
+  const slug = slugOf.get(i.type);
+  return slug ? `/world/items/${slug}/#item-${i.id}` : undefined;
+};
+const names = (i: Item) => [i.name['zh-Hans'], i.name.ja, i.name.en].filter(Boolean).join(' ');
+---
+
+<SiteLayout
+  title="调和列表 · 道具"
+  current="encyclopedia"
+  description="怪物猎人：世界 冰原 调和列表：每种调和的素材、成品与个数"
+  wide
+>
+  <nav class="s-crumbs" aria-label="位置">
+    <a href="/world/encyclopedia/">百科</a>
+    <span>调和列表</span>
+  </nav>
+  <div class="s-head">
+    <h1>
+      调和列表 <span class="b-label">{combos.length} 种</span>
+    </h1>
+    <p>
+      游戏内「从列表中选择调和」的全部配方：素材一到两种，得到的成品与个数。可按任一素材或成品的名字筛选。
+    </p>
+  </div>
+  <FilterBox label="按素材或成品筛选" placeholder="按素材或成品筛选（中文、日文、英文）" />
+
+  {GROUPS.map((g) => (
+    <section class="s-section" data-filter-section>
+      <h2>
+        {g.title} <small class="s-dim">{g.note}</small>
+      </h2>
+      <ol class="cb-list">
+        {combos
+          .filter((c) => c.category === g.category)
+          .map((c) => {
+            const result = item(c.result);
+            const mats = c.materials.map(item);
+            return (
+              <li
+                class="cb-row"
+                data-filter-row
+                data-text={[result, ...mats].map(names).join(' ').toLowerCase()}
+              >
+                <span class="cb-result">
+                  <a class="cb-item" href={href(result)}>
+                    <img src={itemIconUrl(result)} alt="" width="32" height="32" loading="lazy" />
+                    <span>{result.name['zh-Hans']}</span>
+                  </a>
+                  <span
+                    class:list={['cb-qty', { 'cb-qty--many': c.quantity > 1 }]}
+                    aria-label={`得到 ${c.quantity} 个`}
+                  >
+                    ×{c.quantity}
+                  </span>
+                </span>
+                <span class="cb-arrow" aria-hidden="true">
+                  ←
+                </span>
+                <span class="cb-mats">
+                  {mats.map((m, i) => (
+                    <>
+                      {i > 0 && (
+                        <span class="cb-plus" aria-label="加">
+                          ＋
+                        </span>
+                      )}
+                      <a class="cb-item cb-item--mat" href={href(m)}>
+                        <img src={itemIconUrl(m)} alt="" width="26" height="26" loading="lazy" />
+                        <span>{m.name['zh-Hans']}</span>
+                      </a>
+                    </>
+                  ))}
+                </span>
+              </li>
+            );
+          })}
+      </ol>
+    </section>
+  ))}
+
+  <p class="s-note">
+    数据来源：<code>common/item/itemMake.imk</code>（调和配方）与物品文本。已与游戏内核对： 回复药 =
+    药草、回复药·大 = 回复药 + 蜂蜜、汉方药 = 解毒药 + 蓝蘑菇。
+  </p>
+</SiteLayout>
+
+<style>
+  .s-section h2 small {
+    font-size: var(--text-sm);
+    font-weight: 400;
+  }
+
+  .cb-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 460px), 1fr));
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .cb-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1.3fr);
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid var(--c-line);
+    border-radius: var(--radius-md);
+    background: var(--c-surface);
+    transition: border-color var(--dur-fast) var(--ease-standard);
+  }
+
+  .cb-row:hover {
+    border-color: var(--c-line-strong);
+  }
+
+  .cb-result {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+    min-width: 0;
+  }
+
+  .cb-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    color: var(--c-text);
+    text-decoration: none;
+  }
+
+  .cb-item span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .cb-item:hover span {
+    color: var(--c-accent);
+  }
+
+  .cb-result .cb-item {
+    font-weight: 700;
+  }
+
+  .cb-item--mat {
+    color: var(--c-text-2);
+    font-size: var(--text-sm);
+  }
+
+  .cb-qty {
+    flex: none;
+    color: var(--c-text-3);
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+  }
+
+  .cb-qty--many {
+    color: var(--c-accent);
+  }
+
+  .cb-arrow,
+  .cb-plus {
+    color: var(--c-text-3);
+  }
+
+  .cb-mats {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px var(--space-2);
+    min-width: 0;
+  }
+
+  .cb-item img {
+    flex: none;
+  }
+</style>

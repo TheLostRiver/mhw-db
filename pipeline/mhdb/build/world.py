@@ -91,6 +91,32 @@ def build_items(s: Source) -> list[dict]:
     return out
 
 
+def build_combinations(s: Source, item_map: dict[int, dict]) -> list[dict]:
+    """调和列表（itemMake.imk）：素材 1–2 种 → 成品 × 个数。unk_1 恒等于 id，不输出。"""
+    rel = "common/item/itemMake.imk"
+    out = []
+    for row, r in enumerate(s.table(rel, S.ITEM_MAKE)):
+        mats = [m for m in (r["mat_1"], r["mat_2"]) if m]
+        for i in (*mats, r["result"]):
+            if i not in item_map:
+                raise ValueError(f"{rel} 第 {row} 行引用了不存在的物品 {i}")
+        if r["unk_1"] != r["id"] or r["category"] not in (0, 1, 2):
+            raise ValueError(f"{rel} 第 {row} 行结构变化：{r}")
+        out.append(
+            {
+                "id": r["id"],
+                "materials": mats,
+                "result": r["result"],
+                "quantity": r["quantity"],
+                "category": r["category"],
+                "canAuto": bool(r["can_auto"]),
+                "unk": r["unk_2"],
+                "_src": src(rel, row),
+            }
+        )
+    return out
+
+
 def build_skills(s: Source) -> list[dict]:
     pt_rel = "common/equip/skill_point_data.skl_pt_dat"
     lv_rel = "common/equip/skill_data.skl_dat"
@@ -388,6 +414,7 @@ def build(raw: Path, out: Path, log=print) -> dict:
     colors = build_colors(s)
     items = build_items(s)
     item_map = {i["id"]: i for i in items}
+    combinations = build_combinations(s, item_map)
     skills = build_skills(s)
     decorations = build_decorations(s, item_map)
     armor, charms = build_armor(s)
@@ -401,6 +428,7 @@ def build(raw: Path, out: Path, log=print) -> dict:
     write_json(out / "meta.json", meta)
     write_json(out / "colors.json", colors)
     write_records(out / "items.json", "items", items)
+    write_records(out / "combinations.json", "combinations", combinations)
     write_records(out / "skills.json", "skills", skills)
     write_records(out / "decorations.json", "decorations", decorations)
     write_records(out / "armor.json", "armor", armor)
@@ -429,6 +457,7 @@ def build(raw: Path, out: Path, log=print) -> dict:
 
     counts = {
         "items": len(items),
+        "combinations": len(combinations),
         "skills": len(skills),
         "decorations": len(decorations),
         "armor": len(armor),

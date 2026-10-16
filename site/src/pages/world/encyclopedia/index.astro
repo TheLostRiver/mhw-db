@@ -3,6 +3,7 @@ import SiteLayout from '../../../layouts/SiteLayout.astro';
 import {
   loadArmor,
   loadCharms,
+  loadCombinations,
   loadDecorations,
   loadItems,
   loadMantles,
@@ -13,7 +14,7 @@ import {
   loadWeapons,
 } from '../../../data/world/load';
 import { WEAPON_TYPES } from '../../../data/world/schema';
-import { ITEM_TYPES, equipIconUrl } from '../../../lib/world/encyclopedia';
+import { ITEM_TYPES, equipIconUrl, itemIconUrl } from '../../../lib/world/encyclopedia';
 import { weaponIconUrl } from '../../../lib/world/weapons';
 
 const items = loadItems();
@@ -93,17 +94,25 @@ const groups = [
   },
   {
     title: '道具',
-    cards: ITEM_TYPES.map((t) => {
-      const first = items.find(
-        (i) => i.type === t.type && i.rarity > 0 && !i.name['zh-Hans'].startsWith('－'),
-      );
-      return {
-        href: `/world/items/${t.slug}/`,
-        label: t.label,
-        note: `${items.filter((i) => i.type === t.type).length} 种 · ${t.note}`,
-        icon: first ? `/assets/game/world/item/${first.icon.id}-${first.icon.color}.webp` : '',
-      };
-    }),
+    cards: [
+      ...ITEM_TYPES.map((t) => {
+        const first = items.find(
+          (i) => i.type === t.type && i.rarity > 0 && !i.name['zh-Hans'].startsWith('－'),
+        );
+        return {
+          href: `/world/items/${t.slug}/`,
+          label: t.label,
+          note: `${items.filter((i) => i.type === t.type).length} 种 · ${t.note}`,
+          icon: first ? itemIconUrl(first) : '',
+        };
+      }),
+      {
+        href: '/world/combinations/',
+        label: '调和列表',
+        note: `${loadCombinations().length} 种 · 素材、成品与个数`,
+        icon: itemIconUrl(items.find((i) => i.id === 2)!),
+      },
+    ],
   },
 ];
 ---
@@ -111,7 +120,7 @@ const groups = [
 <SiteLayout
   title="百科"
   current="encyclopedia"
-  description="怪物猎人：世界 冰原 资料百科：怪物、地图、武器、招式、防具、护石、饰品、技能、衣装、道具"
+  description="怪物猎人：世界 冰原 资料百科：怪物、地图、武器、招式、防具、护石、饰品、技能、衣装、道具、调和列表"
 >
   <div class="s-head">
     <h1>

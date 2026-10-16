@@ -51,6 +51,13 @@ MANTLE = spec(
     """,
 )
 
+# 调和列表：mat_2 = 0 表示只需一种素材；category 0 药品 1 道具 / 陷阱 2 弹药 / 瓶（按内容归纳）；
+# can_auto 按 MHW-Editor 的命名为「可自动调和」，未在游戏内核对；unk 含义未知
+ITEM_MAKE = spec(
+    "itemMake.imk",
+    "id:I unk_1:H mat_1:I mat_2:I result:I quantity:I unk_2:I category:I can_auto:B",
+)
+
 CRAFT = spec(
     "*.eq_crt",
     """

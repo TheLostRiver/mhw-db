@@ -39,6 +39,7 @@ const lines = (t?: string) => (t ?? '').replace(/\n/g, '');
       </a>
     ))}
     <a href="/world/decorations/">饰品</a>
+    <a href="/world/combinations/">调和列表</a>
   </nav>
   <FilterBox label="按名字或说明筛选" placeholder="按名字或说明筛选" />
   <div class="s-table-wrap it-wrap">
@@ -56,6 +57,7 @@ const lines = (t?: string) => (t ?? '').replace(/\n/g, '');
       <tbody>
         {items.map((i) => (
           <tr
+            id={`item-${i.id}`}
             data-filter-row
             data-text={[i.name['zh-Hans'], i.name.ja, i.name.en, lines(i.desc?.['zh-Hans'])]
               .filter(Boolean)
@@ -84,6 +86,10 @@ const lines = (t?: string) => (t ?? '').replace(/\n/g, '');
 </SiteLayout>
 
 <style>
+  tr:target {
+    background: var(--c-accent-soft);
+  }
+
   .it-wrap {
     max-height: none;
   }
