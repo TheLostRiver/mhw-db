@@ -1,0 +1,221 @@
+---
+import SiteLayout from '../../../layouts/SiteLayout.astro';
+import FilterBox from '../../../components/site/FilterBox.astro';
+import { loadInvestigations, loadMonsters, loadQuests } from '../../../data/world/load';
+import type { Investigation } from '../../../data/world/schema-guiding';
+import { monsterIconUrl, monsterName } from '../../../lib/world/monsters';
+import { questUrl, starLabel } from '../../../lib/world/quests';
+
+const list = loadInvestigations();
+const monsters = new Map(loadMonsters().map((m) => [m.key, m]));
+const quests = new Map(loadQuests().quests.map((q) => [q.id, q]));
+const COLUMNS = [
+  { rank: 'low', tempered: false, title: '下位' },
+  { rank: 'high', tempered: false, title: '上位' },
+  { rank: 'high', tempered: true, title: '上位 · 历战*' },
+  { rank: 'master', tempered: false, title: '大师' },
+  { rank: 'master', tempered: true, title: '大师 · 历战*' },
+] as const;
+const RANK_ORDER = { low: 0, high: 1, master: 2 } as const;
+const cell = (inv: Investigation, c: (typeof COLUMNS)[number]) =>
+  inv.groups.find((g) => g.rank === c.rank && g.tempered === c.tempered);
+const rows = [...list]
+  .map((inv) => ({
+    inv,
+    mon: monsters.get(inv.monster),
+    first: Math.min(...inv.groups.map((g) => RANK_ORDER[g.rank])),
+  }))
+  .sort((a, b) => a.first - b.first || a.inv.gameId - b.inv.gameId);
+const counts = COLUMNS.map((c) => list.filter((inv) => cell(inv, c)).length);
+---
+
+<SiteLayout
+  title="调查任务"
+  current="encyclopedia"
+  description="怪物猎人：世界 冰原 调查任务：每只怪物在下位、上位、大师的调查任务要先完成哪个任务才会出现"
+  wide
+>
+  <nav class="s-crumbs" aria-label="位置">
+    <a href="/world/encyclopedia/">百科</a>
+    <span>调查任务</span>
+  </nav>
+  <div class="s-head">
+    <h1>
+      调查任务 <span class="b-label">{list.length} 种怪物</span>
+    </h1>
+    <p>
+      每只怪物在下位、上位、大师的调查任务，要先完成哪个任务才会出现。「—」表示这一级没有它的调查任务，「一开始」表示没有前置任务。
+    </p>
+  </div>
+
+  <ul class="iv-stats">
+    {COLUMNS.map((c, i) => (
+      <li class={`iv-rank iv-rank--${c.rank}`}>
+        <strong>{counts[i]}</strong>
+        <span>{c.title}</span>
+      </li>
+    ))}
+  </ul>
+
+  <FilterBox label="按怪物或任务名筛选" placeholder="按怪物或任务名筛选" />
+
+  <div class="s-table-wrap">
+    <table class="s-table iv-table">
+      <thead>
+        <tr>
+          <th class="s-left">怪物</th>
+          {COLUMNS.map((c) => (
+            <th class={`s-left iv-rank--${c.rank}`}>{c.title}</th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map(({ inv, mon }) => {
+          const icon = mon && monsterIconUrl(mon);
+          const name = mon ? monsterName(mon) : inv.monster;
+          const text = [
+            name,
+            mon?.name?.en,
+            ...inv.groups.map((g) => (g.unlock ? quests.get(g.unlock)?.name['zh-Hans'] : '')),
+          ]
+            .filter(Boolean)
+            .join(' ')
+            .toLowerCase();
+          return (
+            <tr data-filter-row data-text={text}>
+              <th class="s-left iv-mon" scope="row">
+                <a href={`/world/monsters/${inv.monster}/`}>
+                  {icon && <img src={icon} alt="" width="28" height="28" loading="lazy" />}
+                  <span>{name}</span>
+                </a>
+              </th>
+              {COLUMNS.map((c) => {
+                const g = cell(inv, c);
+                if (!g) return <td class="s-left s-dim">—</td>;
+                const q = g.unlock ? quests.get(g.unlock) : undefined;
+                const alt = g.unlockAlt ? quests.get(g.unlockAlt) : undefined;
+                return (
+                  <td class="s-left iv-cell">
+                    {q ? (
+                      <a href={questUrl(q.id)}>
+                        <small>{starLabel(q)}</small>
+                        {q.name['zh-Hans']}
+                      </a>
+                    ) : (
+                      <span class="iv-free">一开始</span>
+                    )}
+                    {alt && (
+                      <a class="iv-alt" href={questUrl(alt.id)} title="组内第二个任务编号（含义未确认）">
+                        另：{alt.name['zh-Hans']}
+                      </a>
+                    )}
+                  </td>
+                );
+              })}
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
+  </div>
+
+  <p class="s-note">
+    数据来源：<code>quest/enemy/LQ_EmData.lqem</code>（每只怪物一条，按 gameId 排），每条 5
+    组，每组开头是任务编号：-1 表示这一级没有该怪物的调查任务，0 表示没有前置任务。335
+    个任务编号的等级全部与所在组一致（第 1 组都是下位、第 2–3 组上位、第 4–5
+    组大师）：下位多是该怪物首次登场的任务，上位与大师多是剧情进度任务。*「历战」是推断：第 3、5
+    组缺少的正好是大贼龙、搔鸟、眩鸟、大痹贼龙、岩贼龙等没有历战个体的怪物。「另：」是组内第二个任务编号，含义未确认。
+    调查任务的时限、力尽次数、报酬箱数与生成规则不在这张表里，未列出。
+  </p>
+</SiteLayout>
+
+<style>
+  .iv-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin: 0 0 var(--space-4);
+    padding: 0;
+    list-style: none;
+  }
+
+  .iv-stats li {
+    display: grid;
+    min-width: 110px;
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius);
+    background: var(--c-surface);
+    box-shadow:
+      inset 0 0 0 1px var(--c-line),
+      inset 0 3px 0 var(--rank);
+  }
+
+  .iv-stats strong {
+    font-family: var(--font-num);
+    font-size: var(--text-xl, 1.5rem);
+  }
+
+  .iv-stats span {
+    color: var(--c-text-2);
+    font-size: var(--text-xs);
+  }
+
+  .iv-rank--low {
+    --rank: #6fbf73;
+  }
+
+  .iv-rank--high {
+    --rank: #e0a43c;
+  }
+
+  .iv-rank--master {
+    --rank: #b07cc6;
+  }
+
+  .iv-table thead th {
+    box-shadow: inset 0 -2px 0 var(--rank, transparent);
+  }
+
+  .iv-mon {
+    min-width: 170px;
+    font-weight: 400;
+  }
+
+  .iv-mon a {
+    display: inline-flex;
+    gap: var(--space-2);
+    align-items: center;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .iv-mon a:hover span {
+    color: var(--c-accent);
+  }
+
+  .iv-cell {
+    min-width: 150px;
+    font-size: var(--text-sm);
+  }
+
+  .iv-cell a {
+    display: block;
+  }
+
+  .iv-cell small {
+    margin-right: 6px;
+    color: var(--c-text-3);
+    font-family: var(--font-num);
+    font-size: var(--text-xs);
+  }
+
+  .iv-free {
+    color: var(--c-text-2);
+  }
+
+  .iv-alt {
+    margin-top: 2px;
+    color: var(--c-text-3);
+    font-size: var(--text-xs);
+  }
+</style>

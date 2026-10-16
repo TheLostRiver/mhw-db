@@ -43,3 +43,28 @@ export const GuidingLands = z
   })
   .strict();
 export type GuidingLands = z.infer<typeof GuidingLands>;
+
+/** 调查任务（investigations.json，见 world_guiding.build_investigations 与 docs/DATA.md 3.14） */
+export const Investigation = z
+  .object({
+    gameId: z.number().int().nonnegative(),
+    monster: z.string().regex(/^em\d{3}_\d{2}$/),
+    groups: z
+      .array(
+        z
+          .object({
+            rank: z.enum(['low', 'high', 'master']),
+            /** 推断为历战个体 */
+            tempered: z.boolean(),
+            /** 要先完成的任务；null = 没有前置任务 */
+            unlock: z.number().int().positive().nullable(),
+            /** 组内第二个任务编号（与第一个不同时给出，含义未确认） */
+            unlockAlt: z.number().int().positive().optional(),
+          })
+          .strict(),
+      )
+      .min(1),
+    _src: Src,
+  })
+  .strict();
+export type Investigation = z.infer<typeof Investigation>;

@@ -15,6 +15,7 @@ import {
   loadDecorations,
   loadDeliveries,
   loadGuidingLands,
+  loadInvestigations,
   loadItems,
   loadKinsects,
   loadLayeredArmor,
@@ -320,7 +321,13 @@ const chapters: Chapter[] = [
         href: '/world/quests/',
         count: loadQuests().quests.length,
       },
-      { label: '调查任务', note: '生成条件与报酬', glyph: 'investigation' },
+      {
+        label: '调查任务',
+        note: '前置任务与等级',
+        glyph: 'investigation',
+        href: '/world/investigations/',
+        count: loadInvestigations().length,
+      },
     ],
   },
   {

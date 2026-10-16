@@ -1,5 +1,6 @@
 import { defineConfig, passthroughImageService } from 'astro/config';
 import react from '@astrojs/react';
+import { cjkLineBreaks } from './src/build/cjk-line-breaks';
 
 export default defineConfig({
   site: 'https://mhdb.helsincy.com',
@@ -10,4 +11,6 @@ export default defineConfig({
   integrations: [react()],
   devToolbar: { enabled: false },
   prefetch: { prefetchAll: false, defaultStrategy: 'hover' },
+  // 中文段落折行渲染成空格的问题，见 src/build/cjk-line-breaks.ts
+  vite: { plugins: [cjkLineBreaks()] },
 });

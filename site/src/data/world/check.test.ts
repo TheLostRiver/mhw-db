@@ -24,7 +24,7 @@ import { PALICO_FILES } from './schema-palico';
 import { MonsterRewards, Quests } from './schema-quests';
 import { Mechanics } from './schema-mechanics';
 import { Records, Schedule } from './schema-records';
-import { GuidingLands } from './schema-guiding';
+import { GuidingLands, Investigation } from './schema-guiding';
 
 const ROOT = new URL('../../../../data/world/', import.meta.url);
 const read = (rel: string): unknown => JSON.parse(readFileSync(fileURLToPath(new URL(rel, ROOT)), 'utf-8'));
@@ -230,6 +230,21 @@ describe('引用完整', () => {
     for (const c of Combinations.parse(read('combinations.json')).combinations) {
       for (const id of [...c.materials, c.result])
         expect(itemIds.has(id), `调和 ${c.id} 的物品 ${id}`).toBe(true);
+    }
+  });
+
+  it('调查任务的怪物与前置任务存在', () => {
+    const list = (read('investigations.json') as { investigations: unknown[] }).investigations.map((x) =>
+      Investigation.parse(x),
+    );
+    expect(list.length).toBeGreaterThan(0);
+    const keys = new Set(Monsters.parse(read('monsters.json')).monsters.map((m) => m.key));
+    const quests = new Map(Quests.parse(read('quests.json')).quests.map((q) => [q.id, q.rank]));
+    for (const m of list) {
+      expect(keys.has(m.monster), `调查任务 ${m.monster}`).toBe(true);
+      for (const g of m.groups)
+        for (const q of [g.unlock, g.unlockAlt])
+          if (q != null) expect(quests.get(q), `${m.monster} 的任务 ${q}`).toBe(g.rank);
     }
   });
 

@@ -36,7 +36,7 @@ from mhdb.build.world_gear import (
     build_weapon_recipes,
     horn_notes,
 )
-from mhdb.build.world_guiding import build_guiding_lands
+from mhdb.build.world_guiding import build_guiding_lands, build_investigations
 from mhdb.build.world_mechanics import build_mechanics
 from mhdb.build.world_monsters import build_monsters
 from mhdb.build.world_moves import build_moves
@@ -522,6 +522,10 @@ def build(raw: Path, out: Path, log=print) -> dict:
     )
     write_json(out / "schedule.json", build_schedule(s))
     write_json(out / "guiding-lands.json", build_guiding_lands(s, monsters))
+    quest_rank = {q["id"]: q["rank"] for q in quests["quests"]}
+    write_records(
+        out / "investigations.json", "investigations", build_investigations(s, monsters, quest_rank)
+    )
     write_records(out / "monster-rewards.json", "rewards", monster_rewards)
     write_records(out / "palico-gear.json", "gear", palico_gear)
     write_json(out / "palico.json", palico)
