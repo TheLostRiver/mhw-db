@@ -16,6 +16,13 @@ from mhdb.build.world_custom import (
     read_crit,
     read_sharpness_multipliers,
 )
+from mhdb.build.world_gear import (
+    build_kinsects,
+    build_layered_weapons,
+    build_melodies,
+    build_pendants,
+    horn_notes,
+)
 from mhdb.build.world_monsters import build_monsters
 from mhdb.build.world_moves import build_moves
 from mhdb.formats import crypto
@@ -300,8 +307,8 @@ SA_PHIALS = ["power", "element", "dragon", "exhaust", "paralysis", "poison"]
 CB_PHIALS = ["impact", "element"]
 
 
-def _special(key: str, r: dict, tables: dict[str, list[dict]]) -> dict | None:
-    """武器专属参数：铳枪炮击、斩击斧 / 盾斧的瓶、双属性双剑、弓的可用瓶。"""
+def _special(key: str, r: dict, tables: dict[str, list]) -> dict | None:
+    """武器专属参数：铳枪炮击、斩击斧 / 盾斧的瓶、双属性双剑、狩猎笛音色、操虫棍猎虫加成、弓的可用瓶。"""
     if key == "gunlance":
         t = tables["shell"][r["special_1"]]
         return {"shelling": {"type": SHELL_TYPES[t["type"]], "level": t["level"] + 1}}
@@ -318,6 +325,11 @@ def _special(key: str, r: dict, tables: dict[str, list[dict]]) -> dict | None:
                 {"type": ELEMENTS[t["element_2"]], "value": t["value_2"]},
             ]
         }
+    if key == "hunting-horn":
+        return {"notes": tables["notes"][r["special_1"]]}
+    if key == "insect-glaive":
+        # 猎虫加成 0–7 = cm_status 的 STATUS_ROD_SKILL_01…08（已与 Kiranico 的 Weapon Ability 核对）
+        return {"kinsectBonus": r["special_1"]}
     if key == "bow":
         t = tables["coating"][r["special_ammo"]]
         return {"coatings": {k: t[k] for k in ("close", "power", "paralysis", "poison", "sleep", "blast")}}
@@ -331,6 +343,7 @@ def build_weapons(s: Source) -> dict[str, list[dict]]:
         "phial": s.table("common/equip/wep_saxe.wep_saxe", S.PHIAL),
         "dual": s.table("common/equip/wep_wsword.wep_wsd", S.DUAL_ELEMENT),
         "coating": s.table("common/equip/bottle_table.bbtbl", S.BOW_COATING),
+        "notes": horn_notes(s),
     }
     out: dict[str, list[dict]] = {}
     for file, key, text, ranged in S.WEAPON_TYPES:
@@ -423,6 +436,10 @@ def build(raw: Path, out: Path, log=print) -> dict:
     custom = build_weapon_custom(s)
     moves = build_moves(s, log)
     monsters = build_monsters(s, log)
+    kinsects = build_kinsects(s)
+    melodies = build_melodies(s)
+    pendants = build_pendants(s)
+    layered_weapons = build_layered_weapons(s)
     crit = read_crit(crypto.decrypt_file(PLP_REL, s.path(PLP_REL).read_bytes()))
 
     write_json(out / "meta.json", meta)
@@ -439,6 +456,10 @@ def build(raw: Path, out: Path, log=print) -> dict:
     write_json(out / "weapon-custom.json", custom)
     write_records(out / "moves.json", "moves", moves)
     write_records(out / "monsters.json", "monsters", monsters)
+    write_records(out / "kinsects.json", "kinsects", kinsects)
+    write_records(out / "melodies.json", "melodies", melodies["melodies"])
+    write_records(out / "pendants.json", "pendants", pendants)
+    write_json(out / "weapon-layered.json", layered_weapons)
     write_json(
         out / "constants.json",
         {
@@ -469,6 +490,10 @@ def build(raw: Path, out: Path, log=print) -> dict:
         "awakening": len(custom["awakening"]),
         "moves": len(moves),
         "monsters": len(monsters),
+        "kinsects": len(kinsects),
+        "melodies": len(melodies["melodies"]),
+        "pendants": len(pendants),
+        "layeredWeapons": sum(len(v) for v in layered_weapons.values()),
     }
     write_json(out / "counts.json", counts)
     log(f"写入 {out}：{counts}")

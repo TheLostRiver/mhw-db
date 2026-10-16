@@ -221,3 +221,39 @@ ITEM_LOT = spec(
         + [f"anim_{i}:B" for i in range(10)]
     ),
 )
+
+# ---------- 武器周边（字段含义与核对见 docs/DATA.md 3.6） ----------
+
+# 猎虫（整文件加密）：attack_type 0 切断 1 打击；dust 0 爆破 1 回复 2 麻痹 3 毒；power…element 为等级 1–20（与 Kiranico 105 只逐一核对）；
+# cost 为金钱；tree_id 是系列（insect_series 的序号）；tier（Ⅰ–Ⅲ）、tree_column（树里的列）为推断；sort_id、model 未确认
+KINSECT = spec(
+    "rod_insect.rod_inse",
+    "index:I attack_type:B sort_id:B tier:B model:H tree_id:B cost:I rarity:B "
+    "power:H speed:H heal:H element:H dust:H tree_column:B equip_id:H",
+)
+
+# 狩猎笛：whistle.wp_dat 的 special_1 是本表行号；音色 0 紫 1 红 2 橙 3 黄 4 绿 5 蓝 6 水色 7 白 8 残响
+HORN_NOTES = spec("wep_whistle.wep_wsl", "id:I note_1:B note_2:B note_3:B")
+# 旋律音序（整文件加密）：melody 为旋律编号，-1 = 没有这个音符
+MELODY = spec("music_skill.msk", "melody:I note_1:i note_2:i note_3:i note_4:i")
+
+# 武器挂饰（文件名叫 charm，内容是挂饰，不是护石）：cost 为调查点数，color 为图标颜色；其余字段未确认
+PENDANT = spec(
+    "charm.ch_dat",
+    "index:I sort:B unk_2:B model:B unk_4:B unk_5:B unk_6:H unk_7:H unk_8:B color:B cost:I unlock_flag:i "
+    "index_2:H index_3:H",
+)
+
+# 幻化武器（整文件加密）：recipe 为 cus_otr 行号；parts_base / parts_deco / unique_model 三选一（推断）；sort = -1 为空行
+LAYERED_WEAPON = spec(
+    "*.cus_ou",
+    "unk_0:I recipe:I sort:i weapon_id:I weapon_type:i parts_base:i parts_deco:i unique_model:i "
+    "bowgun_flag:h color:I pad:B",
+)
+# 幻化武器的配方：kind 2 基本外观 3 外观零件 4 衍生外观；cost 为调查点数；unlock_monster 为怪物 gameId（-1 无）
+LAYERED_RECIPE = spec(
+    "customOuterRecipe.cus_otr",
+    "kind:B unlock_item:H unlock_monster:i unk_4:i cost:I "
+    + " ".join(f"mat_{k}:H mat_{k}_count:B" for k in range(1, 5))
+    + " unk_5:B unk_6:B unk_7:B unk_8:B",
+)

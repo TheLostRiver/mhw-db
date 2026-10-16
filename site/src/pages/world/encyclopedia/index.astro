@@ -10,34 +10,41 @@ import {
   loadCombinations,
   loadDecorations,
   loadItems,
+  loadKinsects,
+  loadLayeredWeapons,
   loadMantles,
   loadMaps,
+  loadMelodies,
   loadMonsters,
   loadMoves,
+  loadPendants,
   loadSkills,
   loadWeaponCustom,
   loadWeapons,
 } from '../../../data/world/load';
 import { WEAPON_TYPES } from '../../../data/world/schema';
 import { contours } from '../../../lib/contours';
-import { ITEM_TYPES, equipIconUrl, itemIconUrl } from '../../../lib/world/encyclopedia';
-import { weaponIconUrl } from '../../../lib/world/weapons';
+import { ITEM_TYPES } from '../../../lib/world/encyclopedia';
 
 const G = '/assets/game/world';
 const items = loadItems();
-const itemIcon = (zh: string) => {
-  const i = items.find((x) => x.name['zh-Hans'] === zh);
-  return i ? itemIconUrl(i) : '';
-};
 const weapons = WEAPON_TYPES.flatMap((t) => loadWeapons(t).filter((w) => w.duplicateOf == null));
 const monsters = loadMonsters().filter((m) => m.name);
 const combos = loadCombinations();
+const ITEM_GLYPH: Record<string, string> = {
+  consumables: 'item',
+  materials: 'material',
+  other: 'other',
+  ammo: 'ammo',
+  room: 'room',
+};
 const custom = loadWeaponCustom();
 
 interface Entry {
   label: string;
   note: string;
-  icon: string;
+  /** glyph/ 下的单色图形名，按章节色着色 */
+  glyph: string;
   href?: string;
   count?: number;
 }
@@ -63,20 +70,20 @@ const chapters: Chapter[] = [
       {
         label: '怪物',
         note: '肉质、部位、异常耐性',
-        icon: `${G}/monster/em001.webp`,
+        glyph: 'monster',
         href: '/world/monsters/',
         count: monsters.length,
       },
-      { label: '怪物招式', note: '攻击动作与伤害', icon: `${G}/monster/em113.webp` },
-      { label: '环境生物', note: '栖息地、捕获、稀有度', icon: itemIcon('捕获用网子') },
+      { label: '怪物招式', note: '攻击动作与伤害', glyph: 'monster-moves' },
+      { label: '环境生物', note: '栖息地、捕获、稀有度', glyph: 'endemic' },
       {
         label: '地图',
         note: '采集点、环境生物、钓点',
-        icon: `${G}/ui/treasure.webp`,
+        glyph: 'map',
         href: '/world/maps/',
         count: loadMaps().length,
       },
-      { label: '聚魔之地', note: '地区等级与素材', icon: itemIcon('龙脉结晶') },
+      { label: '聚魔之地', note: '地区等级与素材', glyph: 'guiding-lands' },
     ],
   },
   {
@@ -90,42 +97,66 @@ const chapters: Chapter[] = [
       {
         label: '武器',
         note: '攻击、会心、属性、锐利度',
-        icon: weaponIconUrl('long-sword', 8),
+        glyph: 'weapon',
         href: '/world/weapons/',
         count: weapons.length,
       },
       {
         label: '武器招式',
         note: '动作值、补正、卡肉时间',
-        icon: weaponIconUrl('dual-blades', 8),
+        glyph: 'moves',
         href: '/world/moves/',
         count: loadMoves().length,
       },
       {
         label: '客制强化',
         note: '占用格数、研究点数与素材',
-        icon: `${G}/augment/attack.webp`,
+        glyph: 'augments',
         href: '/world/augments/',
         count: custom.augments.levels.length,
       },
       {
         label: '零件强化',
         note: '各阶段零件、效果与素材',
-        icon: `${G}/augment/element.webp`,
+        glyph: 'parts',
         href: '/world/custom-parts/',
         count: Object.values(custom.parts).flat().length,
       },
       {
         label: '冥赤觉醒',
         note: '觉醒能力与各武器种的加值',
-        icon: `${G}/status/90.webp`,
+        glyph: 'awakening',
         href: '/world/awakening/',
         count: custom.awakening.length,
       },
-      { label: '武器外观', note: '自定义外观与所需素材', icon: weaponIconUrl('great-sword', 10) },
-      { label: '武器饰物', note: '挂件一览', icon: weaponIconUrl('gunlance', 6) },
-      { label: '猎虫', note: '力量、速度、回复与粉尘', icon: weaponIconUrl('insect-glaive', 8) },
-      { label: '狩猎笛旋律', note: '音色组合与旋律效果', icon: `${G}/status/33.webp` },
+      {
+        label: '武器外观',
+        note: '自定义外观与所需素材',
+        glyph: 'layered-weapon',
+        href: '/world/layered-weapons/',
+        count: Object.values(loadLayeredWeapons()).flat().length,
+      },
+      {
+        label: '武器饰物',
+        note: '挂饰的素材与获得方式',
+        glyph: 'pendant',
+        href: '/world/pendants/',
+        count: loadPendants().length,
+      },
+      {
+        label: '猎虫',
+        note: '力量、速度、回复与粉尘',
+        glyph: 'kinsect',
+        href: '/world/kinsects/',
+        count: loadKinsects().length,
+      },
+      {
+        label: '狩猎笛旋律',
+        note: '音色组合与旋律效果',
+        glyph: 'melody',
+        href: '/world/melodies/',
+        count: loadMelodies().length,
+      },
     ],
   },
   {
@@ -139,34 +170,34 @@ const chapters: Chapter[] = [
       {
         label: '防具',
         note: '防御、耐性、技能',
-        icon: equipIconUrl('head', 8),
+        glyph: 'armor',
         href: '/world/armor/',
         count: loadArmor().length,
       },
-      { label: '防具幻化', note: '外观装备', icon: equipIconUrl('chest', 10) },
+      { label: '防具幻化', note: '外观装备', glyph: 'layered-armor' },
       {
         label: '护石',
         note: '技能与等级',
-        icon: equipIconUrl('charm', 8),
+        glyph: 'charm',
         href: '/world/charms/',
         count: loadCharms().length,
       },
       {
         label: '饰品',
         note: '镶嵌等级与技能',
-        icon: `${G}/deco/4-1.webp`,
+        glyph: 'decoration',
         href: '/world/decorations/',
         count: loadDecorations().length,
       },
       {
         label: '特殊装备',
         note: '衣装的效果与镶嵌槽',
-        icon: `${G}/mantle/empty.webp`,
+        glyph: 'mantle',
         href: '/world/mantles/',
         count: loadMantles().length,
       },
-      { label: '随从装备', note: '随从的武器与防具', icon: itemIcon('随从票') },
-      { label: '随从道具', note: '随从的特殊道具', icon: `${G}/status/34.webp` },
+      { label: '随从装备', note: '随从的武器与防具', glyph: 'palico-gear' },
+      { label: '随从道具', note: '随从的特殊道具', glyph: 'palico-gadget' },
     ],
   },
   {
@@ -180,13 +211,13 @@ const chapters: Chapter[] = [
       {
         label: '装备技能',
         note: '每级效果、来源',
-        icon: `${G}/skill/5.webp`,
+        glyph: 'skill',
         href: '/world/skills/',
         count: loadSkills().length,
       },
-      { label: '猫饭技能', note: '发动条件与效果', icon: itemIcon('餐券') },
-      { label: '猫饭食材', note: '肉、鱼、蔬菜等食材', icon: itemIcon('生肉') },
-      { label: '艾露猫', note: '随从的等级与成长', icon: `${G}/status/38.webp` },
+      { label: '猫饭技能', note: '发动条件与效果', glyph: 'canteen' },
+      { label: '猫饭食材', note: '肉、鱼、蔬菜等食材', glyph: 'ingredient' },
+      { label: '艾露猫', note: '随从的等级与成长', glyph: 'palico' },
     ],
   },
   {
@@ -197,26 +228,21 @@ const chapters: Chapter[] = [
     hue: '#5cc98f',
     lead: '道具、素材与弹药的稀有度、携带上限与价格；调和配方。',
     entries: [
-      ...ITEM_TYPES.map((t) => {
-        const first = items.find(
-          (i) => i.type === t.type && i.rarity > 0 && !i.name['zh-Hans'].startsWith('－'),
-        );
-        return {
-          label: t.label,
-          note: t.note,
-          icon: first ? itemIconUrl(first) : '',
-          href: `/world/items/${t.slug}/`,
-          count: items.filter((i) => i.type === t.type).length,
-        };
-      }),
+      ...ITEM_TYPES.map((t) => ({
+        label: t.label,
+        note: t.note,
+        glyph: ITEM_GLYPH[t.slug] ?? 'item',
+        href: `/world/items/${t.slug}/`,
+        count: items.filter((i) => i.type === t.type).length,
+      })),
       {
         label: '调和列表',
         note: '素材、成品与个数',
-        icon: itemIcon('回复药·大'),
+        glyph: 'combination',
         href: '/world/combinations/',
         count: combos.length,
       },
-      { label: '投射器弹', note: '地图上可捡的投射物', icon: itemIcon('投射器闪光弹') },
+      { label: '投射器弹', note: '地图上可捡的投射物', glyph: 'slinger' },
     ],
   },
   {
@@ -227,8 +253,8 @@ const chapters: Chapter[] = [
     hue: '#d8c27a',
     lead: '任务的目标、地图、限时与报酬；调查任务。',
     entries: [
-      { label: '任务', note: '目标、地图、报酬', icon: itemIcon('调查团票') },
-      { label: '调查任务', note: '生成条件与报酬', icon: itemIcon('调查点数') },
+      { label: '任务', note: '目标、地图、报酬', glyph: 'quest' },
+      { label: '调查任务', note: '生成条件与报酬', glyph: 'investigation' },
     ],
   },
   {
@@ -239,14 +265,14 @@ const chapters: Chapter[] = [
     hue: '#4fc3c0',
     lead: '阿斯特拉与瑟利纳的各个设施：炼金、商店、委托、交易船与农场。',
     entries: [
-      { label: '神秘炼金', note: '炼金方式与可得物品', icon: itemIcon('神秘炼金珠·银') },
-      { label: '补给物资所', note: '出售物品与解锁条件', icon: itemIcon('回复药') },
-      { label: '交货委托', note: '委托内容与奖励', icon: itemIcon('金之龙人票据') },
-      { label: '重要赏金', note: '赏金条件与奖励', icon: itemIcon('银之龙人票据') },
-      { label: '蒸汽机关管理所', note: '奖励表', icon: itemIcon('击龙杭炮的燃料') },
-      { label: '随从探险队', note: '探险地点与收获', icon: itemIcon('随从票') },
-      { label: '交易船', note: '交易与以物易物', icon: itemIcon('钢之龙人票据') },
-      { label: '植生研究所', note: '可种植物与肥料', icon: itemIcon('怪力种子') },
+      { label: '神秘炼金', note: '炼金方式与可得物品', glyph: 'melder' },
+      { label: '补给物资所', note: '出售物品与解锁条件', glyph: 'provisions' },
+      { label: '交货委托', note: '委托内容与奖励', glyph: 'delivery' },
+      { label: '奖金', note: '登记奖金与重要奖金', glyph: 'bounty' },
+      { label: '蒸气机关管理所', note: '奖励表与燃料', glyph: 'steamworks' },
+      { label: '随从探险队', note: '探险地点与收获', glyph: 'expedition' },
+      { label: '交易船', note: '各阶段的进货', glyph: 'argosy' },
+      { label: '植生研究所', note: '可种植物与肥料', glyph: 'botany' },
     ],
   },
   {
@@ -255,12 +281,12 @@ const chapters: Chapter[] = [
     title: '纪录与祭典',
     en: 'Records & Festivals',
     hue: '#e07a9a',
-    lead: '成就、祭典的轮换日程、人物与追加内容。',
+    lead: '勋章、祭典的轮换日程、人物与追加内容。',
     entries: [
-      { label: '成就', note: '条件一览', icon: `${G}/status/62.webp` },
-      { label: '祭典与日历', note: '轮换日程', icon: itemIcon('祭典票') },
-      { label: 'NPC', note: '人物与介绍', icon: `${G}/ui/npc.webp` },
-      { label: 'DLC', note: '追加内容', icon: `${G}/status/55.webp` },
+      { label: '勋章', note: '条件一览', glyph: 'achievement' },
+      { label: '祭典与日历', note: '轮换日程', glyph: 'festival' },
+      { label: 'NPC', note: '人物一览', glyph: 'npc' },
+      { label: 'DLC', note: '追加内容', glyph: 'dlc' },
     ],
   },
   {
@@ -271,20 +297,14 @@ const chapters: Chapter[] = [
     hue: '#8fb8ff',
     lead: '把游戏里看不见的数值摊开：伤害公式、异常状态、龙封力、加护、无敌帧与防御性能。',
     entries: [
-      {
-        label: '伤害计算器',
-        note: '物理、属性、会心期望',
-        icon: `${G}/status/27.webp`,
-        href: '/world/damage/',
-      },
-      { label: '状态异常数值', note: '毒、睡眠、麻痹、爆破等', icon: `${G}/status/10.webp` },
-      { label: '属性异常数值', note: '猎人身上的属性异常', icon: `${G}/status/3.webp` },
-      { label: '龙封力积蓄', note: '积蓄量与效果', icon: `${G}/status/7.webp` },
-      { label: '加护减伤', note: '减伤概率与比例', icon: `${G}/status/89.webp` },
-      { label: '回避性能', note: '动作的无敌时间', icon: `${G}/status/41.webp` },
-      { label: '防御性能', note: '武器的防御性能', icon: `${G}/status/26.webp` },
-      { label: '猎虫数据', note: '猎虫攻击与粉尘', icon: `${G}/status/80.webp` },
-      { label: '寒气炼成', note: '冰原的炼成参数', icon: `${G}/status/74.webp` },
+      { label: '伤害计算器', note: '物理、属性、会心期望', glyph: 'mechanics', href: '/world/damage/' },
+      { label: '状态异常数值', note: '怪物的毒、睡眠、麻痹、爆破等', glyph: 'status' },
+      { label: '属性异常数值', note: '猎人身上的属性异常', glyph: 'blight' },
+      { label: '龙封力积蓄', note: '积蓄量与效果', glyph: 'elderseal' },
+      { label: '回避性能', note: '翻滚的无敌时间', glyph: 'evade' },
+      { label: '防御性能', note: '武器的防御性能', glyph: 'guard' },
+      { label: '猎虫数据', note: '萃取、粉尘与猎虫加成', glyph: 'kinsect-data' },
+      { label: '寒气炼成', note: '冰呪龙系列技能的倍率', glyph: 'frostcraft' },
     ],
   },
 ];
@@ -395,7 +415,7 @@ let no = 0;
                       <circle class="ec-seal__ring" cx="32" cy="32" r="29" />
                       <circle class="ec-seal__dash" cx="32" cy="32" r="24.5" />
                     </svg>
-                    {e.icon && <img src={e.icon} alt="" width="40" height="40" loading="lazy" />}
+                    <i class="ec-glyph" style={`--glyph: url(${G}/glyph/${e.glyph}.webp)`} />
                   </span>
                   <strong>{e.label}</strong>
                   <small>{e.note}</small>
@@ -881,11 +901,21 @@ let no = 0;
     transform: rotate(120deg);
   }
 
-  .ec-seal img {
+  /* 游戏菜单图标做遮罩，填章节色的渐变 */
+  .ec-glyph {
     position: relative;
-    width: 40px;
-    height: 40px;
-    filter: drop-shadow(0 2px 6px rgb(0 0 0 / 0.35));
+    width: 38px;
+    height: 38px;
+    background: linear-gradient(160deg, color-mix(in oklab, var(--hue) 55%, #fff), var(--hue) 70%);
+    mask: var(--glyph) center / contain no-repeat;
+    /* 图标是白色线稿 + 深色描边，按亮度取遮罩才能只留下线稿 */
+    mask-mode: luminance;
+    transition: transform var(--dur-base) var(--ease-out);
+  }
+
+  a.ec-card:hover .ec-glyph,
+  a.ec-card:focus-visible .ec-glyph {
+    transform: scale(1.08);
   }
 
   .ec-card strong {
@@ -929,9 +959,9 @@ let no = 0;
     box-shadow: inset 0 0 0 1px var(--c-line);
   }
 
-  .ec-card.is-todo .ec-seal img {
-    filter: grayscale(1);
-    opacity: 0.45;
+  .ec-card.is-todo .ec-glyph {
+    background: var(--c-text-3);
+    opacity: 0.5;
   }
 
   .ec-card.is-todo strong {
@@ -1023,7 +1053,8 @@ let no = 0;
       transform: none;
     }
 
-    a.ec-card:hover .ec-seal svg {
+    a.ec-card:hover .ec-seal svg,
+    a.ec-card:hover .ec-glyph {
       transform: none;
     }
   }

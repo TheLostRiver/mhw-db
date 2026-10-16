@@ -22,6 +22,10 @@ const Src = z
   .object({ file: z.string().startsWith('common/'), row: z.number().int().nonnegative() })
   .strict();
 const Rarity = z.number().int().min(1).max(12);
+
+/** 狩猎笛音色：echo 为残响音符 */
+export const NOTES = ['purple', 'red', 'orange', 'yellow', 'green', 'blue', 'aqua', 'white', 'echo'] as const;
+const Note = z.enum(NOTES);
 const SkillRef = z.object({ id: z.number().int().nonnegative(), level: z.number().int().min(1) }).strict();
 const Slots = z.array(z.number().int().min(1).max(4)).max(3);
 const Icon = z.object({ id: z.number().int().min(0).max(255), color: z.number().int().min(0) }).strict();
@@ -89,6 +93,85 @@ export const Combination = z
   })
   .strict();
 export const Combinations = z.object({ combinations: z.array(Combination).min(1) }).strict();
+
+const MaterialList = z.array(
+  z.object({ item: z.number().int().positive(), count: z.number().int().positive() }).strict(),
+);
+
+/** 猎虫（rod_insect.rod_inse + insect.eq_cus 培养树） */
+export const Kinsect = z
+  .object({
+    id: z.number().int().nonnegative(),
+    name: Text,
+    attack: z.enum(['sever', 'blunt']),
+    dust: z.enum(['blast', 'heal', 'paralysis', 'poison']),
+    power: z.number().int().min(1).max(20),
+    speed: z.number().int().min(1).max(20),
+    heal: z.number().int().min(1).max(20),
+    element: z.number().int().min(1).max(20),
+    rarity: Rarity,
+    cost: z.number().int().nonnegative(),
+    series: z.object({ id: z.number().int(), name: OptText }).strict(),
+    tier: z.number().int().min(1).max(3),
+    column: z.number().int().nonnegative(),
+    parent: z.number().int().nullable(),
+    rank: z.enum(['low', 'high', 'master']).nullable(),
+    materials: MaterialList,
+    unlockMonster: z.number().int().positive().optional(),
+    _src: Src,
+  })
+  .strict();
+export type Kinsect = z.infer<typeof Kinsect>;
+
+/** 狩猎笛旋律（music_skill.msk + music_skill_efc.mske） */
+export const Melody = z
+  .object({
+    id: z.number().int().nonnegative(),
+    name: Text,
+    effect: OptText,
+    encore: OptText,
+    sequences: z.array(z.array(Note).min(2).max(4)).min(1),
+    /** 持续秒数：基础 / 吹笛名人 1 / 2（名人两档为推断） */
+    duration: z.tuple([z.number(), z.number(), z.number()]),
+    extension: z.tuple([z.number(), z.number(), z.number()]),
+    value: z.number(),
+    valueEncore: z.number(),
+    _src: z.object({ file: z.string(), effects: z.string(), row: z.number().int() }).strict(),
+  })
+  .strict();
+export type Melody = z.infer<typeof Melody>;
+
+/** 武器挂饰（charm.ch_dat + charm.eq_crt） */
+export const Pendant = z
+  .object({
+    id: z.number().int().nonnegative(),
+    name: Text,
+    color: z.number().int().nonnegative(),
+    /** 调查点数 */
+    cost: z.number().int().nonnegative(),
+    source: z.enum(['craft', 'reward', 'event']),
+    materials: MaterialList,
+    unlockMonster: z.number().int().positive().optional(),
+    _src: Src,
+  })
+  .strict();
+export type Pendant = z.infer<typeof Pendant>;
+
+/** 幻化武器（customOuter*.cus_ou + customOuterRecipe.cus_otr） */
+export const LayeredWeapon = z
+  .object({
+    id: z.number().int().positive(),
+    name: Text,
+    kind: z.enum(['base', 'parts', 'unique']),
+    color: z.number().int().nonnegative(),
+    sort: z.number().int().nonnegative(),
+    cost: z.number().int().nonnegative(),
+    materials: MaterialList,
+    unlockMonster: z.number().int().positive().optional(),
+    _src: Src,
+  })
+  .strict();
+export type LayeredWeapon = z.infer<typeof LayeredWeapon>;
 export type Combination = z.infer<typeof Combination>;
 
 const SkillLevel = z
@@ -230,6 +313,10 @@ const WeaponSpecial = z
       })
       .strict()
       .optional(),
+    /** 狩猎笛的三个音色（wep_wsl） */
+    notes: z.tuple([Note, Note, Note]).optional(),
+    /** 操虫棍的猎虫加成 0–7（cm_status STATUS_ROD_SKILL_01…08） */
+    kinsectBonus: z.number().int().min(0).max(7).optional(),
   })
   .strict();
 
@@ -838,5 +925,11 @@ export const FILES = {
   'armor.json': { key: 'armor', schema: Armor },
   'charms.json': { key: 'charms', schema: Charm },
   'mantles.json': { key: 'mantles', schema: Mantle },
+  'kinsects.json': { key: 'kinsects', schema: Kinsect },
+  'melodies.json': { key: 'melodies', schema: Melody },
+  'pendants.json': { key: 'pendants', schema: Pendant },
   ...Object.fromEntries(WEAPON_TYPES.map((t) => [`weapons/${t}.json`, { key: 'weapons', schema: Weapon }])),
 } as const satisfies Record<string, { key: string; schema: z.ZodType }>;
+
+/** weapon-layered.json：武器种 → 幻化外观 */
+export const LayeredWeapons = z.record(z.enum(WEAPON_TYPES), z.array(LayeredWeapon).min(1));

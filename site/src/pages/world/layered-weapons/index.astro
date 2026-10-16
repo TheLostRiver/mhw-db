@@ -1,0 +1,33 @@
+---
+import SiteLayout from '../../../layouts/SiteLayout.astro';
+import { loadLayeredWeapons } from '../../../data/world/load';
+import { WEAPON_ORDER, WEAPON_TYPE_NAMES, weaponIconUrl } from '../../../lib/world/weapons';
+
+const all = loadLayeredWeapons();
+---
+
+<SiteLayout
+  title="武器外观"
+  current="encyclopedia"
+  description="怪物猎人：世界 冰原 武器自定义外观：14 种武器的基本外观、外观零件与衍生外观"
+>
+  <nav class="s-crumbs" aria-label="位置">
+    <a href="/world/encyclopedia/">百科</a>
+    <span>武器外观</span>
+  </nav>
+  <div class="s-head">
+    <h1>武器外观</h1>
+    <p>大师级的武器自定义外观（幻化）。选择武器种查看可解锁的外观、所需素材与调查点数。</p>
+  </div>
+  <ul class="s-grid">
+    {WEAPON_ORDER.map((w) => (
+      <li>
+        <a class="s-card" href={`/world/layered-weapons/${w}/`}>
+          <img src={weaponIconUrl(w, 10)} alt="" width="44" height="44" loading="lazy" />
+          <strong>{WEAPON_TYPE_NAMES[w]}</strong>
+          <small>{(all[w] ?? []).length} 种外观</small>
+        </a>
+      </li>
+    ))}
+  </ul>
+</SiteLayout>

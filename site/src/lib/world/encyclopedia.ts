@@ -55,6 +55,18 @@ export const COATING_LABEL = {
   blast: '爆破瓶',
 } as const;
 
+/** 操虫棍的猎虫加成（与游戏文本 cm_status 的 STATUS_ROD_SKILL_01…08 一致） */
+export const KINSECT_BONUS_LABEL = [
+  '攻击强化【切断】',
+  '攻击强化【打击】',
+  '攻击强化【属性】',
+  '速度强化',
+  '回复强化【耐力】',
+  '回复强化【体力】',
+  '猎虫强化【气·力】发动',
+  '体力回复·耐力强化',
+] as const;
+
 export const itemIconUrl = (i: Pick<Item, 'icon'>) => `${BASE}/item/${i.icon.id}-${i.icon.color}.webp`;
 export const equipIconUrl = (slot: string, rarity: number) => `${BASE}/equip/${slot}-${rarity}.webp`;
 export const socketIconUrl = (level: number) => `${BASE}/socket/${level}.webp`;

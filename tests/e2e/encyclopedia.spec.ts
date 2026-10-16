@@ -29,6 +29,12 @@ const PAGES = [
   ['/world/custom-parts/', '零件强化'],
   ['/world/custom-parts/long-sword/', '太刀'],
   ['/world/awakening/', '冥赤觉醒'],
+  ['/world/kinsects/', '猎虫'],
+  ['/world/melodies/', '狩猎笛旋律'],
+  ['/world/pendants/', '武器饰物'],
+  ['/world/layered-weapons/', '武器外观'],
+  ['/world/layered-weapons/heavy-bowgun/', '重弩'],
+  ['/world/weapons/hunting-horn/', '狩猎笛'],
 ] as const;
 
 for (const [path, heading] of PAGES) {
@@ -97,4 +103,18 @@ test('百科目录的搜索跨章节筛选', async ({ page }) => {
   await expect(shown.first()).toContainText('冥赤觉醒');
   await shown.first().locator('a').click();
   await expect(page).toHaveURL(/\/world\/awakening\/$/);
+});
+
+test('狩猎笛旋律按音色筛选，从武器页跳转时带上音色', async ({ page }) => {
+  await page.goto('/world/weapons/hunting-horn/', { waitUntil: 'networkidle' });
+  const link = page.locator('a[href^="/world/melodies/#"]').first();
+  const href = (await link.getAttribute('href'))!;
+  await link.click();
+  await expect.poll(() => page.url().endsWith(href)).toBe(true);
+  const key = href.split('#')[1]!;
+  await expect(page.locator(`[data-horn="${key}"]`)).toHaveAttribute('aria-pressed', 'true');
+  const shown = page.locator('[data-ml-row]:not([hidden])');
+  expect(await shown.count()).toBeLessThan(await page.locator('[data-ml-row]').count());
+  await page.getByRole('button', { name: '全部旋律' }).click();
+  await expect(page.locator('[data-ml-row][hidden]')).toHaveCount(0);
 });

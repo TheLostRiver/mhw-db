@@ -41,6 +41,23 @@ WEAPON = {
 }
 # 空栏位占位图标的颜色（灰，与游戏「未装备」栏的灰色图标接近）
 PLACEHOLDER = (128, 132, 138)
+
+# 百科目录用的单色图形（cmn_item00 里的菜单图标），原样输出，站点用作遮罩按章节色着色。按图形挑选，名字是站内用途
+GLYPH = {
+    "monster": 179, "monster-moves": 183, "endemic": 178, "map": 218, "guiding-lands": 184,
+    "weapon": 213, "moves": 235, "augments": 234, "parts": 236, "awakening": 212, "layered-weapon": 237,
+    "pendant": 160, "kinsect": 232, "melody": 159,
+    "armor": 225, "layered-armor": 220, "charm": 223, "decoration": 222, "mantle": 239,
+    "palico-gear": 230, "palico-gadget": 100, "palico": 231,
+    "skill": 96, "canteen": 98, "ingredient": 188,
+    "item": 201, "material": 182, "other": 185, "ammo": 192, "room": 186, "combination": 196, "slinger": 133,
+    "quest": 191, "investigation": 181,
+    "melder": 210, "provisions": 187, "delivery": 190, "bounty": 124, "steamworks": 214, "expedition": 200,
+    "argosy": 197, "botany": 215,
+    "achievement": 106, "festival": 102, "npc": 189, "dlc": 180,
+    "mechanics": 195, "status": 113, "blight": 208, "elderseal": 175, "blessing": 204, "evade": 107,
+    "guard": 203, "kinsect-data": 233, "frostcraft": 208,
+}  # fmt: skip
 # equip_egc：大师自定义强化的格数六边形（已用 / 空），坐标为 (左, 上, 右, 下)
 AUGMENT_HEX = {"used": (5, 2, 59, 62), "empty": (199, 3, 249, 60)}
 # cmn_status00 里自定义强化各项的图标（攻击↑、会心↑、防御↑、镶嵌槽＋、回复、属性↑），按图形核对
@@ -182,6 +199,19 @@ def build(raw: Path, data: Path, out: Path, log=print) -> int:
         for r, rgb in enumerate([PLACEHOLDER, *rarity_colors]):
             save(fill(grid_cell(item, cell), grid_cell(item_mask, cell), rgb), f"weapon/{key}-{r}.webp")
     save(tint(grid_cell(item, 112), PLACEHOLDER), "mantle/empty.webp")
+    for name, cell in GLYPH.items():
+        save(grid_cell(item, cell), f"glyph/{name}.webp")
+
+    # 武器挂饰：挂饰图形 × 图标颜色；幻化武器：武器种图标 × 图标颜色（两者的 color 都是 colors.json 的图标调色板）
+    for c in sorted({p["color"] for p in load("pendants.json")["pendants"]}):
+        save(tint(grid_cell(item, GLYPH["pendant"]), icon_colors[c]), f"pendant/{c}.webp")
+    for key, rows in load("weapon-layered.json").items():
+        cell = WEAPON[key]
+        for c in sorted({r["color"] for r in rows}):
+            save(
+                fill(grid_cell(item, cell), grid_cell(item_mask, cell), icon_colors[c]),
+                f"weapon/{key}-c{c}.webp",
+            )
 
     # 自定义强化：格数六边形与各项图标
     egc = _atlas(raw, "ui/equip/tex/equip_egc_ID.tex")

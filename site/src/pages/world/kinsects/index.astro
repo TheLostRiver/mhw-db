@@ -1,0 +1,324 @@
+---
+import SiteLayout from '../../../layouts/SiteLayout.astro';
+import FilterBox from '../../../components/site/FilterBox.astro';
+import Materials from '../../../components/site/Materials.astro';
+import { itemById, loadColors, loadKinsects, monsterNameByGameId } from '../../../data/world/load';
+import type { Kinsect } from '../../../data/world/schema';
+import { weaponIconUrl } from '../../../lib/world/weapons';
+
+const kinsects = loadKinsects();
+const byId = new Map(kinsects.map((k) => [k.id, k]));
+const rarityColors = loadColors().rarity;
+const ROMAN = ['', 'Ⅰ', 'Ⅱ', 'Ⅲ'];
+const ATTACK = { sever: '切断', blunt: '打击' } as const;
+const DUST = { blast: '爆破', heal: '回复', paralysis: '麻痹', poison: '毒' } as const;
+// 粉尘图标取自状态图标（cmn_status00）
+const DUST_ICON = { blast: 13, heal: 34, paralysis: 10, poison: 8 } as const;
+const STATS = [
+  { key: 'power', label: '力量' },
+  { key: 'speed', label: '速度' },
+  { key: 'heal', label: '回复' },
+  { key: 'element', label: '属性' },
+] as const;
+const RANK = { low: '下位', high: '上位', master: '大师' } as const;
+
+// 系列按在树上出现的位置排序（起始列、编号）
+const seriesOf = (list: Kinsect[]) => {
+  const groups = new Map<number, Kinsect[]>();
+  for (const k of list) groups.set(k.series.id, [...(groups.get(k.series.id) ?? []), k]);
+  return [...groups.values()]
+    .map((ks) => ks.sort((a, b) => a.column - b.column || a.id - b.id))
+    .sort((a, b) => a[0]!.column - b[0]!.column || a[0]!.series.id - b[0]!.series.id);
+};
+const sections = (['sever', 'blunt'] as const).map((attack) => ({
+  attack,
+  series: seriesOf(kinsects.filter((k) => k.attack === attack)),
+}));
+const text = (k: Kinsect) =>
+  [
+    k.name['zh-Hans'],
+    k.name.en,
+    k.series.name['zh-Hans'],
+    DUST[k.dust],
+    ...k.materials.map((m) => itemById(m.item)?.name['zh-Hans'] ?? ''),
+  ]
+    .join(' ')
+    .toLowerCase();
+---
+
+<SiteLayout
+  title="猎虫"
+  current="encyclopedia"
+  description="怪物猎人：世界 冰原 操虫棍猎虫一览：力量、速度、回复、属性等级，粉尘种类、培养树与素材"
+  wide
+>
+  <nav class="s-crumbs" aria-label="位置">
+    <a href="/world/encyclopedia/">百科</a>
+    <a href="/world/weapons/insect-glaive/">操虫棍</a>
+    <span>猎虫</span>
+  </nav>
+  <div class="s-head">
+    <h1>
+      <img src={weaponIconUrl('insect-glaive', 8)} alt="" width="40" height="40" />
+      猎虫 <span class="b-label">{kinsects.length} 只</span>
+    </h1>
+    <p>
+      按攻击类型与系列排列，系列内从左到右为培养顺序。条形为力量 / 速度 / 回复 / 属性的等级（满 20），
+      卡片下方是培养到这一只所需的素材与金额。
+    </p>
+  </div>
+  <FilterBox label="按猎虫名、粉尘或素材筛选" placeholder="按猎虫名、粉尘（如 爆破）或素材筛选" />
+
+  {sections.map((sec) => (
+    <section class="s-section ks-attack">
+      <h2>
+        {ATTACK[sec.attack]}型 <small class="s-dim">{sec.series.flat().length} 只</small>
+      </h2>
+      {sec.series.map((ks) => {
+        const first = ks[0]!;
+        const from = first.parent != null ? byId.get(first.parent) : undefined;
+        return (
+          <div class="ks-series" data-filter-section>
+            <h3>
+              {first.series.name['zh-Hans']}
+              {from && <small>由 {from.name['zh-Hans']} 培养</small>}
+            </h3>
+            <ol class="ks-row">
+              {ks.map((k) => (
+                <li class="ks-card" data-filter-row data-text={text(k)} id={`kinsect-${k.id}`}>
+                  <header>
+                    <span class="ks-tier">{ROMAN[k.tier]}</span>
+                    <strong>{k.name['zh-Hans']}</strong>
+                    <span class="ks-rarity" style={`--rarity: ${rarityColors[k.rarity - 1]}`}>
+                      {k.rarity}
+                    </span>
+                  </header>
+                  <div class="ks-dust">
+                    <img
+                      src={`/assets/game/world/status/${DUST_ICON[k.dust]}.webp`}
+                      alt=""
+                      width="20"
+                      height="20"
+                    />
+                    {DUST[k.dust]}粉尘
+                  </div>
+                  <dl class="ks-stats">
+                    {STATS.map((s) => (
+                      <div class={`ks-stat ks-stat--${s.key}`}>
+                        <dt>{s.label}</dt>
+                        <dd style={`--v: ${k[s.key]}`} aria-label={`${s.label} ${k[s.key]}`}>
+                          <span class="ks-bar" />
+                          <b>{k[s.key]}</b>
+                        </dd>
+                      </div>
+                    ))}
+                  </dl>
+                  {k.materials.length > 0 && (
+                    <footer>
+                      <span class="ks-cost">
+                        {k.rank && RANK[k.rank]} · {k.cost.toLocaleString('en-US')}z
+                      </span>
+                      <Materials materials={k.materials} />
+                      {k.unlockMonster != null && (
+                        <span class="ks-unlock">
+                          需讨伐{monsterNameByGameId(k.unlockMonster) ?? '特定怪物'}
+                        </span>
+                      )}
+                    </footer>
+                  )}
+                  {k.materials.length === 0 && (
+                    <footer>
+                      <span class="ks-cost">{k.parent == null ? '初始猎虫' : '—'}</span>
+                    </footer>
+                  )}
+                </li>
+              ))}
+            </ol>
+          </div>
+        );
+      })}
+    </section>
+  ))}
+
+  <p class="s-note">
+    数据来源：<code>common/equip/rod_insect.rod_inse</code>（猎虫参数）、<code>insect.eq_cus</code>
+    （培养树与素材）与猎虫文本。 四项等级已与 Kiranico 逐只核对（105 / 105）；粉尘按 0 爆破、1 回复、2 麻痹、3
+    毒（与 Fextralife 的 7 只猎虫及操虫棍参数的字段顺序一致， Kiranico 的粉尘标签错了一位）。Ⅰ / Ⅱ / Ⅲ
+    与系列内的列位置为推断。
+  </p>
+</SiteLayout>
+
+<style>
+  .s-head h1 img {
+    align-self: center;
+  }
+
+  .s-section h2 small {
+    font-size: var(--text-sm);
+    font-weight: 400;
+  }
+
+  .ks-series {
+    margin-bottom: var(--space-5);
+  }
+
+  .ks-series h3 {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-3);
+    margin: 0 0 var(--space-2);
+    font-size: var(--text-md);
+  }
+
+  .ks-series h3 small {
+    color: var(--c-text-3);
+    font-size: var(--text-xs);
+    font-weight: 400;
+  }
+
+  .ks-row {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(250px, 1fr);
+    gap: var(--space-4);
+    margin: 0;
+    padding: 0 0 var(--space-2);
+    overflow-x: auto;
+    list-style: none;
+    scrollbar-width: thin;
+  }
+
+  .ks-card {
+    position: relative;
+    display: grid;
+    align-content: start;
+    gap: var(--space-2);
+    padding: var(--space-3);
+    border-radius: var(--radius);
+    background: var(--c-surface);
+    box-shadow: inset 0 0 0 1px var(--c-line);
+  }
+
+  /* 系列内的培养箭头 */
+  .ks-card + .ks-card::before {
+    content: '';
+    position: absolute;
+    left: calc(var(--space-4) * -1);
+    top: 22px;
+    width: var(--space-4);
+    height: 1px;
+    background: var(--c-line-strong);
+  }
+
+  .ks-card:target {
+    box-shadow:
+      inset 0 0 0 1px var(--c-accent),
+      0 0 0 3px var(--c-accent-soft);
+  }
+
+  .ks-card header {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-2);
+  }
+
+  .ks-card strong {
+    flex: 1;
+  }
+
+  .ks-tier {
+    color: var(--c-accent);
+    font-family: 'Noto Serif SC Variable', serif;
+    font-weight: 700;
+  }
+
+  .ks-rarity {
+    padding: 0 6px;
+    border-radius: 3px;
+    background: color-mix(in oklab, var(--rarity) 22%, transparent);
+    color: color-mix(in oklab, var(--rarity) 70%, var(--c-text));
+    font-family: var(--font-num);
+    font-size: var(--text-xs);
+  }
+
+  .ks-dust {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--c-text-2);
+    font-size: var(--text-sm);
+  }
+
+  .ks-stats {
+    display: grid;
+    gap: 3px;
+    margin: 0;
+  }
+
+  .ks-stat {
+    display: grid;
+    grid-template-columns: 2.5em minmax(0, 1fr);
+    align-items: center;
+    font-size: var(--text-xs);
+  }
+
+  .ks-stat dt {
+    color: var(--c-text-3);
+  }
+
+  .ks-stat dd {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 2ch;
+    align-items: center;
+    gap: var(--space-2);
+    margin: 0;
+  }
+
+  .ks-stat b {
+    font-family: var(--font-num);
+    font-weight: 500;
+    text-align: right;
+  }
+
+  /* 20 格的等级条，与游戏内的猎虫能力条一致 */
+  .ks-bar {
+    height: 7px;
+    background:
+      repeating-linear-gradient(90deg, transparent 0 calc(5% - 1px), var(--c-surface) calc(5% - 1px) 5%),
+      linear-gradient(90deg, var(--bar) calc(var(--v) * 5%), var(--c-surface-3) 0);
+    border-radius: 1px;
+  }
+
+  .ks-stat--power {
+    --bar: #e0654f;
+  }
+
+  .ks-stat--speed {
+    --bar: #4fa3d6;
+  }
+
+  .ks-stat--heal {
+    --bar: #5cc98f;
+  }
+
+  .ks-stat--element {
+    --bar: #e0b84f;
+  }
+
+  .ks-card footer {
+    display: grid;
+    gap: 4px;
+    padding-top: var(--space-2);
+    border-top: 1px dashed var(--c-line);
+  }
+
+  .ks-cost,
+  .ks-unlock {
+    color: var(--c-text-3);
+    font-size: var(--text-xs);
+  }
+
+  .ks-unlock {
+    color: var(--c-amber);
+  }
+</style>

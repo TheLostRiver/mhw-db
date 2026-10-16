@@ -1,0 +1,133 @@
+---
+import SiteLayout from '../../../layouts/SiteLayout.astro';
+import FilterBox from '../../../components/site/FilterBox.astro';
+import Materials from '../../../components/site/Materials.astro';
+import { itemById, loadPendants, monsterNameByGameId } from '../../../data/world/load';
+import type { Pendant } from '../../../data/world/schema';
+
+const pendants = loadPendants();
+const GROUPS = [
+  { source: 'craft', title: '工房制作', note: '用素材与调查点数制作' },
+  { source: 'reward', title: '奖励', note: '任务、勋章等发放（推断）' },
+  { source: 'event', title: '活动与追加内容', note: '活动、联动或追加内容发放（推断）' },
+] as const;
+const text = (p: Pendant) =>
+  [
+    p.name['zh-Hans'],
+    p.name.ja,
+    p.name.en,
+    ...p.materials.map((m) => itemById(m.item)?.name['zh-Hans'] ?? ''),
+  ]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
+---
+
+<SiteLayout
+  title="武器饰物"
+  current="encyclopedia"
+  description="怪物猎人：世界 冰原 武器挂饰一览：制作素材、调查点数与获得方式"
+  wide
+>
+  <nav class="s-crumbs" aria-label="位置">
+    <a href="/world/encyclopedia/">百科</a>
+    <a href="/world/weapons/">武器</a>
+    <span>武器饰物</span>
+  </nav>
+  <div class="s-head">
+    <h1>
+      武器饰物 <span class="b-label">{pendants.length} 种</span>
+    </h1>
+    <p>
+      挂在武器上的饰物（挂饰）。可以制作的列出素材与消耗的调查点数；其余按数据里的发放标记分为奖励与活动。
+    </p>
+  </div>
+  <FilterBox label="按名称或素材筛选" placeholder="按名称或素材筛选（中文、日文、英文）" />
+
+  {GROUPS.map((g) => {
+    const list = pendants.filter((p) => p.source === g.source);
+    return (
+      <section class="s-section" data-filter-section>
+        <h2>
+          {g.title}{' '}
+          <small class="s-dim">
+            {list.length} 种 · {g.note}
+          </small>
+        </h2>
+        <ul class="pd-grid">
+          {list.map((p) => (
+            <li class="pd-card" data-filter-row data-text={text(p)}>
+              <img
+                src={`/assets/game/world/pendant/${p.color}.webp`}
+                alt=""
+                width="40"
+                height="40"
+                loading="lazy"
+              />
+              <div>
+                <strong>{p.name['zh-Hans']}</strong>
+                {p.source === 'craft' && <span class="pd-cost">{p.cost} 点</span>}
+                {p.materials.length > 0 && <Materials materials={p.materials} />}
+                {p.unlockMonster != null && (
+                  <span class="pd-unlock">需讨伐{monsterNameByGameId(p.unlockMonster) ?? '特定怪物'}</span>
+                )}
+              </div>
+            </li>
+          ))}
+        </ul>
+      </section>
+    );
+  })}
+
+  <p class="s-note">
+    数据来源：<code>common/equip/charm.ch_dat</code>（文件名为 charm，内容是武器挂饰，不是护石）、
+    <code>charm.eq_crt</code>（制作素材）与挂饰文本。 调查点数与素材已与 Fextralife 抽查核对；「奖励 /
+    活动」的分类按发放标记推断。
+  </p>
+</SiteLayout>
+
+<style>
+  .s-section h2 small {
+    font-size: var(--text-sm);
+    font-weight: 400;
+  }
+
+  .pd-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .pd-card {
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr);
+    gap: var(--space-3);
+    align-items: start;
+    padding: var(--space-3);
+    border-radius: var(--radius);
+    background: var(--c-surface);
+    box-shadow: inset 0 0 0 1px var(--c-line);
+  }
+
+  .pd-card div {
+    display: grid;
+    gap: 4px;
+  }
+
+  .pd-cost,
+  .pd-unlock {
+    font-size: var(--text-xs);
+  }
+
+  .pd-cost {
+    color: var(--c-text-3);
+    font-family: var(--font-num);
+  }
+
+  .pd-unlock {
+    color: var(--c-amber);
+  }
+</style>

@@ -11,13 +11,17 @@ import type {
   Constants,
   Decoration,
   Item,
+  Kinsect,
   Lang,
+  LayeredWeapon,
   Mantle,
   MapNodeStage,
   MapStage,
+  Melody,
   Meta,
   Monster,
   Move,
+  Pendant,
   Skill,
   Weapon,
   WeaponCustom,
@@ -63,6 +67,14 @@ export const loadMaps = () => read<{ stages: MapStage[] }>('maps.json').stages;
 export const loadMapNodes = () => read<{ stages: MapNodeStage[] }>('map-nodes.json').stages;
 export const loadMoves = () => read<{ moves: Move[] }>('moves.json').moves;
 export const loadMonsters = () => read<{ monsters: Monster[] }>('monsters.json').monsters;
+export const loadKinsects = () => read<{ kinsects: Kinsect[] }>('kinsects.json').kinsects;
+export const loadMelodies = () => read<{ melodies: Melody[] }>('melodies.json').melodies;
+export const loadPendants = () => read<{ pendants: Pendant[] }>('pendants.json').pendants;
+export const loadLayeredWeapons = () => read<Partial<Record<WeaponType, LayeredWeapon[]>>>('weapon-layered.json');
+/** 怪物 gameId（解锁条件等字段里的编号）→ 怪物名；同一 gameId 取第一个有名字的 */
+export function monsterNameByGameId(id: number): string | undefined {
+  return loadMonsters().find((m) => m.gameId === id && m.name)?.name?.['zh-Hans'];
+}
 
 /** 取某语言文本，缺失时退回简中 */
 export const pick = (t: { [K in Lang]?: string | undefined } | undefined, lang: Lang): string =>

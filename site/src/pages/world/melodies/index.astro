@@ -1,0 +1,240 @@
+---
+import SiteLayout from '../../../layouts/SiteLayout.astro';
+import Notes from '../../../components/site/Notes.astro';
+import { loadMelodies, loadWeapons } from '../../../data/world/load';
+import { NOTE_LABEL, canPlay, hornKey, type Note } from '../../../lib/world/horn';
+import { weaponIconUrl } from '../../../lib/world/weapons';
+
+const melodies = loadMelodies();
+// 笛子实际存在的音色组合（按笛子数量排序）
+const counts = new Map<string, { notes: Note[]; n: number }>();
+for (const w of loadWeapons('hunting-horn')) {
+  const notes = w.special?.notes;
+  if (w.duplicateOf != null || !notes) continue;
+  const k = hornKey(notes);
+  counts.set(k, { notes: [...notes], n: (counts.get(k)?.n ?? 0) + 1 });
+}
+const horns = [...counts.values()].sort((a, b) => b.n - a.n);
+const lines = (t?: string) => (t ?? '').replace(/\n/g, '');
+const secs = (xs: number[]) => xs.map((x) => (x ? `${x}` : '—')).join(' / ');
+---
+
+<SiteLayout
+  title="狩猎笛旋律"
+  current="encyclopedia"
+  description="怪物猎人：世界 冰原 狩猎笛旋律一览：音序、首次与重复演奏的效果、持续时间，按笛子的音色筛选"
+  wide
+>
+  <nav class="s-crumbs" aria-label="位置">
+    <a href="/world/encyclopedia/">百科</a>
+    <a href="/world/weapons/hunting-horn/">狩猎笛</a>
+    <span>旋律</span>
+  </nav>
+  <div class="s-head">
+    <h1>
+      <img src={weaponIconUrl('hunting-horn', 8)} alt="" width="40" height="40" />
+      狩猎笛旋律 <span class="b-label">{melodies.length} 种</span>
+    </h1>
+    <p>
+      选择一组音色，只显示这把笛子能吹奏的旋律。时长为「基础 / 吹笛名人 1 /
+      2」的秒数，重复演奏时延长对应的秒数。
+    </p>
+  </div>
+
+  <section class="ml-picker" aria-label="按笛子的音色筛选">
+    <h2>笛子的音色</h2>
+    <div class="ml-horns" role="group">
+      <button type="button" aria-pressed="true" data-horn="">
+        全部旋律
+      </button>
+      {horns.map((h) => (
+        <button type="button" aria-pressed="false" data-horn={hornKey(h.notes)} title={`${h.n} 把笛子`}>
+          <Notes notes={h.notes} size={20} />
+          <small>{h.n}</small>
+        </button>
+      ))}
+    </div>
+    <p class="ml-count" aria-live="polite" data-ml-count></p>
+  </section>
+
+  <div class="s-table-wrap ml-wrap">
+    <table class="s-table">
+      <thead>
+        <tr>
+          <th class="s-left">音序</th>
+          <th class="s-left">旋律</th>
+          <th class="s-left">效果（首次 → 重复演奏）</th>
+          <th title="基础 / 吹笛名人 1 / 吹笛名人 2">持续（秒）</th>
+          <th title="重复演奏时延长的秒数">延长（秒）</th>
+        </tr>
+      </thead>
+      <tbody>
+        {melodies.map((m) => (
+          <tr
+            data-ml-row
+            data-horns={horns
+              .filter((h) => canPlay(m, h.notes))
+              .map((h) => hornKey(h.notes))
+              .join(' ')}
+          >
+            <td class="s-left ml-seqs">
+              {m.sequences.map((s) => (
+                <Notes notes={s} />
+              ))}
+            </td>
+            <td class="s-left ml-name">{m.name['zh-Hans']}</td>
+            <td class="s-left ml-effect">
+              {lines(m.effect['zh-Hans'])}
+              {m.encore['zh-Hans'] && m.encore['zh-Hans'] !== m.effect['zh-Hans'] && (
+                <>
+                  <span class="ml-arrow"> → </span>
+                  <strong>{lines(m.encore['zh-Hans'])}</strong>
+                </>
+              )}
+            </td>
+            <td class="s-num">{secs(m.duration)}</td>
+            <td class="s-num">{secs(m.extension)}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+
+  <p class="s-note">
+    数据来源：<code>hm/wp/wp05/music_skill.msk</code>（音序）、<code>common/pl/music_skill_efc.mske</code>
+    （名称、效果、时长）、
+    <code>common/equip/wep_whistle.wep_wsl</code>（笛子的音色）。音色名按图标颜色命名（
+    {Object.values(NOTE_LABEL).join('、')}）。
+    「音序里除残响外的音符都在笛子音色之内即可吹奏」为推断规则，已与 Fextralife 三组笛子的旋律列表核对一致；
+    吹笛名人两档的时长、残响音符的触发方式未确认；即时回复类旋律的回复量不在这两个文件里。
+  </p>
+</SiteLayout>
+
+<script>
+  const buttons = [...document.querySelectorAll<HTMLButtonElement>('[data-horn]')];
+  const rows = [...document.querySelectorAll<HTMLElement>('[data-ml-row]')];
+  const count = document.querySelector<HTMLElement>('[data-ml-count]');
+  const apply = (key: string) => {
+    let shown = 0;
+    for (const r of rows) {
+      const hit = !key || (r.dataset.horns ?? '').split(' ').includes(key);
+      r.hidden = !hit;
+      if (hit) shown++;
+    }
+    for (const b of buttons) b.setAttribute('aria-pressed', String(b.dataset.horn === key));
+    if (count) count.textContent = key ? `这组音色可以吹奏 ${shown} 种旋律` : '';
+  };
+  for (const b of buttons)
+    b.addEventListener('click', () => {
+      const key = b.dataset.horn ?? '';
+      apply(key);
+      history.replaceState(null, '', key ? `#${key}` : location.pathname);
+    });
+  // 从武器页跳转过来时带着 #purple-red-blue
+  const initial = location.hash.slice(1);
+  if (buttons.some((b) => b.dataset.horn === initial)) apply(initial);
+</script>
+
+<style>
+  .s-head h1 img {
+    align-self: center;
+  }
+
+  .ml-picker h2 {
+    margin: 0 0 var(--space-2);
+    color: var(--c-text-2);
+    font-size: var(--text-sm);
+    font-weight: 500;
+  }
+
+  .ml-horns {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  .ml-horns button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 36px;
+    padding: 4px 10px;
+    border: 1px solid var(--c-line);
+    border-radius: var(--radius);
+    background: var(--c-surface);
+    color: var(--c-text-2);
+    font: inherit;
+    font-size: var(--text-sm);
+    cursor: pointer;
+    transition:
+      border-color var(--dur-fast),
+      background var(--dur-fast);
+  }
+
+  .ml-horns button:hover {
+    border-color: var(--c-line-strong);
+  }
+
+  .ml-horns button[aria-pressed='true'] {
+    border-color: var(--c-accent);
+    background: var(--c-accent-soft);
+    color: var(--c-text);
+  }
+
+  .ml-horns button:focus-visible {
+    outline: 2px solid var(--c-focus);
+    outline-offset: 2px;
+  }
+
+  .ml-horns small {
+    color: var(--c-text-3);
+    font-family: var(--font-num);
+    font-size: 10px;
+  }
+
+  .ml-count {
+    min-height: 1.5em;
+    margin: var(--space-2) 0 var(--space-3);
+    color: var(--c-text-2);
+    font-size: var(--text-sm);
+  }
+
+  .ml-wrap {
+    max-height: none;
+  }
+
+  .ml-seqs {
+    display: grid;
+    gap: 4px;
+    justify-items: start;
+  }
+
+  .ml-name {
+    min-width: 11rem;
+    font-weight: 600;
+  }
+
+  .ml-effect {
+    min-width: 16rem;
+    white-space: normal;
+  }
+
+  .ml-arrow {
+    color: var(--c-text-3);
+  }
+
+  .ml-effect strong {
+    color: var(--c-accent);
+    font-weight: 500;
+  }
+
+  tr[hidden] {
+    display: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ml-horns button {
+      transition: none;
+    }
+  }
+</style>

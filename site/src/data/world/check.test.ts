@@ -10,6 +10,7 @@ import {
   Combinations,
   Constants,
   FILES,
+  LayeredWeapons,
   LANGS,
   MapNodes,
   Maps,
@@ -39,6 +40,7 @@ describe('结构', () => {
     Moves.parse(read('moves.json'));
     Monsters.parse(read('monsters.json'));
     Combinations.parse(read('combinations.json'));
+    LayeredWeapons.parse(read('weapon-layered.json'));
   });
 
   for (const [file, { schema }] of Object.entries(FILES)) {
@@ -120,6 +122,18 @@ describe('引用完整', () => {
     for (const d of rows['decorations.json'] ?? []) expect(itemIds.has(d.id), `饰品 ${d.id}`).toBe(true);
     for (const m of rows['mantles.json'] ?? [])
       expect(itemIds.has(m.itemId as number), `衣装 ${m.id}`).toBe(true);
+  });
+
+  it('猎虫、挂饰、幻化武器的素材都存在，猎虫的上一级存在', () => {
+    const mats = (list: unknown) => ((list ?? []) as { item: number }[]).map((m) => m.item);
+    for (const file of ['kinsects.json', 'pendants.json'])
+      for (const r of rows[file] ?? [])
+        for (const id of mats(r.materials)) expect(itemIds.has(id), `${file} ${r.id} 的素材 ${id}`).toBe(true);
+    for (const list of Object.values(LayeredWeapons.parse(read('weapon-layered.json'))))
+      for (const r of list) for (const id of mats(r.materials)) expect(itemIds.has(id), `幻化武器 ${r.id}`).toBe(true);
+    const kinsects = new Set((rows['kinsects.json'] ?? []).map((k) => k.id));
+    for (const k of rows['kinsects.json'] ?? [])
+      if (k.parent != null) expect(kinsects.has(k.parent as number), `猎虫 ${k.id} 的上一级`).toBe(true);
   });
 
   it('调和的素材与成品都存在', () => {

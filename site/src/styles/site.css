@@ -349,3 +349,55 @@
 .s-gt--red {
   color: var(--c-danger);
 }
+
+/* 狩猎笛音符（components/site/Notes.astro） */
+.s-hns {
+  display: inline-flex;
+  gap: 1px;
+  vertical-align: middle;
+}
+
+/* 遮罩放在伪元素上，描边（drop-shadow）加在外层，才不会被遮罩裁掉 */
+.s-hn {
+  display: inline-block;
+  width: var(--size, 18px);
+  height: var(--size, 18px);
+  filter: drop-shadow(0 0 0.6px rgb(0 0 0 / 0.75));
+}
+
+.s-hn::before {
+  content: '';
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--note);
+  mask: url('/assets/game/world/status/32.webp') center / contain no-repeat;
+}
+
+.s-hn--purple {
+  --note: #b27be8;
+}
+.s-hn--red {
+  --note: #e8554a;
+}
+.s-hn--orange {
+  --note: #f0903a;
+}
+.s-hn--yellow {
+  --note: #e8cb3f;
+}
+.s-hn--green {
+  --note: #4fcf7f;
+}
+.s-hn--blue {
+  --note: #4a7fe0;
+}
+.s-hn--aqua {
+  --note: #4fd6e6;
+}
+.s-hn--white {
+  --note: #f6f7f8;
+}
+.s-hn--echo {
+  --note: #8a949c;
+}

@@ -200,3 +200,29 @@ def test_combinations_match_game() -> None:
     assert recipes["回复药"] == (["药草"], 1)
     assert recipes["回复药·大"] == (["回复药", "蜂蜜"], 1)
     assert recipes["汉方药"] == (["解毒药", "蓝蘑菇"], 1)
+
+
+def test_kinsects_match_public_data() -> None:
+    # 与 Kiranico 逐只核对过的四项等级；粉尘按 0 爆破 1 回复 2 麻痹 3 毒（Fextralife 的 7 只猎虫一致）
+    k = by_name(load("kinsects.json", "kinsects"), "龙魂虫·极")
+    assert (k["power"], k["speed"], k["heal"], k["element"]) == (17, 16, 1, 16)
+    assert (k["attack"], k["dust"], k["rarity"]) == ("blunt", "blast", 12)
+    assert by_name(load("kinsects.json", "kinsects"), "恐惧银色金龟子3")["dust"] == "heal"
+
+
+def test_melodies_match_public_data() -> None:
+    # 白红红 = 攻击力提升【小】，120 秒，重复演奏变为【大】；数值与 Kiranico 旋律页前几行一致
+    m = by_name(load("melodies.json", "melodies"), "攻击力提升【小】")
+    assert ["white", "red", "red"] in m["sequences"]
+    assert m["duration"][0] == 120 and m["extension"][0] == 60
+    assert m["encore"]["zh-Hans"] == "攻击力提升【大】"
+
+
+def test_pendant_and_layered_weapon_recipes() -> None:
+    items = {i["id"]: i["name"]["zh-Hans"] for i in load("items.json", "items")}
+    p = by_name(load("pendants.json", "pendants"), "铜章领巾·黄")
+    assert p["cost"] == 300
+    assert {items[m["item"]]: m["count"] for m in p["materials"]} == {"霸王之证": 1, "雷电袋": 2}
+    layered = json.loads((WORLD / "weapon-layered.json").read_text(encoding="utf-8"))
+    iron = by_name(layered["long-sword"], "基本外观【铁】")
+    assert (iron["kind"], iron["cost"]) == ("base", 250)

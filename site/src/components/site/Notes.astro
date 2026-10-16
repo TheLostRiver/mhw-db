@@ -1,0 +1,21 @@
+---
+/** 狩猎笛音符：用游戏的音符图标做遮罩，按音色着色 */
+import { NOTE_LABEL, type Note } from '../../lib/world/horn';
+
+interface Props {
+  notes: readonly Note[];
+  size?: number;
+}
+const { notes, size = 18 } = Astro.props;
+---
+
+<span
+  class="s-hns"
+  role="img"
+  aria-label={notes.map((n) => NOTE_LABEL[n]).join('')}
+  style={`--size: ${size}px`}
+>
+  {notes.map((n) => (
+    <i class={`s-hn s-hn--${n}`} title={NOTE_LABEL[n]} />
+  ))}
+</span>

@@ -20,6 +20,9 @@ patterns = [
 
   # 武器与猎人的攻击参数（动作值、补正、卡肉）
   '^/hm/(wp/wp\d\d|common|claw)/(shell/)?collision/.*\.col$',
+  # 武器参数（操虫棍萃取、防御性能等）与狩猎笛的旋律音序
+  '^/hm/wp/wp\d\d/wp\d\d_param\.w\d\dp$',
+  '^/hm/wp/wp05/music_skill\.msk$',
   '^/common/pl/',
   '^/common/otomo/',
   '^/common/facility/',

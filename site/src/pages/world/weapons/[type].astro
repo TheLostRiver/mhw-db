@@ -1,13 +1,16 @@
 ---
 import SiteLayout from '../../../layouts/SiteLayout.astro';
 import FilterBox from '../../../components/site/FilterBox.astro';
+import Notes from '../../../components/site/Notes.astro';
 import { loadColors, loadConstants, loadSkills, loadWeapons } from '../../../data/world/load';
 import { RANGED, type Weapon, type WeaponType } from '../../../data/world/schema';
 import { SHARPNESS_COLORS, sharpnessBar } from '../../../lib/world/builder';
+import { hornKey } from '../../../lib/world/horn';
 import {
   COATING_LABEL,
   ELDERSEAL,
   ELEMENT_NAMES,
+  KINSECT_BONUS_LABEL,
   PHIAL_LABEL,
   SHELL_LABEL,
   socketIconUrl,
@@ -28,9 +31,11 @@ const rarities = [...new Set(weapons.map((w) => w.rarity))].sort((a, b) => a - b
 const ranged = RANGED.has(type);
 const element = (e: Weapon['element']) => (e ? `${ELEMENT_NAMES[e.type] ?? e.type} ${e.value * 10}` : '');
 const FULL = 400;
-// 专属参数列：铳枪炮击、斩击斧 / 盾斧的瓶、弓的可用瓶
+// 专属参数列：铳枪炮击、斩击斧 / 盾斧的瓶、狩猎笛音色、操虫棍猎虫加成、弓的可用瓶
 const SPECIAL_HEAD: Partial<Record<WeaponType, string>> = {
   gunlance: '炮击',
+  'hunting-horn': '音色',
+  'insect-glaive': '猎虫加成',
   'switch-axe': '瓶',
   'charge-blade': '瓶',
   bow: '可用瓶',
@@ -42,6 +47,7 @@ const specialText = (w: Weapon): string => {
   if (!sp) return '';
   if (sp.shelling) return `${SHELL_LABEL[sp.shelling.type]} Lv${sp.shelling.level}`;
   if (sp.phial) return `${PHIAL_LABEL[sp.phial.type]}${sp.phial.value ? ` ${sp.phial.value * 10}` : ''}`;
+  if (sp.kinsectBonus != null) return KINSECT_BONUS_LABEL[sp.kinsectBonus] ?? '';
   const coatings = sp.coatings;
   if (coatings)
     return (Object.keys(COATING_LABEL) as Coating[])
@@ -151,7 +157,17 @@ const elementsOf = (w: Weapon) => w.special?.elements ?? (w.element ? [w.element
                       )}
                       {elementsOf(w).length === 0 && !w.hiddenElement && <span class="s-dim">—</span>}
                     </td>
-                    {specialHead && <td class="s-left">{specialText(w) || <span class="s-dim">—</span>}</td>}
+                    {specialHead && (
+                      <td class="s-left">
+                        {w.special?.notes ? (
+                          <a href={`/world/melodies/#${hornKey(w.special.notes)}`} title="查看可吹奏的旋律">
+                            <Notes notes={w.special.notes} />
+                          </a>
+                        ) : (
+                          specialText(w) || <span class="s-dim">—</span>
+                        )}
+                      </td>
+                    )}
                     {!ranged && (
                       <td class="s-left">
                         {base && max ? (
@@ -202,8 +218,10 @@ const elementsOf = (w: Weapon) => w.special?.elements ?? (w.element ? [w.element
   <p class="s-note">
     数据来源：<code>common/equip/*.wp_dat</code>（近战）、<code>*.wp_dat_g</code>（远程）、
     <code>common/equip/kireaji.kire</code>（锐利度）、
-    <code>wep_glan</code>、<code>wep_saxe</code>、<code>wep_wsd</code>、<code>bottle_table.bbtbl</code>
-    （炮击、瓶、双属性、弓的可用瓶，已与 Kiranico 抽查核对）；
+    <code>wep_glan</code>、<code>wep_saxe</code>、<code>wep_wsd</code>、<code>wep_wsl</code>、
+    <code>bottle_table.bbtbl</code>
+    （炮击、瓶、双属性、狩猎笛音色、弓的可用瓶，已与 Kiranico
+    抽查核对；操虫棍的猎虫加成按武器数据的专属参数与游戏文本对应，已核对）；
     武器倍率取自游戏程序数据。龙封力「大」已核对，「小」「中」按顺序推断。
   </p>
 </SiteLayout>

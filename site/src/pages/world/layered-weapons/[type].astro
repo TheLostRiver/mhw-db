@@ -1,0 +1,139 @@
+---
+import SiteLayout from '../../../layouts/SiteLayout.astro';
+import FilterBox from '../../../components/site/FilterBox.astro';
+import Materials from '../../../components/site/Materials.astro';
+import { itemById, loadLayeredWeapons, monsterNameByGameId } from '../../../data/world/load';
+import type { LayeredWeapon, WeaponType } from '../../../data/world/schema';
+import { WEAPON_ORDER, WEAPON_TYPE_NAMES, weaponIconUrl } from '../../../lib/world/weapons';
+
+export function getStaticPaths() {
+  return WEAPON_ORDER.map((type) => ({ params: { type } }));
+}
+
+const type = Astro.params.type as WeaponType;
+const list = loadLayeredWeapons()[type] ?? [];
+const GROUPS = [
+  { kind: 'base', title: '基本外观', note: '武器的整体造型' },
+  { kind: 'parts', title: '外观零件', note: '加在基本外观上的装饰零件' },
+  { kind: 'unique', title: '衍生外观', note: '特定怪物武器的造型' },
+] as const;
+const text = (w: LayeredWeapon) =>
+  [w.name['zh-Hans'], w.name.en, ...w.materials.map((m) => itemById(m.item)?.name['zh-Hans'] ?? '')]
+    .join(' ')
+    .toLowerCase();
+---
+
+<SiteLayout
+  title={`${WEAPON_TYPE_NAMES[type]} · 武器外观`}
+  current="encyclopedia"
+  description={`怪物猎人：世界 冰原 ${WEAPON_TYPE_NAMES[type]}的自定义外观：基本外观、外观零件、衍生外观的素材与调查点数`}
+  wide
+>
+  <nav class="s-crumbs" aria-label="位置">
+    <a href="/world/encyclopedia/">百科</a>
+    <a href="/world/layered-weapons/">武器外观</a>
+    <span>{WEAPON_TYPE_NAMES[type]}</span>
+  </nav>
+  <div class="s-head">
+    <h1>
+      {WEAPON_TYPE_NAMES[type]} · 武器外观 <span class="b-label">{list.length} 种</span>
+    </h1>
+    <p>大师级的武器自定义外观：用素材与调查点数解锁，之后可以把武器的外观换成这些造型。</p>
+  </div>
+  <nav class="s-tabs" aria-label="武器种类">
+    {WEAPON_ORDER.map((w) => (
+      <a href={`/world/layered-weapons/${w}/`} aria-current={w === type ? 'page' : undefined}>
+        <img src={weaponIconUrl(w, 0)} alt="" width="22" height="22" loading="lazy" />
+        {WEAPON_TYPE_NAMES[w]}
+      </a>
+    ))}
+  </nav>
+  <FilterBox label="按外观名或素材筛选" placeholder="按外观名或素材筛选" />
+
+  {GROUPS.map((g) => {
+    const rows = list.filter((w) => w.kind === g.kind);
+    return rows.length ? (
+      <section class="s-section" data-filter-section>
+        <h2>
+          {g.title}{' '}
+          <small class="s-dim">
+            {rows.length} 种 · {g.note}
+          </small>
+        </h2>
+        <ul class="lw-grid">
+          {rows.map((w) => (
+            <li class="lw-card" data-filter-row data-text={text(w)}>
+              <img
+                src={`/assets/game/world/weapon/${type}-c${w.color}.webp`}
+                alt=""
+                width="36"
+                height="36"
+                loading="lazy"
+              />
+              <div>
+                <strong>{w.name['zh-Hans']}</strong>
+                <span class="lw-cost">{w.cost.toLocaleString('en-US')} 点</span>
+                <Materials materials={w.materials} />
+                {w.unlockMonster != null && (
+                  <span class="lw-unlock">需讨伐{monsterNameByGameId(w.unlockMonster) ?? '特定怪物'}</span>
+                )}
+              </div>
+            </li>
+          ))}
+        </ul>
+      </section>
+    ) : null;
+  })}
+
+  <p class="s-note">
+    数据来源：<code>common/equip/customOuter*.cus_ou</code>（外观）、<code>customOuterRecipe.cus_otr</code>
+    （素材、调查点数、需讨伐的怪物）与外观文本。 三类与名称后缀（Base / Parts / Unique）逐条一致；调查点数已与
+    Game8 抽查核对。基本外观与外观零件的组合规则未确认。
+  </p>
+</SiteLayout>
+
+<style>
+  .s-section h2 small {
+    font-size: var(--text-sm);
+    font-weight: 400;
+  }
+
+  .lw-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .lw-card {
+    display: grid;
+    grid-template-columns: 36px minmax(0, 1fr);
+    gap: var(--space-3);
+    align-items: start;
+    padding: var(--space-3);
+    border-radius: var(--radius);
+    background: var(--c-surface);
+    box-shadow: inset 0 0 0 1px var(--c-line);
+  }
+
+  .lw-card div {
+    display: grid;
+    gap: 4px;
+  }
+
+  .lw-cost,
+  .lw-unlock {
+    font-size: var(--text-xs);
+  }
+
+  .lw-cost {
+    color: var(--c-text-3);
+    font-family: var(--font-num);
+  }
+
+  .lw-unlock {
+    color: var(--c-amber);
+  }
+</style>

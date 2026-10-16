@@ -184,6 +184,17 @@ uv run mhdb nodes     # 大地图标记（采集点等）→ data/world/map-node
   毒伤害（数据为 5 与 2.0）、捕获体力线（30 / 25）、大师级眩晕的附加参数、粪弹时间未核对，未显示。笔记里的栖息地字段未核对，未显示。
 - **未做**：素材（剥取、破坏、捕获报酬；`em_note_rem_*.emr` 结构未解）、任务体力倍率。
 
+### 3.6 武器周边：猎虫、狩猎笛旋律、武器挂饰、幻化武器（`mhdb/build/world_gear.py`）
+
+| 输出 | 来源 | 结论与核对 |
+|---|---|---|
+| `kinsects.json`（105） | `rod_insect.rod_inse`（整文件加密，键见 crypto.py）+ `insect.eq_cus`（培养树，`equip_index` = 猎虫行号，`child_*` 为本表行号） | 名称 `vfont/rod_insect` 按**行号**（key 里的数字不是行号）；系列 `steam/insect_series` 按 `tree_id`。攻击类型 0 切断 1 打击；力量 / 速度 / 回复 / 属性与 Kiranico **105 只逐一一致**；粉尘 **0 爆破 1 回复 2 麻痹 3 毒**（Fextralife 7 只、`w10p` 粉尘间隔的字段顺序一致；Kiranico 的粉尘标签错了一位）；`cost` 为金额；`tier`（Ⅰ–Ⅲ）、`tree_column` 为推断 |
+| `melodies.json`（56） | `hm/wp/wp05/music_skill.msk`（音序，加密）+ `common/pl/music_skill_efc.mske`（加密，表头 14 字节 `<IHII`，每行 56 字节） | 旋律编号 N 对应 mske 第 N+1 行；名称、首次效果、重复效果是该行里给出的 `vfont/music_skill` 序号（按 `HUD_HUE_*` 的 key 取会在 17 以后错位）。音色 0 紫 1 红 2 橙 3 黄 4 绿 5 蓝 6 水 7 白 8 残响。持续 / 延长秒数与 Kiranico 一致；`_m1/_m2` 为吹笛名人两档（推断）；value 只核对了攻击、防御倍率，页面不显示 |
+| 武器 `special.notes` | `wep_whistle.wep_wsl`（`whistle.wp_dat` 的 `special_1` 是行号） | 可用旋律规则（推断）：某种音序里除残响以外的音符都在三个音色内即可吹奏；与 Fextralife 紫红蓝 / 紫绿水 / 紫红水三组笛子的列表完全一致（`horn.test.ts`） |
+| 武器 `special.kinsectBonus` | `rod.wp_dat` 的 `special_1`（0–7） | = `cm_status` 的 `STATUS_ROD_SKILL_01…08`（07、08 的文本序号不连续，按 key 取），已与 Kiranico 的 Weapon Ability 核对 |
+| `pendants.json`（183） | `charm.ch_dat`（**文件名叫 charm，内容是武器挂饰**）+ `charm.eq_crt`（配方） | 名称 `steam/charm` 按行号；`cost` 为调查点数（Fextralife：铜章领巾 300 / 银 400 / 金 500）；`color` 为图标调色板；DUMMY / HARDUMMY 与 cost 1 的空行跳过。获得方式「奖励 / 活动」按 `unlock_flag` 推断 |
+| `weapon-layered.json`（1028） | 14 个 `customOuter*.cus_ou` + `customOuterRecipe.cus_otr`（都加密） | 名称 `steam/ou_<武器文本名>` 按行号；配方 `kind` 2 基本外观 3 外观零件 4 衍生外观（与名称后缀 Base / Parts / Unique 逐条一致）；`cost` 为调查点数（Game8 核对）；`unlock_monster` 为怪物 gameId；`sort = -1` 为空行。基本外观与零件的组合规则未确认 |
+
 ## 4. 界面图标（游戏 UI 贴图）
 
 | 图集 | 内容 | 用到的格子 |
