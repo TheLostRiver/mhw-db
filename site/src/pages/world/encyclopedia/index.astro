@@ -14,6 +14,7 @@ import {
   loadCombinations,
   loadDecorations,
   loadDeliveries,
+  loadGuidingLands,
   loadItems,
   loadKinsects,
   loadLayeredArmor,
@@ -101,7 +102,13 @@ const chapters: Chapter[] = [
         href: '/world/maps/',
         count: loadMaps().length,
       },
-      { label: '聚魔之地', note: '地区等级与素材', glyph: 'guiding-lands' },
+      {
+        label: '聚魔之地',
+        note: '地区等级与素材',
+        glyph: 'guiding-lands',
+        href: '/world/guiding-lands/',
+        count: loadGuidingLands().monsters.length,
+      },
     ],
   },
   {

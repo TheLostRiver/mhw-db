@@ -35,6 +35,8 @@ patterns = [
   '^/quest/questData_\d+\.mib$',
   '^/quest/(rem|bui|supp)/',
   '^/em/ems\d+/\d+/data/ems\d+\.dtt_epg$',
+  # 聚魔之地的怪物表、调查任务的生成表、探索时的怪物与特殊痕迹
+  '^/quest/enemy/[^/]+\.(ecem|lqem|dems|sptl)$',
 
   # 界面贴图
   '^/ui/(common|common_menu|equip|status|item_menu|note|map)/tex/.*\.tex$',

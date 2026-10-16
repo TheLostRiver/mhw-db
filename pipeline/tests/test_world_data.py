@@ -424,3 +424,30 @@ def test_festival_schedule() -> None:
         "月辰祭【盛放之宴】",
         "月辰祭【热情之宴】",
     ]
+
+
+def test_guiding_lands_habitats() -> None:
+    d = json.loads((WORLD / "guiding-lands.json").read_text(encoding="utf-8"))
+    assert [r["name"]["en"] for r in d["regions"]] == [
+        "Forest Region",
+        "Wildspire Region",
+        "Coral Region",
+        "Rotted Region",
+        "Volcanic Region",
+        "Tundra Region",
+    ]
+    by = {m["monster"]: m for m in d["monsters"]}
+    # 主要地带（标记 2）与游戏内的栖息地一致：火龙森林、雌火龙荒地、麒麟陆珊瑚、惨爪龙瘴气、熔岩龙熔岩、冰呪龙冰雪
+    for key, region in [
+        ("em002_00", 0),
+        ("em001_00", 1),
+        ("em011_00", 2),
+        ("em113_00", 3),
+        ("em036_00", 4),
+        ("em124_00", 5),
+    ]:
+        assert by[key]["habitat"][region] == 2, key
+    # 不在聚魔之地的怪物：贝希摩斯、冥赤龙、黑龙
+    assert not {"em121_00", "em104_00", "em013_00"} & set(by)
+    # 金狮子要先完成「出来吧，破坏的化身」（51601）
+    assert by["em023_00"]["unlockQuest"] == 51601

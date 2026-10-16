@@ -35,6 +35,7 @@ const PAGES = [
   ['/world/layered-armor/', '防具幻化'],
   ['/world/slinger/', '投射器弹'],
   ['/world/festivals/', '祭典与日历'],
+  ['/world/guiding-lands/', '聚魔之地'],
   ['/world/layered-weapons/', '武器外观'],
   ['/world/layered-weapons/heavy-bowgun/', '重弩'],
   ['/world/weapons/hunting-horn/', '狩猎笛'],

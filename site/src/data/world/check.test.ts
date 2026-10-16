@@ -24,6 +24,7 @@ import { PALICO_FILES } from './schema-palico';
 import { MonsterRewards, Quests } from './schema-quests';
 import { Mechanics } from './schema-mechanics';
 import { Records, Schedule } from './schema-records';
+import { GuidingLands } from './schema-guiding';
 
 const ROOT = new URL('../../../../data/world/', import.meta.url);
 const read = (rel: string): unknown => JSON.parse(readFileSync(fileURLToPath(new URL(rel, ROOT)), 'utf-8'));
@@ -229,6 +230,16 @@ describe('引用完整', () => {
     for (const c of Combinations.parse(read('combinations.json')).combinations) {
       for (const id of [...c.materials, c.result])
         expect(itemIds.has(id), `调和 ${c.id} 的物品 ${id}`).toBe(true);
+    }
+  });
+
+  it('聚魔之地的怪物与解锁任务存在', () => {
+    const gl = GuidingLands.parse(read('guiding-lands.json'));
+    const keys = new Set((Monsters.parse(read('monsters.json')).monsters).map((m) => m.key));
+    const quests = new Set(Quests.parse(read('quests.json')).quests.map((q) => q.id));
+    for (const m of gl.monsters) {
+      expect(keys.has(m.monster), `聚魔之地 ${m.monster}`).toBe(true);
+      if (m.unlockQuest != null) expect(quests.has(m.unlockQuest), `${m.monster} 的任务 ${m.unlockQuest}`).toBe(true);
     }
   });
 

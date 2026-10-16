@@ -41,6 +41,7 @@ import type {
 import type { Canteen, Palico, PalicoGearItem } from './schema-palico';
 import type { Mechanics } from './schema-mechanics';
 import type { Records, Schedule } from './schema-records';
+import type { GuidingLands } from './schema-guiding';
 import type { MonsterReward, Quests } from './schema-quests';
 
 const ROOT = new URL('../../../../data/world/', import.meta.url);
@@ -92,6 +93,7 @@ export const loadPalico = () => read<Palico>('palico.json');
 export const loadCanteen = () => read<Canteen>('canteen.json');
 export const loadRecords = () => read<Records>('records.json');
 export const loadSchedule = () => read<Schedule>('schedule.json');
+export const loadGuidingLands = () => read<GuidingLands>('guiding-lands.json');
 export const loadMechanics = () => read<Mechanics>('mechanics.json');
 export const loadQuests = () => read<Quests>('quests.json');
 export const loadMonsterRewards = () => read<{ rewards: MonsterReward[] }>('monster-rewards.json').rewards;
