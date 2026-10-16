@@ -51,7 +51,7 @@ const mod = (v: number) => (v === 1 ? 's-dim' : v > 1 ? 's-hot' : '');
     <p>
       每行是一条攻击参数（一次命中的判定），同一招有几段时各段分开列出。「动作值」是伤害公式里的倍率（×0.01），
       属性 /
-      异常补正乘在属性值与异常值上；卡肉为命中后的停顿秒数。将鼠标停在表头上可看各列说明，招式名下方为数据里的日文原名。
+      异常补正乘在属性值与异常值上；卡肉时间为命中后动作停顿的秒数。将鼠标停在表头上可看各列说明，招式名下方为数据里的日文原名。
     </p>
   </div>
 
@@ -93,13 +93,15 @@ const mod = (v: number) => (v === 1 ? 's-dim' : v > 1 ? 's-hot' : '');
               <th class="s-left">招式</th>
               <th title="伤害类型：斩、打、弹，决定使用怪物哪一种肉质">类型</th>
               <th title="动作值：物理伤害的倍率（×0.01）">动作值</th>
+              <th title="卡肉时间：命中后动作停顿的秒数（攻击参数的 hitstop 字段）；条形长度按 0.5 秒满格">
+                卡肉时间
+              </th>
               <th title="属性补正：乘在属性伤害上的系数">属性补正</th>
               <th title="异常补正：乘在毒 / 麻痹 / 睡眠 / 爆破积累值上的系数">异常补正</th>
               <th title="部位耐久补正：对部位耐久的伤害系数">部位</th>
               <th title="眩晕值（打击类攻击头部时积累）">眩晕</th>
               <th title="减气值">减气</th>
               <th title="骑乘值（空中攻击积累骑乘）">骑乘</th>
-              <th title="卡肉：命中后的停顿时间（秒）">卡肉</th>
               <th title="心眼：数据里的不弹刀标志">心眼</th>
               {showEnergy(g.moves) && (
                 <th title={`${energyLabel}的增加量（按数值与招式推断）`}>{energyLabel}</th>
@@ -121,13 +123,22 @@ const mod = (v: number) => (v === 1 ? 's-dim' : v > 1 ? 's-hot' : '');
                 </td>
                 <td>{DAMAGE_TYPE_LABEL[m.type]}</td>
                 <td class="s-num mv-mv">{m.mv ? fmt(m.mv) : <span class="s-dim">0</span>}</td>
+                <td class="s-num mv-hs">
+                  {m.hitstop ? (
+                    <span class="mv-hs__cell">
+                      <span>{fmt(m.hitstop)} 秒</span>
+                      <i style={`--w:${Math.min(1, m.hitstop / 0.5) * 100}%`} aria-hidden="true" />
+                    </span>
+                  ) : (
+                    <span class="s-dim">—</span>
+                  )}
+                </td>
                 <td class={`s-num ${mod(m.ele)}`}>{fmt(m.ele)}</td>
                 <td class={`s-num ${mod(m.status)}`}>{fmt(m.status)}</td>
                 <td class={`s-num ${mod(m.part)}`}>{fmt(m.part)}</td>
                 <td class="s-num">{m.stun ? fmt(m.stun) : <span class="s-dim">—</span>}</td>
                 <td class="s-num">{m.exhaust ? fmt(m.exhaust) : <span class="s-dim">—</span>}</td>
                 <td class="s-num">{m.mount ? fmt(m.mount) : <span class="s-dim">—</span>}</td>
-                <td class="s-num">{m.hitstop ? fmt(m.hitstop) : <span class="s-dim">—</span>}</td>
                 <td>{m.eye ? '有' : <span class="s-dim">—</span>}</td>
                 {showEnergy(g.moves) && (
                   <td class="s-num">{m.energy ? fmt(m.energy) : <span class="s-dim">—</span>}</td>
@@ -189,6 +200,19 @@ const mod = (v: number) => (v === 1 ? 's-dim' : v > 1 ? 's-hot' : '');
   .mv-mv {
     color: var(--c-text);
     font-weight: 700;
+  }
+
+  .mv-hs__cell {
+    display: inline-grid;
+    gap: 3px;
+    min-width: 4.5em;
+  }
+
+  .mv-hs i {
+    display: block;
+    height: 3px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, var(--c-accent) var(--w), var(--c-surface-2) var(--w));
   }
 
   .mv-notes {
