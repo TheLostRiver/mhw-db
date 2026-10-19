@@ -20,7 +20,7 @@ const ICON: Record<string, string> = {
   slot: 'slot',
   health: 'health',
   element: 'element',
-  extend: 'cell-used',
+  extend: 'gem',
 };
 const MR_GROUPS = [
   { key: 'attack', title: '攻击力强化' },
@@ -129,7 +129,7 @@ const hrEffect = (k: keyof typeof HR_LABELS) =>
                             style={`--hex: ${AUGMENT_COLORS[g.key as AugmentCategory]}`}
                           >
                             {Array.from({ length: a.slotCost }, () => (
-                              <i />
+                              <i class="s-gem" />
                             ))}
                           </span>
                         </td>
@@ -315,15 +315,6 @@ const hrEffect = (k: keyof typeof HR_LABELS) =>
   .au-hex {
     display: inline-flex;
     gap: 1px;
-  }
-
-  .au-hex i {
-    width: 18px;
-    height: 18px;
-    background: url('/assets/game/world/augment/cell-used.webp') center / contain no-repeat var(--hex);
-    background-blend-mode: multiply;
-    -webkit-mask: url('/assets/game/world/augment/cell-used.webp') center / contain no-repeat;
-    mask: url('/assets/game/world/augment/cell-used.webp') center / contain no-repeat;
   }
 
   .au-effect {

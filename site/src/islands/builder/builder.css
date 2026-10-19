@@ -28,8 +28,10 @@
   --ui-bracket-br: url('/assets/game/world/ui/bracket-br.webp');
   --ui-pattern: url('/assets/game/world/ui/pattern.webp');
   --ui-diamond: url('/assets/game/world/ui/diamond.webp');
-  /* 自定义强化的实心格（limit_break_EX.gui 的 EXIcon） */
-  --ui-hex-used: url('/assets/game/world/augment/cell-used.webp');
+  /* 自定义强化列表的行底花纹板（limit_break_EX.gui 的 EX_list：左饰头 + 镜像拼成的中段 + 右饰头） */
+  --ui-plate-l: url('/assets/game/world/augment/plate-l.webp');
+  --ui-plate-m: url('/assets/game/world/augment/plate-m.webp');
+  --ui-plate-r: url('/assets/game/world/augment/plate-r.webp');
 
   display: grid;
   gap: var(--space-3);
@@ -449,6 +451,81 @@
   justify-self: center;
 }
 
+/* 嵌在自动配装武器面板里的客制（WeaponCustomPanel variant=inline）：
+ * 页头是一行小标题（有零件强化时为两个页签），容量靠右；面板够宽时格子栏与「基础 + 扩充」同一行 */
+.gb-cus-head[data-variant='inline'] {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: 4px;
+  padding: 0;
+  background: none;
+  box-shadow: none;
+}
+
+.gb-cus-head[data-variant='inline'] .gb-cus-head__title {
+  display: block;
+  font-size: var(--text-sm);
+}
+
+.gb-cus-head[data-variant='inline'] .gb-cus-head__extra {
+  margin-left: auto;
+}
+
+.gb-cus-head__tabs {
+  display: inline-flex;
+  gap: var(--space-1);
+}
+
+.gb-cus-head__tabs button {
+  position: relative;
+  padding: 4px 10px 6px;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--c-text-3);
+  transition: color var(--dur-fast) var(--ease-standard);
+}
+
+.gb-cus-head__tabs button:hover {
+  color: var(--c-text);
+}
+
+.gb-cus-head__tabs button[aria-selected='true'] {
+  color: var(--gb-gold);
+}
+
+.gb-cus-head__tabs button::after {
+  content: '';
+  position: absolute;
+  inset: auto 10px 0;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--gb-gold);
+  transform: scaleX(0);
+  transition: transform var(--dur-base) var(--ease-standard);
+}
+
+.gb-cus-head__tabs button[aria-selected='true']::after {
+  transform: scaleX(1);
+}
+
+.gb-cus-head__tabs button:focus-visible {
+  outline: 2px solid var(--c-focus);
+  outline-offset: -2px;
+}
+
+.gb-custom-wrap[data-variant='inline'] .gb-hexrow {
+  margin-bottom: var(--space-2);
+}
+
+@container custom (min-width: 30rem) {
+  .gb-custom-wrap[data-variant='inline'] .gb-hexrow {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: var(--space-3);
+  }
+}
+
 .gb-custom__hint {
   margin: 0 0 var(--space-2);
   font-size: var(--text-xs);
@@ -495,27 +572,28 @@
   scale: -1 1;
 }
 
+/* 发光加在格子外层：实心格本身有遮罩，滤镜放在它身上会被裁掉 */
 .gb-exbar__cell {
   position: relative;
   display: grid;
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
+  transition: filter var(--dur-base) var(--ease-standard);
 }
 
 .gb-exbar__cell img {
   grid-area: 1 / 1;
   display: block;
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
   transition: opacity var(--dur-base) var(--ease-standard);
 }
 
-/* 已占用：游戏的白色实心格按项目颜色正片叠底着色，再用同一张图的形状裁出来 */
+/* 已占用：游戏的实心格按项目颜色着色、叠上高光（.s-gem），盖在空格上 */
 .gb-exbar__fill {
   grid-area: 1 / 1;
-  background: var(--ui-hex-used) center / contain no-repeat var(--hex, #fff);
-  background-blend-mode: multiply;
-  mask: var(--ui-hex-used) center / contain no-repeat;
+  width: 30px;
+  height: 30px;
   opacity: 0;
   scale: 0.55;
   transition:
@@ -525,10 +603,13 @@
     filter var(--dur-base) var(--ease-standard);
 }
 
+.gb-exbar__cell[data-used] {
+  filter: drop-shadow(0 0 2px color-mix(in srgb, var(--hex) 55%, transparent));
+}
+
 .gb-exbar__cell[data-used] .gb-exbar__fill {
   opacity: 1;
   scale: 1;
-  filter: drop-shadow(0 0 3px color-mix(in srgb, var(--hex) 60%, transparent));
 }
 
 /* 要扩充自定义栏才开出来的格子 */
@@ -537,7 +618,7 @@
 }
 
 /* 超出上限的占用 */
-.gb-exbar__cell[data-used][data-locked] .gb-exbar__fill {
+.gb-exbar__cell[data-used][data-locked] {
   --hex: #ff3b2f;
   filter: drop-shadow(0 0 5px rgb(255 60 40 / 0.8));
 }
@@ -547,9 +628,13 @@
   opacity: 0.35;
 }
 
+.gb-exbar__cell[data-hl] {
+  filter: drop-shadow(0 0 6px var(--hex));
+}
+
 .gb-exbar__cell[data-hl] .gb-exbar__fill {
   scale: 1.12;
-  filter: drop-shadow(0 0 6px var(--hex)) brightness(1.15);
+  filter: brightness(1.15);
 }
 
 .gb-hexrow small {
@@ -578,33 +663,63 @@
 }
 
 .gb-aug li {
+  --plate-cap: 22px;
+  --plate-color: var(--c-text-3);
+
   position: relative;
+  isolation: isolate;
   display: grid;
   grid-template-columns: 30px minmax(0, 1fr) auto auto;
   gap: var(--space-3);
   align-items: center;
-  min-height: 46px;
-  padding: 4px 8px 4px 10px;
-  border-radius: var(--gb-radius);
+  min-height: 48px;
+  padding: 5px 16px 5px 22px;
   font-size: var(--text-sm);
-  transition: background-color var(--dur-fast) var(--ease-standard);
 }
 
-/* 已设定的项目整行铺上项目颜色，上下各一道同色细线（游戏里是彩色长条） */
+/* 行底是游戏的花纹板：两端饰头不拉伸，中段随行宽拉伸，按项目颜色正片叠底着色。
+ * 已设定的项目整块铺满（游戏里就是彩色长条），未设定的只留一层淡灰板，悬停时稍亮 */
+.gb-aug li::before {
+  --plate:
+    var(--ui-plate-l) left center / var(--plate-cap) 100% no-repeat,
+    var(--ui-plate-r) right center / var(--plate-cap) 100% no-repeat,
+    var(--ui-plate-m) center / calc(100% - 2 * var(--plate-cap)) 100% no-repeat;
+
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--plate);
+  background-color: var(--plate-color);
+  background-blend-mode: multiply;
+  mask: var(--plate);
+  opacity: 0.28;
+  transition:
+    opacity var(--dur-base) var(--ease-standard),
+    background-color var(--dur-base) var(--ease-standard);
+}
+
+.gb-aug li:not([data-on]):hover::before {
+  opacity: 0.5;
+}
+
 .gb-aug li[data-on] {
-  background: linear-gradient(
-    90deg,
-    color-mix(in srgb, var(--hex, var(--gb-gold)) 36%, transparent),
-    color-mix(in srgb, var(--hex, var(--gb-gold)) 14%, transparent) 60%,
-    color-mix(in srgb, var(--hex, var(--gb-gold)) 6%, transparent)
-  );
-  box-shadow:
-    inset 0 1px 0 color-mix(in srgb, var(--hex, var(--gb-gold)) 55%, transparent),
-    inset 0 -1px 0 color-mix(in srgb, var(--hex, var(--gb-gold)) 55%, transparent);
+  --plate-color: var(--hex, var(--gb-gold));
 }
 
-.gb-aug li:not([data-on]):hover {
-  background: var(--gb-row-hover);
+.gb-aug li[data-on]::before {
+  opacity: 1;
+}
+
+/* 浅色主题：已设定的行仍是游戏的深色彩条，行内文字与控件换成浅色 */
+[data-theme='light'] .gb-aug li[data-on] {
+  --c-text: #f4f1ea;
+  --c-text-3: #cfc8bb;
+  --c-surface-3: rgb(255 255 255 / 0.12);
+  --c-line-strong: rgb(255 255 255 / 0.3);
+  --gb-gold: #e2c25a;
+
+  color: var(--c-text);
 }
 
 .gb-aug__cost {
@@ -613,13 +728,9 @@
   gap: 4px;
 }
 
-.gb-aug__cost i {
-  width: 22px;
-  height: 22px;
-  background: var(--ui-hex-used) center / contain no-repeat var(--hex, #fff);
-  background-blend-mode: multiply;
-  mask: var(--ui-hex-used) center / contain no-repeat;
-  filter: drop-shadow(0 0 3px color-mix(in srgb, var(--hex) 50%, transparent));
+.gb-aug__cost .s-gem-glow {
+  width: 28px;
+  height: 28px;
 }
 
 .gb-aug__cost b {

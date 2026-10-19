@@ -113,14 +113,17 @@ export interface WeaponData {
 }
 
 export type AugmentCategory = 'extend' | 'attack' | 'affinity' | 'defense' | 'slot' | 'health' | 'element';
-/** 自定义强化各项目在格子上的颜色（自定，按项目图标的主色挑选；配装器与百科共用） */
+/**
+ * 自定义强化各项目在格子上的颜色（配装器与百科共用）。游戏里由程序设定、数据文件里没有：
+ * 会心（紫红）、回复（绿）、属性（黄）按游戏截图取色（2026-10-20）；攻击、防御、镶嵌槽、扩充暂按项目图标的主色，待截图核对
+ */
 export const AUGMENT_COLORS: Record<AugmentCategory, string> = {
   attack: '#d65a45',
-  affinity: '#a982e0',
-  element: '#dcae3a',
+  affinity: '#b46cc6',
+  element: '#cfcc52',
   defense: '#c98b46',
   slot: '#4cb3c9',
-  health: '#6cc36a',
+  health: '#5fbf78',
   extend: '#9aa0a6',
 };
 export const AUGMENT_ORDER: AugmentCategory[] = [

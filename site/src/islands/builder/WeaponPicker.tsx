@@ -19,7 +19,7 @@ import { GameIcon, iconUrl } from './icons';
 import './weapon-picker.css';
 
 /** 属性 / 状态异常的图标（cmn_status00 的格子，与猎虫页一致） */
-const ELEMENT_ICON: Record<string, number> = {
+export const ELEMENT_ICON: Record<string, number> = {
   fire: 3,
   water: 4,
   thunder: 5,
@@ -32,7 +32,7 @@ const ELEMENT_ICON: Record<string, number> = {
 };
 const ELEMENT_ORDER = ['fire', 'water', 'thunder', 'ice', 'dragon', 'poison', 'paralysis', 'sleep', 'blast'];
 /** 状态图标：攻击、会心、防御、龙封力（龙头与剑，按图形挑选） */
-const ICON = { attack: 25, affinity: 27, defense: 26, elderseal: 76 };
+export const STAT_ICON = { attack: 25, affinity: 27, defense: 26, elderseal: 76 };
 
 type GroupKey = 'all' | 'mr' | 'hr' | 'lr' | 'awakened' | 'kulve';
 const GROUPS: { key: GroupKey; label: string; title: string; test: (w: WeaponData) => boolean }[] = [
@@ -527,7 +527,7 @@ function WeaponCard({
             title={`攻击力：显示值 ${shown(w.attack)}，真实值 ${w.attack}；期望攻击力（真实值）${Math.round(efr)}`}
           >
             <dt>
-              <GameIcon src={iconUrl.status(ICON.attack)} size={18} alt="攻击力" />
+              <GameIcon src={iconUrl.status(STAT_ICON.attack)} size={18} alt="攻击力" />
             </dt>
             <dd>
               <b>{shown(w.attack)}</b>
@@ -570,7 +570,7 @@ function WeaponCard({
           </div>
           <div title="龙封力">
             <dt>
-              <GameIcon src={iconUrl.status(ICON.elderseal)} size={18} alt="龙封力" />
+              <GameIcon src={iconUrl.status(STAT_ICON.elderseal)} size={18} alt="龙封力" />
             </dt>
             <dd>
               {w.elderseal ? <b>{ELDERSEAL[w.elderseal]}</b> : <span className="gb-wcard__none">—</span>}
@@ -578,7 +578,7 @@ function WeaponCard({
           </div>
           <div title="会心率">
             <dt>
-              <GameIcon src={iconUrl.status(ICON.affinity)} size={18} alt="会心率" />
+              <GameIcon src={iconUrl.status(STAT_ICON.affinity)} size={18} alt="会心率" />
             </dt>
             <dd data-neg={w.affinity < 0 ? '' : undefined}>
               <b>{w.affinity}%</b>
@@ -587,7 +587,7 @@ function WeaponCard({
           </div>
           <div title="防御力加成">
             <dt>
-              <GameIcon src={iconUrl.status(ICON.defense)} size={18} alt="防御力加成" />
+              <GameIcon src={iconUrl.status(STAT_ICON.defense)} size={18} alt="防御力加成" />
             </dt>
             <dd>{w.defense ? <b>+{w.defense}</b> : <span className="gb-wcard__none">0</span>}</dd>
           </div>
@@ -628,7 +628,7 @@ function WeaponCard({
  * 锐利度条：左端画成剑柄（自绘），实色为不带匠的长度，其后的淡色为匠 5 时能延长的部分；
  * 提示里写出白 / 紫的长度（游戏单位，满条 400）。
  */
-function SharpGauge({ ends, handicraft }: { ends: number[]; handicraft: number }) {
+export function SharpGauge({ ends, handicraft }: { ends: number[]; handicraft: number }) {
   const FULL = 400;
   const now = sharpnessBar(ends, handicraft, 0);
   const max = sharpnessBar(ends, handicraft, 5);

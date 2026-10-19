@@ -37,7 +37,12 @@ import { buildFromHash, shareUrl } from '../../lib/world/share';
 import AutoSearch from './AutoSearch';
 import Picker from './Picker';
 import WeaponPicker from './WeaponPicker';
-import WeaponCustomPanel, { AWAKENING_GROUPS, ROMAN, awakeningMeta } from './WeaponCustom';
+import WeaponCustomPanel, {
+  AWAKENING_GROUPS,
+  ROMAN,
+  awakeningMeta,
+  type CustomVariant,
+} from './WeaponCustom';
 import { GameIcon, iconUrl, LevelBoxes } from './icons';
 import './builder.css';
 import { WEAPON_TYPE_NAMES } from '../../lib/world/weapons';
@@ -457,8 +462,9 @@ export default function Builder() {
   const rarityVars = Object.fromEntries(data.colors.rarity.map((c, i) => [`--gb-rarity-${i + 1}`, c]));
 
   /** 武器客制面板：手动配装的详情栏与自动配装的武器栏共用 */
-  const customPanel = (w: WeaponData) => (
+  const customPanel = (w: WeaponData, variant: CustomVariant = 'panel') => (
     <WeaponCustomPanel
+      variant={variant}
       weapon={w}
       build={build}
       idx={idx}
@@ -628,7 +634,7 @@ export default function Builder() {
           onApply={applyPlan}
           onPickWeapon={() => setPicking({ target: { kind: 'weapon' } })}
           onClearWeapon={() => setPiece({ kind: 'weapon' }, null)}
-          renderCustom={customPanel}
+          renderCustom={(w, variant) => customPanel(w, variant)}
         />
       )}
 
@@ -665,7 +671,7 @@ export default function Builder() {
               build={build}
               idx={idx}
               onChange={() => setPicking({ target: selected })}
-              custom={customPanel}
+              custom={(w) => customPanel(w)}
             />
           </section>
 

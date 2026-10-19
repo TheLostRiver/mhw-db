@@ -2,8 +2,8 @@
  * 自动配装：选武器（可直接在这里选、设定客制）或只指定镶嵌槽，选技能（含套装技能）与排除项，
  * 在后台线程里搜索所有能凑出这些技能的配装，
  * 结果以游戏式的方案卡片列出，点「应用此方案」写回手动配装。
- * 布局：上方条件板（第一排是武器卡——武器与它的客制在同一张卡里，其下技能 / 套装 / 筛选与排除），中间吸顶的指令条
- * （条件摘要 + 搜索），下方整宽结果。
+ * 布局：上方条件板（左边一条窄长的武器面板——武器本身的数值与它的客制连成一块；右边技能 / 套装 / 筛选与排除），
+ * 中间吸顶的指令条（条件摘要 + 搜索），下方整宽结果。
  * 搜索算法见 lib/world/search.ts；条件保存在本机浏览器。
  */
 import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from 'react';
@@ -24,7 +24,9 @@ import { toSearchIndex, type SearchQuery, type SearchResult, type SearchStats } 
 import Dropdown, { type DropdownOption } from './Dropdown';
 import Picker, { type PickerItem } from './Picker';
 import { GameIcon, iconUrl } from './icons';
-import { ELEMENT_NAMES } from '../../lib/world/encyclopedia';
+import type { CustomVariant } from './WeaponCustom';
+import { ELEMENT_ICON, STAT_ICON, SharpGauge } from './WeaponPicker';
+import { ELDERSEAL, ELEMENT_NAMES } from '../../lib/world/encyclopedia';
 import type { WorkerRequest, WorkerResponse } from './search.worker';
 import './autosearch.css';
 
@@ -112,8 +114,8 @@ interface Props {
   /** 打开武器选择器（与手动配装共用） */
   onPickWeapon: () => void;
   onClearWeapon: () => void;
-  /** 武器客制面板（自定义强化 / 零件强化 / 觉醒） */
-  renderCustom: (w: WeaponData) => ReactNode;
+  /** 武器客制面板（自定义强化 / 零件强化 / 觉醒）；这里用 inline 样式嵌在武器面板里 */
+  renderCustom: (w: WeaponData, variant: CustomVariant) => ReactNode;
 }
 
 export default function AutoSearch({
@@ -459,115 +461,83 @@ export default function AutoSearch({
     <div className="gb-as">
       {/* 条件板：武器 / 技能 / 套装 / 筛选与排除，宽屏三栏 */}
       <section className="gb-as__form" aria-label="搜索条件" ref={board}>
-        {/* 武器：武器本身与它的客制在同一张卡里（客制是这把武器的属性，与手动配装的武器详情一致）。
-            武器与手动配装共用同一把；卡片宽时左右排，窄时上下排 */}
+        {/* 武器：一整块面板——上面是武器本身（名字、数值、锐利度、镶嵌槽），下面紧接着它的客制。
+            客制加的数值直接以金色「+N」标在武器数值旁边。武器与手动配装共用同一把；
+            标题右侧切换搜索时用不用这把武器，不用时整块变淡，改为指定镶嵌槽 */}
         <div className="gb-as__card gb-as__card--weapon">
           <header className="gb-as__cardhead">
             <h3>武器</h3>
             <small>{weaponTypeName}</small>
+            <span className="gb-as__wmode" role="radiogroup" aria-label="搜索时的武器">
+              <label
+                data-disabled={weapon ? undefined : ''}
+                title="镶嵌槽含自定义强化追加的槽，武器技能与觉醒的系列技能也计入"
+              >
+                <input
+                  type="radio"
+                  name="gb-as-weapon"
+                  checked={useWeapon}
+                  disabled={!weapon}
+                  onChange={() => update((c) => ({ ...c, useWeapon: true }))}
+                />
+                用这把武器
+              </label>
+              <label title="不看武器，只按指定的镶嵌槽搜索">
+                <input
+                  type="radio"
+                  name="gb-as-weapon"
+                  checked={!useWeapon}
+                  onChange={() => update((c) => ({ ...c, useWeapon: false }))}
+                />
+                不指定武器
+              </label>
+            </span>
           </header>
-          <div className="gb-as__wbody">
-            <div className="gb-as__wside">
-              {weapon ? (
-                <div className="gb-as__wcard" data-off={useWeapon ? undefined : ''}>
-                  <span
-                    className="gb-as__wicon"
-                    style={{ ['--rar' as string]: `var(--gb-rarity-${weapon.rarity})` }}
-                  >
-                    <GameIcon src={iconUrl.weapon(build.weaponType, weapon.rarity)} size={34} />
-                  </span>
-                  <span className="gb-as__winfo">
-                    <span className="gb-as__wname">
-                      <small style={{ ['--rar' as string]: `var(--gb-rarity-${weapon.rarity})` }}>
-                        R{weapon.rarity}
-                      </small>
-                      {weapon.name}
-                    </span>
-                    <span className="gb-as__wstats">
-                      攻击 {Math.round((weapon.attack + bonus.attack) * (idx.bloat[build.weaponType] ?? 1))}
-                      {' · '}会心 {weapon.affinity + bonus.affinity}%
-                      {weapon.element
-                        ? ` · ${ELEMENT_NAMES[weapon.element.type] ?? ''} ${(weapon.element.value + bonus.element) * 10}`
-                        : ''}
-                    </span>
-                    <SlotIcons slots={weaponSlots(build, idx)} extraFrom={weapon.slots.length} />
-                  </span>
-                  <span className="gb-as__wbtns">
-                    <button type="button" className="gb-btn" onClick={onPickWeapon}>
-                      更换
-                    </button>
-                    <button type="button" className="gb-btn gb-btn--ghost" onClick={onClearWeapon}>
-                      卸下
-                    </button>
-                  </span>
-                </div>
-              ) : (
-                <button type="button" className="gb-as__wpick" onClick={onPickWeapon}>
-                  <GameIcon src={iconUrl.empty.weapon(build.weaponType)} size={30} />
-                  <span>
-                    选择{weaponTypeName}
-                    <small>按稀有度、属性筛选，卡片上列出攻击、斩味与镶嵌槽</small>
-                  </span>
-                </button>
-              )}
-              <div className="gb-as__weapon" role="radiogroup" aria-label="搜索时的武器">
-                <label className="gb-as__radio" data-disabled={weapon ? undefined : ''}>
-                  <input
-                    type="radio"
-                    name="gb-as-weapon"
-                    checked={useWeapon}
-                    disabled={!weapon}
-                    onChange={() => update((c) => ({ ...c, useWeapon: true }))}
+          {!useWeapon && (
+            <div className="gb-as__slotrow">
+              <span>只按这几个镶嵌槽搜索</span>
+              <span className="gb-as__slotpick">
+                {cond.weaponSlots.map((sl, i) => (
+                  <Dropdown
+                    key={i}
+                    label={`第 ${i + 1} 个槽`}
+                    className="gb-as__slotdd"
+                    value={sl}
+                    options={SLOT_OPTIONS}
+                    onChange={(v) =>
+                      update((c) => {
+                        c.weaponSlots[i] = v;
+                        return c;
+                      })
+                    }
                   />
-                  <span>
-                    用这把武器
-                    <small>槽含自定义强化追加的槽，武器技能与觉醒的系列技能也计入</small>
-                  </span>
-                </label>
-                <label className="gb-as__radio">
-                  <input
-                    type="radio"
-                    name="gb-as-weapon"
-                    checked={!useWeapon}
-                    onChange={() => update((c) => ({ ...c, useWeapon: false }))}
-                  />
-                  <span>
-                    不指定武器
-                    <small>只按这几个镶嵌槽搜索</small>
-                  </span>
-                  <span className="gb-as__slotpick">
-                    {cond.weaponSlots.map((s, i) => (
-                      <Dropdown
-                        key={i}
-                        label={`第 ${i + 1} 个槽`}
-                        className="gb-as__slotdd"
-                        value={s}
-                        disabled={useWeapon}
-                        options={SLOT_OPTIONS}
-                        onChange={(v) =>
-                          update((c) => {
-                            c.weaponSlots[i] = v;
-                            return c;
-                          })
-                        }
-                      />
-                    ))}
-                  </span>
-                </label>
-              </div>
+                ))}
+              </span>
             </div>
-            {/* 这把武器的客制：不按武器搜索时变淡 */}
-            <div className="gb-as__cside" data-off={useWeapon ? undefined : ''}>
-              {weapon ? (
-                renderCustom(weapon)
-              ) : (
-                <p className="gb-as__hint">
-                  选好武器后，这里设定它的自定义强化、零件强化或冥赤龙觉醒能力；镶嵌槽强化追加的槽、
-                  觉醒的系列技能都会计入搜索。
-                </p>
-              )}
+          )}
+          {weapon ? (
+            <div className="gb-as__wpanel" data-off={useWeapon ? undefined : ''}>
+              <WeaponSummary
+                weapon={weapon}
+                build={build}
+                idx={idx}
+                bonus={bonus}
+                onPick={onPickWeapon}
+                onClear={onClearWeapon}
+              />
+              <div className="gb-as__cside">{renderCustom(weapon, 'inline')}</div>
             </div>
-          </div>
+          ) : (
+            <button type="button" className="gb-as__wpick" onClick={onPickWeapon}>
+              <GameIcon src={iconUrl.empty.weapon(build.weaponType)} size={30} />
+              <span>
+                选择{weaponTypeName}
+                <small>
+                  按稀有度、属性筛选，卡片上列出攻击、斩味与镶嵌槽；选好后在这里设定自定义强化、零件强化或觉醒能力
+                </small>
+              </span>
+            </button>
+          )}
         </div>
 
         {/* 技能：主栏。输入即搜，回车添加，可以连续添加 */}
@@ -1114,6 +1084,132 @@ function LevelPicker({
 }
 
 /** 一排镶嵌槽图标；extraFrom 之后的是自定义强化 / 觉醒追加的槽，右上角带金色「＋」 */
+/**
+ * 武器面板的上半：图标、稀有度与名字、更换 / 卸下，一排数值（攻击、会心、属性、龙封力、防御、镶嵌槽）与锐利度。
+ * 数值已含客制，客制加的部分另标金色「+N」（攻击按显示值）。
+ */
+function WeaponSummary({
+  weapon: w,
+  build,
+  idx,
+  bonus,
+  onPick,
+  onClear,
+}: {
+  weapon: WeaponData;
+  build: Build;
+  idx: Index;
+  bonus: ReturnType<typeof customBonus>;
+  onPick: () => void;
+  onClear: () => void;
+}) {
+  const bloat = idx.bloat[build.weaponType] ?? 1;
+  const els = w.special?.elements ?? (w.element ? [w.element] : []);
+  const hidden = !els.length ? w.hiddenElement : null;
+  const plus = (n: number, unit = '') => (n ? <em className="gb-as__wplus">+{n + unit}</em> : null);
+  const rar = { ['--rar' as string]: `var(--gb-rarity-${w.rarity})` };
+  return (
+    <div className="gb-as__wcard">
+      <span className="gb-as__wicon" style={rar}>
+        <GameIcon src={iconUrl.weapon(build.weaponType, w.rarity)} size={40} />
+      </span>
+      <div className="gb-as__whead">
+        <span className="gb-as__wname" title={w.name}>
+          <small style={rar}>RARE {w.rarity}</small>
+          {w.name}
+        </span>
+        <span className="gb-as__wbtns">
+          <button type="button" className="gb-btn" onClick={onPick}>
+            更换
+          </button>
+          <button type="button" className="gb-btn gb-btn--ghost" onClick={onClear}>
+            卸下
+          </button>
+        </span>
+      </div>
+      <dl className="gb-as__wstats">
+        <div title={`攻击力（显示值；真实值 ${w.attack + bonus.attack}）`}>
+          <dt>
+            <GameIcon src={iconUrl.status(STAT_ICON.attack)} size={18} alt="攻击力" />
+          </dt>
+          <dd>
+            <b>{Math.round((w.attack + bonus.attack) * bloat)}</b>
+            {plus(Math.round(bonus.attack * bloat))}
+          </dd>
+        </div>
+        <div title="会心率">
+          <dt>
+            <GameIcon src={iconUrl.status(STAT_ICON.affinity)} size={18} alt="会心率" />
+          </dt>
+          <dd data-neg={w.affinity + bonus.affinity < 0 ? '' : undefined}>
+            <b>{w.affinity + bonus.affinity}%</b>
+            {plus(bonus.affinity, '%')}
+          </dd>
+        </div>
+        <div title={hidden ? '隐藏属性：需要「解放属性 / 状态异常」才能发挥' : '属性 / 状态异常'}>
+          <dt>
+            <GameIcon
+              src={iconUrl.status(ELEMENT_ICON[(els[0] ?? hidden)?.type ?? ''] ?? 3)}
+              size={18}
+              {...(els.length || hidden ? {} : { className: 'gb-as__woff' })}
+              alt="属性"
+            />
+          </dt>
+          <dd>
+            {els.length ? (
+              <b>
+                {els
+                  .map(
+                    (e, k) =>
+                      `${ELEMENT_NAMES[e.type] ?? ''} ${(e.value + (k === 0 ? bonus.element : 0)) * 10}`,
+                  )
+                  .join(' / ')}
+              </b>
+            ) : hidden ? (
+              <b data-hidden="">
+                ({ELEMENT_NAMES[hidden.type] ?? ''} {hidden.value * 10})
+              </b>
+            ) : (
+              <span className="gb-as__wnone">无</span>
+            )}
+            {els.length > 0 && plus(bonus.element * 10)}
+          </dd>
+        </div>
+        <div title="龙封力">
+          <dt>
+            <GameIcon src={iconUrl.status(STAT_ICON.elderseal)} size={18} alt="龙封力" />
+          </dt>
+          <dd>{w.elderseal ? <b>{ELDERSEAL[w.elderseal]}</b> : <span className="gb-as__wnone">—</span>}</dd>
+        </div>
+        <div title="防御力加成">
+          <dt>
+            <GameIcon src={iconUrl.status(STAT_ICON.defense)} size={18} alt="防御力加成" />
+          </dt>
+          <dd>
+            {w.defense + bonus.defense ? (
+              <b>+{w.defense + bonus.defense}</b>
+            ) : (
+              <span className="gb-as__wnone">0</span>
+            )}
+            {plus(bonus.defense)}
+          </dd>
+        </div>
+        <div title="镶嵌槽（含客制追加的槽）">
+          <dt className="gb-as__wlabel">镶嵌槽</dt>
+          <dd>
+            <SlotIcons slots={weaponSlots(build, idx)} extraFrom={w.slots.length} />
+          </dd>
+        </div>
+      </dl>
+      {w.sharpness && w.handicraft != null && (
+        <div className="gb-as__wsharp">
+          <SharpGauge ends={w.sharpness} handicraft={w.handicraft} />
+        </div>
+      )}
+    </div>
+  );
+}
+
 function SlotIcons({ slots, extraFrom }: { slots: number[]; extraFrom?: number }) {
   return (
     <span className="gb-as__sloticons">

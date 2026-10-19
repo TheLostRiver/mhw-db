@@ -456,3 +456,49 @@
   color: var(--c-text-3);
   font-size: var(--text-xs);
 }
+
+/* 自定义强化的格子（mhdb images 按 limit_break_EX.gui 的分层输出）：
+ * 实心格按项目颜色 --hex 正片叠底着色，高光层（游戏里是加法混合）用 screen 叠在上面，再按实心格的形状裁出来。
+ * s-gem--l 是列表右侧的大格（贴图 64px，多一圈外发光，外发光放在伪元素上才不会被裁掉） */
+.s-gem {
+  --gem: url('/assets/game/world/augment/gem-s.webp');
+  --gem-gloss: url('/assets/game/world/augment/gem-s-gloss.webp');
+
+  display: inline-block;
+  flex: none;
+  width: 18px;
+  height: 18px;
+  background:
+    var(--gem-gloss) center / contain no-repeat,
+    var(--gem) center / contain no-repeat var(--hex, #fff);
+  background-blend-mode: screen, multiply;
+  mask: var(--gem) center / contain no-repeat;
+}
+
+.s-gem--l {
+  --gem: url('/assets/game/world/augment/gem.webp');
+  --gem-gloss: url('/assets/game/world/augment/gem-gloss.webp');
+}
+
+.s-gem-glow {
+  position: relative;
+  display: inline-grid;
+  flex: none;
+}
+
+.s-gem-glow > .s-gem {
+  width: 100%;
+  height: 100%;
+}
+
+.s-gem-glow::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url('/assets/game/world/augment/gem-glow.webp') center / contain no-repeat
+    color-mix(in srgb, var(--hex, #fff) 55%, #fff);
+  background-blend-mode: multiply;
+  mask: url('/assets/game/world/augment/gem-glow.webp') center / contain no-repeat;
+  mix-blend-mode: plus-lighter;
+  pointer-events: none;
+}

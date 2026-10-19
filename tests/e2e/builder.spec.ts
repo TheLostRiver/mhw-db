@@ -210,6 +210,16 @@ test('自动配装：可以直接选武器并设定自定义强化', async ({ pa
     .click();
   await expect(custom.locator('.gb-exbar__cell[data-used]')).toHaveCount(3);
   await expect(form.locator('.gb-as__wcard .gb-slot-plus')).toHaveCount(1);
+  // 武器面板的数值含客制：镶嵌槽强化不加数值，没有金色「+N」
+  await expect(form.locator('.gb-as__wplus')).toHaveCount(0);
+  // 有零件强化的武器在面板里是两个页签（黑龙玄刃不支援零件强化，只有标题）
+  await expect(custom.getByRole('tab')).toHaveCount(0);
+  // 不指定武器：整块变淡，改为指定镶嵌槽
+  await form.getByRole('radio', { name: '不指定武器' }).check();
+  await expect(form.locator('.gb-as__wpanel')).toHaveAttribute('data-off', '');
+  await expect(form.getByRole('combobox', { name: '第 1 个槽' })).toBeVisible();
+  await form.getByRole('radio', { name: '用这把武器' }).check();
+  await expect(form.getByRole('combobox', { name: '第 1 个槽' })).toHaveCount(0);
   // 手动配装里是同一把武器、同样的强化
   await page.getByRole('tab', { name: '手动配装' }).click();
   await expect(page.locator('.gb-row').first().locator('.gb-slot')).toHaveCount(3);

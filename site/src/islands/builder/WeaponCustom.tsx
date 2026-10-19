@@ -4,7 +4,7 @@
  * 还能继续强化的武器没有客制；不支援零件强化的武器没有零件强化页（见 lib/world/builder.ts 的 customKind / partsAvailable）。
  * 规则与数值的确认状态见 docs/DATA.md 3.3；未确认的部分只显示、不计入状态。
  */
-import { useState, type ReactNode } from 'react';
+import { createContext, useContext, useState, type ReactNode } from 'react';
 import {
   EXTEND_LEVELS,
   HR_AUGMENTS,
@@ -99,6 +99,13 @@ const partEffectText = (effect: { [K in PartEffectKey]?: number | undefined }) =
     .map(([k, v]) => `${PART_LABELS[k]} +${v}`)
     .join('、');
 
+/**
+ * 面板的样式：panel 为手动配装详情栏里的独立面板（金色页头、左右翻页）；
+ * inline 嵌在自动配装的武器面板里（一行小标题，有零件强化时为页签），与武器数值连成一体
+ */
+export type CustomVariant = 'panel' | 'inline';
+const VariantContext = createContext<CustomVariant>('panel');
+
 interface Props {
   weapon: WeaponData;
   build: Build;
@@ -106,16 +113,20 @@ interface Props {
   onAugment: (category: AugmentCategory, level: number) => void;
   onCustom: (fn: (c: WeaponCustom) => WeaponCustom) => void;
   onPickAwakening: (slot: number) => void;
+  variant?: CustomVariant;
 }
 
-export default function WeaponCustomPanel({
-  weapon,
-  build,
-  idx,
-  onAugment,
-  onCustom,
-  onPickAwakening,
-}: Props) {
+export default function WeaponCustomPanel({ variant = 'panel', ...props }: Props) {
+  return (
+    <VariantContext.Provider value={variant}>
+      <div className="gb-custom-wrap" data-variant={variant}>
+        <CustomBody {...props} />
+      </div>
+    </VariantContext.Provider>
+  );
+}
+
+function CustomBody({ weapon, build, idx, onAugment, onCustom, onPickAwakening }: Omit<Props, 'variant'>) {
   const kind = customKind(weapon);
   if (kind === 'awakening')
     return <AwakeningPanel build={build} idx={idx} onPick={onPickAwakening} onCustom={onCustom} />;
@@ -153,10 +164,49 @@ function CustomHead<T extends string>({
   onPage?: (p: T) => void;
   extra?: ReactNode;
 }) {
+  const variant = useContext(VariantContext);
   const list = pages ?? [];
   const i = list.findIndex((p) => p.key === page);
   const at = (d: number) => list[(i + d + list.length) % list.length];
   const paged = list.length > 1 && i >= 0;
+  // 嵌在武器面板里：一行小标题；有两页时为页签
+  if (variant === 'inline')
+    return (
+      <header className="gb-cus-head" data-variant="inline">
+        {paged ? (
+          <span
+            className="gb-cus-head__tabs"
+            role="tablist"
+            aria-label="客制"
+            onKeyDown={(e) => {
+              // 左右方向键切换页签（焦点跟着走）
+              const d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+              if (!d) return;
+              e.preventDefault();
+              onPage?.(at(d)!.key);
+              const tabs = e.currentTarget.querySelectorAll('button');
+              tabs[(i + d + tabs.length) % tabs.length]?.focus();
+            }}
+          >
+            {list.map((p) => (
+              <button
+                key={p.key}
+                type="button"
+                role="tab"
+                aria-selected={p.key === page}
+                tabIndex={p.key === page ? 0 : -1}
+                onClick={() => onPage?.(p.key)}
+              >
+                {p.label}
+              </button>
+            ))}
+          </span>
+        ) : (
+          <h4 className="gb-cus-head__title">{title}</h4>
+        )}
+        {extra != null && <span className="gb-cus-head__extra">{extra}</span>}
+      </header>
+    );
   return (
     <header className="gb-cus-head">
       {paged && (
@@ -200,7 +250,7 @@ function CustomHead<T extends string>({
 
 /**
  * 自定义强化的格子栏：两端细线箭头、一道细轨贯穿到右端（参照游戏强化画面，不铺底色），
- * 格子贴图取自游戏（limit_break_EX.gui）。
+ * 格子贴图取自游戏（limit_break_EX.gui 的 EXSlot：空格、实心格与两层高光）。
  * 已占用的格子按占用它的项目着色；要「扩充自定义栏」才开出来的格子半透明，超出上限的占用标红。
  * focus 为鼠标所在的项目：它占的格子高亮，其余变暗。
  */
@@ -237,8 +287,8 @@ function AugmentBar({
               style={c ? { ['--hex' as string]: AUGMENT_COLORS[c] } : undefined}
               title={c ? AUGMENT_NAMES[c] : i >= capacity ? '扩充自定义栏后可用' : '空格'}
             >
-              <img src={iconUrl.augmentHex(false)} width={28} height={28} alt="" decoding="async" />
-              <i className="gb-exbar__fill" />
+              <img src={iconUrl.augmentEmpty} width={30} height={30} alt="" decoding="async" />
+              <i className="gb-exbar__fill s-gem" />
             </span>
           );
         })}
@@ -258,11 +308,13 @@ function BarCap({ end = false }: { end?: boolean }) {
   );
 }
 
-/** 占用格数：项目颜色的小六边形 + 数字（游戏里列在每项右侧） */
+/** 占用格数：项目颜色的大格（带外发光）+ 数字（游戏里列在每项右侧） */
 function CostHex({ n }: { n: number }) {
   return (
     <span className="gb-aug__cost" title={`占用 ${n} 格`}>
-      <i aria-hidden="true" />
+      <span className="s-gem-glow" aria-hidden="true">
+        <i className="s-gem s-gem--l" />
+      </span>
       <b>{n}</b>
     </span>
   );
@@ -557,7 +609,11 @@ function AugmentPanel({
         })}
         {/* 扩充自定义栏：本身不占格，只把上限往上抬 */}
         {extendOpts.length > 0 && (
-          <li className="gb-aug--extend" data-on={extend ? '' : undefined}>
+          <li
+            className="gb-aug--extend"
+            data-on={extend ? '' : undefined}
+            style={{ ['--hex' as string]: AUGMENT_COLORS.extend }}
+          >
             <GameIcon src={iconUrl.augment('slot')} size={30} />
             <span className="gb-aug__label">
               <span className="gb-aug__name">

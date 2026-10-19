@@ -7,7 +7,7 @@
   cmn_action00 64px 网格：大地图上交互环境生物、环境利用的图标（彩色，原样输出）
   cmn_creature00 64px 网格：狩猎笔记里每种环境生物的图标，格子号见 records.json 的 endemic[].icon（彩色，原样输出）
   common00     非网格：镶嵌槽框与宝石，按坐标裁切
-  equip_egc    非网格：自定义强化的格数六边形
+  equip_egc    非网格：自定义强化的格子（实心格、高光、外发光）与列表行底的花纹板
   status00 / menu00 / itemMenu00 / common00  菜单界面零件（UI_SPRITES），按坐标裁切
 着色方式见 mhdb/images/atlas.py（按游戏截图对比选定的近似）。
 """
@@ -15,8 +15,10 @@
 import json
 from pathlib import Path
 
-from PIL import Image
+import numpy as np
+from PIL import Image, ImageOps
 
+from mhdb.formats import gui as guifmt
 from mhdb.formats.tex import decode
 from mhdb.images.atlas import fill, grid_cell, tint
 
@@ -59,9 +61,16 @@ GLYPH = {
     "mechanics": 195, "status": 113, "blight": 208, "elderseal": 175, "blessing": 204, "evade": 107,
     "guard": 203, "kinsect-data": 233, "frostcraft": 208,
 }  # fmt: skip
-# 大师自定义强化的格子（equip_egc，输出 augment/cell-*；旧名 hex-* 已停用，避免浏览器缓存旧图）：矩形取自 limit_break_EX.gui——
-# 已占用 = EXIcon 的 tex_EXSlot（白色实心格），空格 = EXSlot 的 tex_base（暗色底格，描边浅灰）
-AUGMENT_HEX = {"used": ("EXIcon", "tex_EXSlot"), "empty": ("EXSlot", "tex_base")}
+# 大师自定义强化的画面（ui/equip/limit_break_EX.gui，贴图 equip_egc；矩形与顶点色都取自布局文件）：
+#   格子栏的小格 = EXSlot 动画：tex_base 空格；tex_EXSlot 实心格 + tex_EXSlot_L00 / L01 两层高光
+#   列表右侧的大格 = EXIcon 动画：tex_EXSlot 实心格 + L00 / L01 高光 + tex_EXSlot_L 外发光
+#   列表行底的花纹板 = EX_list 的 tex_00（tex_01 是同一矩形宽 -178，即水平镜像拼在右半）
+# 高光与外发光的 BlendState 为 5，按加法混合（与游戏画面一致）。实心格、外发光、花纹板输出白 / 灰原图，
+# 前端按项目颜色正片叠底着色——各项的颜色由程序设定、布局里没有，按游戏截图取色（见 docs/DATA.md 3.3）。
+# 旧名 cell-* / hex-* 已停用（静态资源缓存 7 天，换内容就换文件名）
+AUGMENT_GEM = {"gem-s": "EXSlot", "gem": "EXIcon"}
+# 花纹板左端的饰头宽度（贴图像素）：饰头不拉伸，中段（右半镜像）随行宽拉伸
+PLATE_CAP = 34
 # cmn_status00 里自定义强化各项的图标（攻击↑、会心↑、防御↑、镶嵌槽＋、回复、属性↑），按图形核对
 AUGMENT_ICON = {"attack": 16, "affinity": 51, "defense": 17, "slot": 55, "health": 54, "element": 67}
 # common00 里的镶嵌槽（列表用小图标）与宝石，坐标为 (左, 上, 右, 下)
@@ -152,6 +161,46 @@ def _save(img: Image.Image, path: Path) -> None:
     img.save(path, "WEBP", lossless=True, method=6)
 
 
+def _additive(layers: list[tuple[Image.Image, tuple[float, ...]]]) -> Image.Image:
+    """把若干 BlendState 5（加法）层按「贴图 × 顶点色 × alpha」预先加在一起，存成非预乘 RGBA。
+    前端用 mix-blend-mode: plus-lighter 叠到实心格上：结果 = 底 + Σ 颜色 × alpha，与游戏的加法混合相同。"""
+    acc = np.zeros((layers[0][0].height, layers[0][0].width, 3))
+    for img, color in layers:
+        px = np.asarray(img.convert("RGBA"), float) / 255
+        vc = np.asarray(color, float) / 255
+        acc += px[..., :3] * vc[:3] * px[..., 3:] * vc[3]
+    alpha = acc.max(axis=2, keepdims=True).clip(0, 1)
+    rgb = np.divide(acc, alpha, out=np.zeros_like(acc), where=alpha > 0).clip(0, 1)
+    return Image.fromarray((np.concatenate([rgb, alpha], 2) * 255).round().astype(np.uint8), "RGBA")
+
+
+def augment_sprites(raw: Path) -> dict[str, Image.Image]:
+    """自定义强化画面的零件：gem-empty（空格）、gem-s / gem（小 / 大实心格）、gem-s-gloss / gem-gloss（高光）、
+    gem-glow（大格外发光）、plate-l / plate-m / plate-r（行底花纹板的左饰头、中段、右饰头）。"""
+    lb = guifmt.parse((raw / "ui/equip/limit_break_EX.gui").read_bytes())
+    atlases: dict[str, Image.Image] = {}
+
+    def part(anim: str, obj: str) -> tuple[Image.Image, tuple[float, ...]]:
+        init = next(o.init for o in lb.animations[anim].objects if o.name == obj)
+        rel = lb.textures[init["Texture"]].path.replace("\\", "/")
+        atlas = atlases.setdefault(rel, _atlas(raw, f"{rel}.tex"))
+        return atlas.crop(tuple(int(v) for v in init["mTextureRect"])), init["VertexColor"]
+
+    out = {"gem-empty": part("EXSlot", "tex_base")[0]}
+    for name, anim in AUGMENT_GEM.items():
+        out[name] = part(anim, "tex_EXSlot")[0]
+        out[f"{name}-gloss"] = _additive([part(anim, "tex_EXSlot_L01"), part(anim, "tex_EXSlot_L00")])
+    out["gem-glow"] = part("EXIcon", "tex_EXSlot_L")[0]
+    plate = part("EX_list", "tex_00")[0]
+    cap = plate.crop((0, 0, PLATE_CAP, plate.height))
+    band = plate.crop((PLATE_CAP, 0, plate.width, plate.height))
+    mid = Image.new("RGBA", (band.width * 2, plate.height))
+    mid.paste(band, (0, 0))
+    mid.paste(ImageOps.mirror(band), (band.width, 0))
+    out.update({"plate-l": cap, "plate-m": mid, "plate-r": ImageOps.mirror(cap)})
+    return out
+
+
 def _square(img: Image.Image) -> Image.Image:
     """非正方形裁切居中放进正方形透明画布，方便前端统一尺寸。"""
     side = max(img.size)
@@ -216,17 +265,9 @@ def build(raw: Path, data: Path, out: Path, log=print) -> int:
                 f"weapon/{key}-c{c}.webp",
             )
 
-    # 自定义强化：格子（按布局文件里的矩形裁切）与各项图标
-    from mhdb.formats import gui as guifmt
-
-    lb = guifmt.parse((raw / "ui/equip/limit_break_EX.gui").read_bytes())
-    for name, (anim, obj) in AUGMENT_HEX.items():
-        init = next(o.init for o in lb.animations[anim].objects if o.name == obj)
-        tex = lb.textures[init["Texture"]].path.replace("\\", "/")
-        save(
-            _atlas(raw, f"{tex}.tex").crop(tuple(int(v) for v in init["mTextureRect"])),
-            f"augment/cell-{name}.webp",
-        )
+    # 自定义强化：格子、高光、花纹板（按布局文件里的矩形裁切）与各项图标
+    for name, img in augment_sprites(raw).items():
+        save(img, f"augment/{name}.webp")
     for name, cell in AUGMENT_ICON.items():
         save(grid_cell(status, cell), f"augment/{name}.webp")
 

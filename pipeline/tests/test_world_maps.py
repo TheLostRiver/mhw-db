@@ -94,3 +94,32 @@ def test_cover_is_whole_map() -> None:
     assert max(img.size) == COVER_SIZE and min(img.size) > COVER_SIZE * 0.9
     a = np.asarray(img.getchannel("A"))
     assert a[a.shape[0] // 2, a.shape[1] // 2] == 255 and a[0, 0] == 0 and a[-1, -1] == 0
+
+
+@pytest.mark.skipif(
+    not (DATA_RAW / "world/ui/equip/limit_break_EX.gui").is_file(), reason="需要先运行 mhdb extract"
+)
+def test_augment_sprites_follow_layout() -> None:
+    """自定义强化的格子按 limit_break_EX.gui 的矩形裁切：小格 32px、大格 64px；高光层是加法层预先合成，
+    颜色带布局里的顶点色（L00 偏青、L01 偏粉，alpha 100/255），不会比原图更不透明；花纹板左右饰头互为镜像。"""
+    from mhdb.images.world_icons import PLATE_CAP, augment_sprites
+
+    sp = augment_sprites(DATA_RAW / "world")
+    assert {k: v.size for k, v in sp.items()} == {
+        "gem-empty": (32, 32),
+        "gem-s": (32, 32),
+        "gem-s-gloss": (32, 32),
+        "gem": (64, 64),
+        "gem-gloss": (64, 64),
+        "gem-glow": (64, 64),
+        "plate-l": (PLATE_CAP, 72),
+        "plate-m": (2 * (168 - PLATE_CAP), 72),
+        "plate-r": (PLATE_CAP, 72),
+    }
+    gloss = np.asarray(sp["gem-gloss"], float)
+    assert gloss[..., 3].max() <= 255 * (100 / 255) * 2 + 1  # 两层各 alpha 100/255
+    assert gloss[..., 3].max() > 0
+    left, right = np.asarray(sp["plate-l"]), np.asarray(sp["plate-r"])
+    assert (left[:, ::-1] == right).all()
+    mid = np.asarray(sp["plate-m"])
+    assert (mid[:, ::-1] == mid).all()
