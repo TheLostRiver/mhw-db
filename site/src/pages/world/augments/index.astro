@@ -5,6 +5,7 @@ import Materials from '../../../components/site/Materials.astro';
 import { loadWeaponCustom } from '../../../data/world/load';
 import type { WeaponType } from '../../../data/world/schema';
 import { WEAPON_ORDER, WEAPON_TYPE_NAMES, weaponIconUrl } from '../../../lib/world/weapons';
+import { AUGMENT_COLORS, type AugmentCategory } from '../../../lib/world/builder';
 
 const { levels, effects, hr } = loadWeaponCustom().augments;
 type Level = (typeof levels)[number];
@@ -121,14 +122,14 @@ const hrEffect = (k: keyof typeof HR_LABELS) =>
                       <td class="au-lv">{ROMAN[a.level]}</td>
                       {g.key !== 'extend' && (
                         <td>
-                          <span class="au-hex" aria-label={`占用 ${a.slotCost} 格`}>
+                          <span
+                            class="au-hex"
+                            role="img"
+                            aria-label={`占用 ${a.slotCost} 格`}
+                            style={`--hex: ${AUGMENT_COLORS[g.key as AugmentCategory]}`}
+                          >
                             {Array.from({ length: a.slotCost }, () => (
-                              <img
-                                src="/assets/game/world/augment/hex-used.webp"
-                                alt=""
-                                width="18"
-                                height="18"
-                              />
+                              <i />
                             ))}
                           </span>
                         </td>
@@ -310,18 +311,19 @@ const hrEffect = (k: keyof typeof HR_LABELS) =>
     font-weight: 700;
   }
 
-  /* 占用格数：游戏的白色实心格放在深色小底条上（与配装器的格子栏一致，两主题都是深色） */
+  /* 占用格数：游戏的实心格按项目颜色着色（与配装器的格子栏一致） */
   .au-hex {
     display: inline-flex;
     gap: 1px;
-    padding: 3px 6px;
-    border-radius: 3px;
-    background: linear-gradient(90deg, #1b1c1f, #2b2c30 20%, #2b2c30 80%, #1b1c1f);
-    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.1);
   }
 
-  .au-hex img {
-    display: block;
+  .au-hex i {
+    width: 18px;
+    height: 18px;
+    background: url('/assets/game/world/augment/hex-used.webp') center / contain no-repeat var(--hex);
+    background-blend-mode: multiply;
+    -webkit-mask: url('/assets/game/world/augment/hex-used.webp') center / contain no-repeat;
+    mask: url('/assets/game/world/augment/hex-used.webp') center / contain no-repeat;
   }
 
   .au-effect {

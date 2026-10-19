@@ -201,10 +201,16 @@ test('自动配装：可以直接选武器并设定自定义强化', async ({ pa
   await page.keyboard.press('Enter');
   await expect(form.locator('.gb-as__wcard')).toContainText('黑龙玄刃');
   await expect(form.getByRole('radio', { name: /用这把武器/ })).toBeChecked();
-  // 展开自定义强化，镶嵌槽强化Ⅰ（3 格）追加一个 1 级槽
-  await form.locator('.gb-as__custom > summary').click();
-  await form.getByRole('radiogroup', { name: '镶嵌槽强化等级' }).getByRole('radio', { name: 'Ⅰ 级' }).click();
-  await expect(form.locator('.gb-as__custom > summary')).toContainText('镶嵌槽强化 Ⅰ');
+  // 打开客制弹窗，镶嵌槽强化Ⅰ（3 格）追加一个 1 级槽
+  await form.locator('.gb-as__custombtn').click();
+  const custom = page.getByRole('dialog', { name: /客制/ });
+  await custom
+    .getByRole('radiogroup', { name: '镶嵌槽强化等级' })
+    .getByRole('radio', { name: 'Ⅰ 级' })
+    .click();
+  await custom.getByRole('button', { name: '完成' }).click();
+  await expect(custom).toBeHidden();
+  await expect(form.locator('.gb-as__custombtn')).toContainText('镶嵌槽强化 Ⅰ');
   await expect(form.locator('.gb-as__wcard .gb-slot-plus')).toHaveCount(1);
   // 手动配装里是同一把武器、同样的强化
   await page.getByRole('tab', { name: '手动配装' }).click();
@@ -254,27 +260,32 @@ test('自动配装：按技能搜索，应用方案后写回手动配装', async
   const form = page.locator('.gb-as__form');
   await expect(form).toBeVisible();
 
-  // 添加技能：攻击 7、弱点特效 3
+  // 内联搜索连续添加：输入、回车，焦点留在框里接着输入
+  const search = form.getByRole('combobox', { name: '添加技能' });
   for (const [name, level] of [
     ['攻击', 7],
     ['弱点特效', 3],
   ] as const) {
-    await form.getByRole('button', { name: '＋ 添加' }).first().click();
-    const dialog = page.getByRole('dialog');
-    await dialog.getByRole('searchbox').fill(name);
-    await dialog
-      .locator('.gb-picker__list [role="option"]', { hasText: new RegExp(`^${name}`) })
-      .first()
-      .click();
+    await search.fill(name);
+    await expect(form.getByRole('listbox', { name: '添加技能' }).getByRole('option').first()).toContainText(
+      name,
+    );
+    await page.keyboard.press('Enter');
+    await expect(search).toBeFocused();
+    await expect(search).toHaveValue('');
     await form
       .getByRole('radiogroup', { name: `${name} 等级` })
       .getByRole('radio', { name: `${level} 级` })
       .click();
   }
-  await form.getByRole('button', { name: '搜索', exact: true }).click();
+  // 指令条上有条件摘要；Ctrl + Enter 直接搜索
+  const bar = page.locator('.gb-as__bar');
+  await expect(bar).toContainText('攻击7');
+  await page.keyboard.press('Control+Enter');
   const plans = page.locator('.gb-plan');
   await expect(plans.first()).toBeVisible({ timeout: 15_000 });
   await expect(page.locator('.gb-as__head')).toContainText('搜到');
+  await expect(bar).not.toHaveAttribute('data-stale');
 
   // 从方案卡片排除一件防具，排除列表里出现它
   const firstArmor = plans.first().locator('.gb-plan__equip li').nth(1);
@@ -282,9 +293,12 @@ test('自动配装：按技能搜索，应用方案后写回手动配装', async
   await firstArmor.hover();
   await firstArmor.getByRole('button', { name: `排除 ${armorName}` }).click();
   await expect(form.locator('.gb-as__chip', { hasText: armorName })).toBeVisible();
+  // 条件变了：指令条提示，按钮变成「重新搜索」
+  await expect(bar).toHaveAttribute('data-stale', '');
+  await expect(bar).toContainText('条件已更改');
 
   // 重新搜索后应用第一个方案
-  await form.getByRole('button', { name: '搜索', exact: true }).click();
+  await bar.getByRole('button', { name: '重新搜索' }).click();
   await expect(plans.first()).toBeVisible({ timeout: 15_000 });
   await plans.first().getByRole('button', { name: '应用此方案' }).click();
   await expect(page.getByRole('tab', { name: '手动配装' })).toHaveAttribute('aria-selected', 'true');

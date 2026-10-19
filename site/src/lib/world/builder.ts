@@ -113,6 +113,16 @@ export interface WeaponData {
 }
 
 export type AugmentCategory = 'extend' | 'attack' | 'affinity' | 'defense' | 'slot' | 'health' | 'element';
+/** 自定义强化各项目在格子上的颜色（自定，按项目图标的主色挑选；配装器与百科共用） */
+export const AUGMENT_COLORS: Record<AugmentCategory, string> = {
+  attack: '#d65a45',
+  affinity: '#a982e0',
+  element: '#dcae3a',
+  defense: '#c98b46',
+  slot: '#4cb3c9',
+  health: '#6cc36a',
+  extend: '#9aa0a6',
+};
 export const AUGMENT_ORDER: AugmentCategory[] = [
   'attack',
   'affinity',

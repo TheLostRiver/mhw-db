@@ -2,10 +2,10 @@
  * 自动配装：选武器（可直接在这里选、设定客制）或只指定镶嵌槽，选技能（含套装技能）与排除项，
  * 在后台线程里搜索所有能凑出这些技能的配装，
  * 结果以游戏式的方案卡片列出，点「应用此方案」写回手动配装。
+ * 布局：上方条件板（武器 / 技能 / 套装 / 筛选与排除，宽屏三栏），中间吸顶的指令条（条件摘要 + 搜索），下方整宽结果。
  * 搜索算法见 lib/world/search.ts；条件保存在本机浏览器。
  */
-import { useEffect, useMemo, useRef, useState } from 'react';
-import type { ReactNode } from 'react';
+import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from 'react';
 import {
   ARMOR_SLOTS,
   augmentLevels,
@@ -164,6 +164,9 @@ export default function AutoSearch({
   const worker = useRef<Worker | null>(null);
   const runId = useRef(0);
   const pendingQuery = useRef<SearchQuery | null>(null);
+  const board = useRef<HTMLElement>(null);
+  const [customOpen, setCustomOpen] = useState(false);
+  const [recent, setRecent] = useState<number[]>(loadRecent);
 
   useEffect(() => {
     try {
@@ -205,6 +208,63 @@ export default function AutoSearch({
   );
 
   const update = (fn: (c: SearchConditions) => SearchConditions) => setCond((c) => fn(structuredClone(c)));
+
+  // 内联搜索的条目：技能（能从装备得到的）与套装技能（有防具带的）
+  const skillItems = useMemo<SearchItem[]>(
+    () =>
+      data.skills
+        .filter((s) => !s.setBonus && obtainable.has(s.id) && !cond.skills.some((t) => t.id === s.id))
+        .map((s) => ({
+          id: s.id,
+          name: s.name,
+          search: s.levels.map((l) => l.desc).join(' '),
+          iconColor: s.iconColor,
+          meta:
+            s.maxLevel > s.baseMaxLevel
+              ? `最高 ${s.baseMaxLevel}（极意 ${s.maxLevel}）`
+              : `最高 ${s.maxLevel}`,
+        })),
+    [data, obtainable, cond.skills],
+  );
+  const setItems = useMemo<SearchItem[]>(
+    () =>
+      data.skills
+        .filter((s) => s.setBonus && setSkillIds.has(s.id) && !cond.sets.some((t) => t.id === s.id))
+        .map((s) => ({
+          id: s.id,
+          name: s.name,
+          search: s.levels.map((l) => `${l.name ?? ''} ${l.desc}`).join(' '),
+          iconColor: s.iconColor,
+          meta: s.levels.map((l) => `${l.level} 件`).join(' · '),
+        })),
+    [data, setSkillIds, cond.sets],
+  );
+  const addSkill = (id: number) => {
+    const s = idx.skills.get(id);
+    update((c) =>
+      c.skills.some((t) => t.id === id)
+        ? c
+        : { ...c, skills: [...c.skills, { id, level: s?.baseMaxLevel ?? 1 }] },
+    );
+    setRecent((r) => {
+      const next = [id, ...r.filter((x) => x !== id)].slice(0, 12);
+      try {
+        localStorage.setItem(RECENT_KEY, JSON.stringify(next));
+      } catch {
+        /* 存储不可用时忽略 */
+      }
+      return next;
+    });
+  };
+  const addSet = (id: number) => {
+    const s = idx.skills.get(id);
+    update((c) =>
+      c.sets.some((t) => t.id === id)
+        ? c
+        : { ...c, sets: [...c.sets, { id, level: s?.levels[0]?.level ?? 2 }] },
+    );
+  };
+  const excludedCount = cond.exclude.armor.length + cond.exclude.charms.length + cond.exclude.decos.length;
 
   const buildQuery = (): SearchQuery => {
     const fixedSkills: SearchQuery['fixedSkills'] = [];
@@ -393,26 +453,44 @@ export default function AutoSearch({
     const kind = picking;
     setPicking(null);
     if (id == null || !kind) return;
-    if (kind === 'skill') {
-      const s = idx.skills.get(id);
-      update((c) => ({ ...c, skills: [...c.skills, { id, level: s?.baseMaxLevel ?? 1 }] }));
-    } else if (kind === 'set') {
-      const s = idx.skills.get(id);
-      update((c) => ({ ...c, sets: [...c.sets, { id, level: s?.levels[0]?.level ?? 2 }] }));
-    } else if (kind === 'armor') toggleExclude('armor', id);
+    if (kind === 'skill') addSkill(id);
+    else if (kind === 'set') addSet(id);
+    else if (kind === 'armor') toggleExclude('armor', id);
     else if (kind === 'charm') toggleExclude('charms', id);
     else toggleExclude('decos', id);
   };
 
   const pp = pickerProps();
   const canSearch = cond.skills.length > 0 || cond.sets.length > 0;
+  const stale = status.state === 'done' && JSON.stringify(buildQuery()) !== JSON.stringify(status.query);
+
+  // Ctrl / ⌘ + Enter：在条件板任何位置都能直接搜索
+  const runRef = useRef(run);
+  useEffect(() => {
+    runRef.current = run;
+  });
+  useEffect(() => {
+    if (!canSearch) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey) && !document.querySelector('[role="dialog"]')) {
+        e.preventDefault();
+        runRef.current();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [canSearch]);
 
   return (
     <div className="gb-as">
-      <section className="gb-panel gb-as__form" aria-label="搜索条件">
-        {/* 武器：直接在这里选（与手动配装共用同一把），客制可展开设置 */}
-        <div className="gb-as__group">
-          <h3 className="gb-h gb-h--sub">武器</h3>
+      {/* 条件板：武器 / 技能 / 套装 / 筛选与排除，宽屏三栏 */}
+      <section className="gb-as__form" aria-label="搜索条件" ref={board}>
+        {/* 武器：直接在这里选（与手动配装共用同一把），客制在弹窗里设置 */}
+        <div className="gb-as__card gb-as__card--weapon">
+          <header className="gb-as__cardhead">
+            <h3>武器</h3>
+            <small>{weaponTypeName}</small>
+          </header>
           {weapon ? (
             <div className="gb-as__wcard" data-off={useWeapon ? undefined : ''}>
               <span
@@ -435,8 +513,8 @@ export default function AutoSearch({
                     ? ` · ${ELEMENT_NAMES[weapon.element.type] ?? ''} ${(weapon.element.value + bonus.element) * 10}`
                     : ''}
                 </span>
+                <SlotIcons slots={weaponSlots(build, idx)} extraFrom={weapon.slots.length} />
               </span>
-              <SlotIcons slots={weaponSlots(build, idx)} extraFrom={weapon.slots.length} />
               <span className="gb-as__wbtns">
                 <button type="button" className="gb-btn" onClick={onPickWeapon}>
                   更换
@@ -456,13 +534,13 @@ export default function AutoSearch({
             </button>
           )}
           {weapon && customKind(weapon) && (
-            <details className="gb-as__custom">
-              <summary>
-                <span>{customKind(weapon) === 'awakening' ? '觉醒能力' : '自定义强化'}</span>
-                <small>{customSummary || '未设定'}</small>
-              </summary>
-              {renderCustom(weapon)}
-            </details>
+            <button type="button" className="gb-as__custombtn" onClick={() => setCustomOpen(true)}>
+              <span>{customKind(weapon) === 'awakening' ? '觉醒能力' : '自定义强化'}</span>
+              <small>{customSummary || '未设定，点这里设置'}</small>
+              <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true">
+                <path d="m4.5 2 4 4-4 4" />
+              </svg>
+            </button>
           )}
           <div className="gb-as__weapon" role="radiogroup" aria-label="搜索时的武器">
             <label className="gb-as__radio" data-disabled={weapon ? undefined : ''}>
@@ -475,7 +553,7 @@ export default function AutoSearch({
               />
               <span>
                 用这把武器
-                <small>镶嵌槽含自定义强化追加的槽，武器技能与觉醒的系列技能也计入</small>
+                <small>槽含自定义强化追加的槽，武器技能与觉醒的系列技能也计入</small>
               </span>
             </label>
             <label className="gb-as__radio">
@@ -487,7 +565,7 @@ export default function AutoSearch({
               />
               <span>
                 不指定武器
-                <small>只按下面的镶嵌槽搜索</small>
+                <small>只按这几个镶嵌槽搜索</small>
               </span>
               <span className="gb-as__slotpick">
                 {cond.weaponSlots.map((s, i) => (
@@ -511,51 +589,66 @@ export default function AutoSearch({
           </div>
         </div>
 
-        {/* 技能 */}
-        <div className="gb-as__group">
-          <h3 className="gb-h gb-h--sub">
-            技能
+        {/* 技能：主栏。输入即搜，回车添加，可以连续添加 */}
+        <div className="gb-as__card gb-as__card--skills">
+          <header className="gb-as__cardhead">
+            <h3>技能</h3>
+            <small>{cond.skills.length ? `${cond.skills.length} 项` : '想要的技能与等级'}</small>
             <button
               type="button"
               className="gb-btn gb-btn--ghost gb-as__add"
               onClick={() => setPicking('skill')}
             >
-              ＋ 添加
+              浏览全部
             </button>
-          </h3>
-          {cond.skills.length === 0 && <p className="gb-note">点「添加」选择想要的技能与等级。</p>}
-          <ul className="gb-as__skills">
-            {cond.skills.map((t, i) => {
-              const s = idx.skills.get(t.id);
-              if (!s) return null;
-              return (
-                <li key={t.id}>
-                  <GameIcon src={iconUrl.skill(s.iconColor)} size={26} />
-                  <span className="gb-as__skillname">{s.name}</span>
-                  <LevelPicker
-                    level={t.level}
-                    max={s.maxLevel}
-                    base={s.baseMaxLevel}
-                    label={s.name}
-                    onChange={(lv) =>
-                      update((c) => {
-                        c.skills[i]!.level = lv;
-                        return c;
-                      })
-                    }
-                  />
-                  <button
-                    type="button"
-                    className="gb-as__remove"
-                    aria-label={`移除 ${s.name}`}
-                    onClick={() => update((c) => ({ ...c, skills: c.skills.filter((x) => x.id !== t.id) }))}
-                  >
-                    ×
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
+          </header>
+          <InlineSearch
+            kind="skill"
+            label="添加技能"
+            placeholder="技能名或效果，回车添加（如 弱点、会心）"
+            items={skillItems}
+            recent={recent.filter((id) => !cond.skills.some((s) => s.id === id) && idx.skills.has(id))}
+            idx={idx}
+            onAdd={addSkill}
+          />
+          {cond.skills.length === 0 ? (
+            <p className="gb-as__hint">
+              还没有技能。在上面输入名字或效果（「回避」「属性」「弹药」都行），回车就加上，等级默认取上限。
+            </p>
+          ) : (
+            <ul className="gb-as__skills">
+              {cond.skills.map((t, i) => {
+                const s = idx.skills.get(t.id);
+                if (!s) return null;
+                return (
+                  <li key={t.id}>
+                    <GameIcon src={iconUrl.skill(s.iconColor)} size={26} />
+                    <span className="gb-as__skillname">{s.name}</span>
+                    <LevelPicker
+                      level={t.level}
+                      max={s.maxLevel}
+                      base={s.baseMaxLevel}
+                      label={s.name}
+                      onChange={(lv) =>
+                        update((c) => {
+                          c.skills[i]!.level = lv;
+                          return c;
+                        })
+                      }
+                    />
+                    <button
+                      type="button"
+                      className="gb-as__remove"
+                      aria-label={`移除 ${s.name}`}
+                      onClick={() => update((c) => ({ ...c, skills: c.skills.filter((x) => x.id !== t.id) }))}
+                    >
+                      ×
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
           {cond.skills.some((t) => (idx.skills.get(t.id)?.baseMaxLevel ?? 99) < t.level) && (
             <p className="gb-note">
               紫色等级需要对应的极意（套装技能）才能突破，搜索会自动要求满足其中一条。
@@ -564,84 +657,90 @@ export default function AutoSearch({
         </div>
 
         {/* 套装技能 */}
-        <div className="gb-as__group">
-          <h3 className="gb-h gb-h--sub">
-            套装技能
-            <button
-              type="button"
-              className="gb-btn gb-btn--ghost gb-as__add"
-              onClick={() => setPicking('set')}
-            >
-              ＋ 添加
-            </button>
-          </h3>
-          <ul className="gb-as__skills">
-            {cond.sets.map((t, i) => {
-              const s = idx.skills.get(t.id);
-              if (!s) return null;
-              return (
-                <li key={t.id}>
-                  <GameIcon src={iconUrl.skill(s.iconColor)} size={26} />
-                  <span className="gb-as__skillname">{s.name}</span>
-                  <span className="gb-as__tiers" role="radiogroup" aria-label={`${s.name} 件数`}>
-                    {s.levels.map((l) => (
-                      <button
-                        key={l.level}
-                        type="button"
-                        role="radio"
-                        aria-checked={t.level === l.level}
-                        title={l.desc}
-                        className="gb-chip"
-                        onClick={() =>
-                          update((c) => {
-                            c.sets[i]!.level = l.level;
-                            return c;
-                          })
-                        }
-                      >
-                        {l.level} 件
-                      </button>
-                    ))}
-                  </span>
-                  <button
-                    type="button"
-                    className="gb-as__remove"
-                    aria-label={`移除 ${s.name}`}
-                    onClick={() => update((c) => ({ ...c, sets: c.sets.filter((x) => x.id !== t.id) }))}
-                  >
-                    ×
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
+        <div className="gb-as__card gb-as__card--sets">
+          <header className="gb-as__cardhead">
+            <h3>套装技能</h3>
+            <small>{cond.sets.length ? `${cond.sets.length} 项` : '可选'}</small>
+          </header>
+          <InlineSearch
+            kind="set"
+            label="添加套装技能"
+            placeholder="套装名，如 黑龙、冰呪龙"
+            items={setItems}
+            recent={[]}
+            idx={idx}
+            onAdd={addSet}
+          />
+          {cond.sets.length > 0 && (
+            <ul className="gb-as__skills gb-as__skills--sets">
+              {cond.sets.map((t, i) => {
+                const s = idx.skills.get(t.id);
+                if (!s) return null;
+                return (
+                  <li key={t.id}>
+                    <GameIcon src={iconUrl.skill(s.iconColor)} size={26} />
+                    <span className="gb-as__skillname">{s.name}</span>
+                    <span className="gb-as__tiers" role="radiogroup" aria-label={`${s.name} 件数`}>
+                      {s.levels.map((l) => (
+                        <button
+                          key={l.level}
+                          type="button"
+                          role="radio"
+                          aria-checked={t.level === l.level}
+                          title={l.desc}
+                          className="gb-chip"
+                          onClick={() =>
+                            update((c) => {
+                              c.sets[i]!.level = l.level;
+                              return c;
+                            })
+                          }
+                        >
+                          {l.level} 件
+                        </button>
+                      ))}
+                    </span>
+                    <button
+                      type="button"
+                      className="gb-as__remove"
+                      aria-label={`移除 ${s.name}`}
+                      onClick={() => update((c) => ({ ...c, sets: c.sets.filter((x) => x.id !== t.id) }))}
+                    >
+                      ×
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
         </div>
 
-        {/* 条件 */}
-        <div className="gb-as__group gb-as__opts">
-          <div>
-            <span id="gb-as-rarity">防具 / 护石稀有度</span>
-            <Dropdown
-              labelledBy="gb-as-rarity"
-              value={cond.minRarity}
-              options={RARITY_OPTIONS}
-              onChange={(v) => update((c) => ({ ...c, minRarity: v }))}
-            />
+        {/* 筛选与排除 */}
+        <div className="gb-as__card gb-as__card--filters">
+          <header className="gb-as__cardhead">
+            <h3>筛选与排除</h3>
+            {excludedCount > 0 && <small>已排除 {excludedCount} 件</small>}
+          </header>
+          <div className="gb-as__opts">
+            <div>
+              <span id="gb-as-rarity">防具 / 护石稀有度</span>
+              <Dropdown
+                labelledBy="gb-as-rarity"
+                value={cond.minRarity}
+                options={RARITY_OPTIONS}
+                onChange={(v) => update((c) => ({ ...c, minRarity: v }))}
+              />
+            </div>
+            <div>
+              <span id="gb-as-limit">最多列出</span>
+              <Dropdown
+                labelledBy="gb-as-limit"
+                value={cond.limit}
+                options={LIMIT_OPTIONS}
+                onChange={(v) => update((c) => ({ ...c, limit: v }))}
+              />
+            </div>
           </div>
-          <div>
-            <span id="gb-as-limit">最多列出</span>
-            <Dropdown
-              labelledBy="gb-as-limit"
-              value={cond.limit}
-              options={LIMIT_OPTIONS}
-              onChange={(v) => update((c) => ({ ...c, limit: v }))}
-            />
-          </div>
-        </div>
-
-        {/* 排除 */}
-        <div className="gb-as__group">
-          <h3 className="gb-h gb-h--sub">排除</h3>
           <ExcludeList
             label="防具"
             items={cond.exclude.armor.map((id) => {
@@ -669,21 +768,87 @@ export default function AutoSearch({
             onAdd={() => setPicking('deco')}
             onRemove={(id) => toggleExclude('decos', id)}
           />
-        </div>
-
-        <div className="gb-as__actions">
-          <button type="button" className="gb-btn gb-btn--primary" disabled={!canSearch} onClick={run}>
-            {status.state === 'running' ? '重新搜索' : '搜索'}
-          </button>
-          <button
-            type="button"
-            className="gb-btn gb-btn--ghost"
-            onClick={() => setCond((c) => ({ ...emptyConditions(), useWeapon: c.useWeapon }))}
-          >
-            清空条件
-          </button>
+          <p className="gb-as__hint">方案卡片上点防具旁的 × 也能直接排除。</p>
         </div>
       </section>
+
+      {/* 指令条：条件摘要 + 搜索；往下看结果时贴在顶部（手机上贴在底部） */}
+      <div className="gb-as__bar" data-stale={stale ? '' : undefined}>
+        <button
+          type="button"
+          className="gb-as__summary"
+          title="回到搜索条件"
+          onClick={() =>
+            board.current?.scrollIntoView({ behavior: reduceMotion() ? 'auto' : 'smooth', block: 'start' })
+          }
+        >
+          <span className="gb-as__sumw">
+            <GameIcon
+              src={
+                useWeapon && weapon
+                  ? iconUrl.weapon(build.weaponType, weapon.rarity)
+                  : iconUrl.empty.weapon(build.weaponType)
+              }
+              size={22}
+            />
+            <SlotIcons slots={slots} />
+          </span>
+          {cond.skills.length + cond.sets.length === 0 ? (
+            <span className="gb-as__sumempty">先添加想要的技能</span>
+          ) : (
+            <span className="gb-as__sumchips">
+              {cond.skills.map((t) => {
+                const s = idx.skills.get(t.id);
+                return s ? (
+                  <span
+                    key={t.id}
+                    className="gb-as__sumchip"
+                    data-secret={t.level > s.baseMaxLevel ? '' : undefined}
+                  >
+                    <GameIcon src={iconUrl.skill(s.iconColor)} size={16} />
+                    {s.name}
+                    <b>{t.level}</b>
+                  </span>
+                ) : null;
+              })}
+              {cond.sets.map((t) => {
+                const s = idx.skills.get(t.id);
+                return s ? (
+                  <span key={t.id} className="gb-as__sumchip" data-set="">
+                    {s.name}
+                    <b>{t.level}件</b>
+                  </span>
+                ) : null;
+              })}
+            </span>
+          )}
+        </button>
+        <span className="gb-as__barstate" role="status">
+          {status.state === 'running'
+            ? `搜索中… 已找到 ${results.length} 个`
+            : stale
+              ? '条件已更改'
+              : status.state === 'done'
+                ? `搜到 ${status.stats.found}${status.stats.truncated ? '+' : ''} 个 · ${Math.max(1, Math.round(status.ms))} ms`
+                : ''}
+        </span>
+        <button
+          type="button"
+          className="gb-btn gb-btn--ghost"
+          onClick={() => setCond((c) => ({ ...emptyConditions(), useWeapon: c.useWeapon }))}
+        >
+          清空条件
+        </button>
+        <button
+          type="button"
+          className="gb-btn gb-btn--primary gb-as__go"
+          disabled={!canSearch}
+          title="Ctrl + Enter"
+          onClick={run}
+        >
+          {status.state === 'running' ? '重新搜索' : stale ? '重新搜索' : '搜索'}
+        </button>
+      </div>
 
       <section className="gb-as__results" aria-label="搜索结果" aria-busy={status.state === 'running'}>
         <header className="gb-as__head">
@@ -706,7 +871,8 @@ export default function AutoSearch({
         </header>
         {status.state === 'idle' && (
           <p className="gb-note gb-as__empty">
-            选好技能后点「搜索」。会列出所有能凑出这些技能的防具、护石与饰品组合，按需要排除不想用的装备。
+            选好技能后点「搜索」（或按 Ctrl + Enter）。会列出所有能凑出这些技能的防具、护石与饰品组合，
+            不想用的装备可以在方案卡片上直接排除。
           </p>
         )}
         {status.state === 'error' && <p className="gb-error">搜索出错：{status.message}</p>}
@@ -743,8 +909,238 @@ export default function AutoSearch({
       </section>
 
       {pp && <Picker {...pp} onPick={onPick} onClose={() => setPicking(null)} />}
+      {customOpen && weapon && (
+        <CustomDialog title={`${weapon.name} · 客制`} onClose={() => setCustomOpen(false)}>
+          {renderCustom(weapon)}
+        </CustomDialog>
+      )}
     </div>
   );
+}
+
+/** 内联搜索的条目 */
+interface SearchItem {
+  id: number;
+  name: string;
+  /** 额外参与匹配的文本（各等级的效果说明） */
+  search: string;
+  iconColor: number;
+  meta: string;
+}
+
+/** 名字里与输入相同的部分加亮 */
+function Highlight({ text, q }: { text: string; q: string }) {
+  const t = q.trim();
+  const i = t ? text.toLowerCase().indexOf(t.toLowerCase()) : -1;
+  if (i < 0) return <>{text}</>;
+  return (
+    <>
+      {text.slice(0, i)}
+      <mark>{text.slice(i, i + t.length)}</mark>
+      {text.slice(i + t.length)}
+    </>
+  );
+}
+
+/**
+ * 内联搜索（combobox）：输入即筛——名字开头匹配的在前，其次名字包含，再次效果说明包含；
+ * 方向键选择、回车添加，加完清空输入、焦点留在框里，可以连续添加。下方列出最近添加过的条目。
+ */
+function InlineSearch({
+  kind,
+  label,
+  placeholder,
+  items,
+  recent,
+  idx,
+  onAdd,
+}: {
+  kind: 'skill' | 'set';
+  label: string;
+  placeholder: string;
+  items: SearchItem[];
+  recent: number[];
+  idx: Index;
+  onAdd: (id: number) => void;
+}) {
+  const [q, setQ] = useState('');
+  const [open, setOpen] = useState(false);
+  const [active, setActive] = useState(0);
+  const listId = useId();
+  const input = useRef<HTMLInputElement>(null);
+  const list = useRef<HTMLUListElement>(null);
+
+  const matches = useMemo(() => {
+    const t = q.trim().toLowerCase();
+    if (!t) return items;
+    const head: SearchItem[] = [];
+    const inName: SearchItem[] = [];
+    const inDesc: SearchItem[] = [];
+    for (const it of items) {
+      const n = it.name.toLowerCase();
+      if (n.startsWith(t)) head.push(it);
+      else if (n.includes(t)) inName.push(it);
+      else if (it.search.toLowerCase().includes(t)) inDesc.push(it);
+    }
+    return [...head, ...inName, ...inDesc];
+  }, [items, q]);
+  const cur = Math.min(active, Math.max(0, matches.length - 1));
+  const shown = open && matches.length > 0;
+
+  useEffect(() => {
+    if (shown) list.current?.querySelector(`[data-i="${cur}"]`)?.scrollIntoView({ block: 'nearest' });
+  }, [cur, shown]);
+
+  // 加完收起列表、焦点留在框里：接着输入或按 ↓ 再展开，不挡住下面刚加的技能
+  const add = (id: number) => {
+    onAdd(id);
+    setQ('');
+    setActive(0);
+    setOpen(false);
+    input.current?.focus();
+  };
+
+  const onKey = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.ctrlKey || e.metaKey) return;
+    if (e.key === 'ArrowDown') {
+      setOpen(true);
+      setActive(Math.min(matches.length - 1, cur + 1));
+    } else if (e.key === 'ArrowUp') setActive(Math.max(0, cur - 1));
+    else if (e.key === 'Enter') {
+      const it = shown ? matches[cur] : undefined;
+      if (!it) return;
+      add(it.id);
+    } else if (e.key === 'Escape') {
+      if (open) setOpen(false);
+      else setQ('');
+    } else return;
+    e.preventDefault();
+  };
+
+  return (
+    <div className="gb-is" data-skill-search={kind === 'skill' ? '' : undefined}>
+      <label className="gb-is__box">
+        <span className="visually-hidden">{label}</span>
+        <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
+          <circle cx="7" cy="7" r="4.5" fill="none" stroke="currentColor" strokeWidth="1.5" />
+          <path d="m10.5 10.5 3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        </svg>
+        <input
+          ref={input}
+          type="text"
+          role="combobox"
+          aria-expanded={shown}
+          aria-controls={listId}
+          aria-autocomplete="list"
+          aria-activedescendant={shown ? `${listId}-${cur}` : undefined}
+          value={q}
+          placeholder={placeholder}
+          onChange={(e) => {
+            setQ(e.target.value);
+            setOpen(true);
+            setActive(0);
+          }}
+          onFocus={() => setOpen(true)}
+          onBlur={() => setOpen(false)}
+          onKeyDown={onKey}
+        />
+        {shown && q && <kbd aria-hidden="true">Enter</kbd>}
+      </label>
+      {shown && (
+        <ul ref={list} id={listId} role="listbox" aria-label={label} className="gb-is__list">
+          {matches.map((it, i) => (
+            <li
+              key={it.id}
+              id={`${listId}-${i}`}
+              role="option"
+              aria-selected={i === cur}
+              data-i={i}
+              onMouseDown={(e) => e.preventDefault()}
+              onPointerMove={(e) => e.pointerType === 'mouse' && i !== cur && setActive(i)}
+              onClick={() => add(it.id)}
+            >
+              <GameIcon src={iconUrl.skill(it.iconColor)} size={22} />
+              <span className="gb-is__name">
+                <Highlight text={it.name} q={q} />
+              </span>
+              <small>{it.meta}</small>
+            </li>
+          ))}
+        </ul>
+      )}
+      {open && q.trim() && matches.length === 0 && (
+        <p className="gb-is__none">没有匹配的{label.replace('添加', '')}</p>
+      )}
+      {recent.length > 0 && (
+        <div className="gb-is__recent">
+          <span>最近</span>
+          {recent.slice(0, 8).map((id) => {
+            const s = idx.skills.get(id);
+            return s ? (
+              <button key={id} type="button" className="gb-chip" onClick={() => add(id)}>
+                <GameIcon src={iconUrl.skill(s.iconColor)} size={16} />
+                {s.name}
+              </button>
+            ) : null;
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** 弹窗：武器客制（自定义强化 / 零件强化 / 觉醒）在这里设置，条件板保持紧凑 */
+function CustomDialog({
+  title,
+  onClose,
+  children,
+}: {
+  title: string;
+  onClose: () => void;
+  children: ReactNode;
+}) {
+  const titleId = useId();
+  const card = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    card.current?.focus();
+  }, []);
+  return (
+    <div
+      className="gb-picker"
+      role="presentation"
+      onMouseDown={(e) => e.target === e.currentTarget && onClose()}
+    >
+      <div
+        ref={card}
+        tabIndex={-1}
+        className="gb-picker__card gb-as__dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        onKeyDown={(e) => e.key === 'Escape' && onClose()}
+      >
+        <header className="gb-picker__head">
+          <h2 id={titleId}>{title}</h2>
+          <button type="button" className="gb-btn gb-btn--primary" onClick={onClose}>
+            完成
+          </button>
+        </header>
+        <div className="gb-as__dialogbody">{children}</div>
+      </div>
+    </div>
+  );
+}
+
+const reduceMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const RECENT_KEY = 'mhdb-autosearch-recent-v1';
+function loadRecent(): number[] {
+  try {
+    const v = JSON.parse(localStorage.getItem(RECENT_KEY) ?? '[]') as unknown;
+    return Array.isArray(v) ? v.filter((x): x is number => typeof x === 'number') : [];
+  } catch {
+    return [];
+  }
 }
 
 const planKey = (r: SearchResult) =>

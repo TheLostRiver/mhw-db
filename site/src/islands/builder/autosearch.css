@@ -1,49 +1,417 @@
-/* 自动配装（gb-as 前缀） */
+/* 自动配装（gb-as 前缀）
+ * 布局：条件板（武器 / 技能 / 套装 / 筛选与排除）→ 吸顶指令条 → 整宽结果。
+ * 条件板宽屏三栏：武器在左、技能居中最宽、套装与筛选在右；中屏两栏；窄屏依次堆叠。 */
 
 .gb-as {
   display: grid;
-  gap: var(--space-4);
+  gap: var(--space-3);
   font-size: var(--text-sm);
 }
 
-@media (min-width: 76rem) {
-  .gb-as {
-    grid-template-columns: 360px minmax(0, 1fr);
-  }
-}
-
-/* ---------- 搜索表单 ---------- */
+/* ---------- 条件板 ---------- */
 
 .gb-as__form {
   display: grid;
-  gap: var(--space-4);
-  align-content: start;
-  padding: var(--space-3);
-  border-radius: var(--gb-radius);
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: 'weapon' 'skills' 'sets' 'filters';
+  gap: var(--space-3);
+  scroll-margin-top: 72px;
 }
 
-.gb-as__group {
+@media (min-width: 52rem) {
+  .gb-as__form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-areas:
+      'skills skills'
+      'weapon sets'
+      'weapon filters';
+  }
+}
+
+@media (min-width: 80rem) {
+  .gb-as__form {
+    grid-template-columns: minmax(19rem, 0.95fr) minmax(0, 1.75fr) minmax(18rem, 1fr);
+    grid-template-rows: auto 1fr;
+    grid-template-areas:
+      'weapon skills sets'
+      'weapon skills filters';
+  }
+}
+
+.gb-as__card {
   display: grid;
+  align-content: start;
   gap: var(--space-2);
+  min-width: 0;
+  padding: var(--space-3);
+  border-radius: 6px;
+  background: var(--gb-panel);
+  box-shadow: inset 0 0 0 1px var(--c-line);
 }
 
-.gb-as__group .gb-h--sub {
+.gb-as__card--weapon {
+  grid-area: weapon;
+}
+
+.gb-as__card--skills {
+  grid-area: skills;
+}
+
+.gb-as__card--sets {
+  grid-area: sets;
+}
+
+.gb-as__card--filters {
+  grid-area: filters;
+}
+
+/* 卡片标题：下方一道细线，左端一小段金色（游戏菜单的标题线） */
+.gb-as__cardhead {
+  position: relative;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  align-items: baseline;
+  gap: var(--space-2);
+  min-height: 28px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--c-line);
+}
+
+.gb-as__cardhead::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 32px;
+  height: 2px;
+  background: var(--gb-gold);
+}
+
+.gb-as__cardhead h3 {
+  font-size: var(--text-md);
+  font-weight: 700;
+}
+
+.gb-as__cardhead small {
+  font-size: var(--text-xs);
+  color: var(--c-text-3);
+}
+
+.gb-as__cardhead .gb-as__add {
+  margin-left: auto;
+  align-self: center;
 }
 
 .gb-as__add {
   font-size: var(--text-xs);
 }
 
+.gb-as__hint {
+  margin: 0;
+  font-size: var(--text-xs);
+  line-height: 1.7;
+  color: var(--c-text-3);
+}
+
+/* ---------- 内联搜索（技能 / 套装） ---------- */
+
+.gb-is {
+  position: relative;
+  display: grid;
+  gap: 6px;
+}
+
+.gb-is__box {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: 40px;
+  padding: 0 var(--space-3);
+  border-radius: 6px;
+  background: var(--c-surface);
+  box-shadow: inset 0 0 0 1px var(--c-line-strong);
+  cursor: text;
+  transition: box-shadow var(--dur-fast) var(--ease-standard);
+}
+
+.gb-is__box:focus-within {
+  box-shadow:
+    inset 0 0 0 1.5px var(--c-accent),
+    0 0 0 3px var(--c-accent-soft);
+}
+
+.gb-is__box svg {
+  flex: none;
+  color: var(--c-text-3);
+}
+
+.gb-is__box input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: none;
+  font-size: var(--text-md);
+  color: var(--c-text);
+}
+
+.gb-is__box kbd {
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-family: var(--font-num);
+  font-size: 10px;
+  color: var(--c-text-3);
+  box-shadow: inset 0 0 0 1px var(--c-line-strong);
+}
+
+.gb-is__list {
+  position: absolute;
+  top: 44px;
+  right: 0;
+  left: 0;
+  z-index: var(--z-overlay);
+  max-height: 320px;
+  margin: 0;
+  padding: 4px;
+  overflow: auto;
+  overscroll-behavior: contain;
+  list-style: none;
+  border-radius: 6px;
+  background: var(--c-surface);
+  box-shadow: var(--shadow-pop);
+  animation: gb-fade var(--dur-fast) var(--ease-standard);
+}
+
+.gb-is__list li {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 5px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.gb-is__list li[aria-selected='true'] {
+  background: var(--c-accent-soft);
+  box-shadow: inset 2px 0 0 var(--c-accent);
+}
+
+.gb-is__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gb-is__name mark {
+  background: none;
+  color: var(--c-accent);
+  font-weight: 700;
+}
+
+.gb-is__list small {
+  font-family: var(--font-num);
+  font-size: var(--text-xs);
+  color: var(--c-text-3);
+}
+
+.gb-is__none {
+  margin: 0;
+  font-size: var(--text-xs);
+  color: var(--c-text-3);
+}
+
+.gb-is__recent {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+
+.gb-is__recent > span {
+  margin-right: 2px;
+  font-size: var(--text-xs);
+  color: var(--c-text-3);
+}
+
+/* 技能列表：主栏里自动分列 */
+.gb-as__card--skills .gb-as__skills {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr));
+  gap: 4px var(--space-2);
+}
+
+/* ---------- 指令条 ---------- */
+
+/* 同时设 top 与 bottom：编辑条件时贴在视口底部，往下看结果时贴在顶栏下方，搜索按钮始终够得着 */
+.gb-as__bar {
+  position: sticky;
+  top: 64px;
+  bottom: var(--space-3);
+  z-index: calc(var(--z-sticky) - 1);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 8px 10px 8px 8px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--c-surface) 86%, transparent);
+  box-shadow:
+    inset 0 0 0 1px var(--c-line-strong),
+    0 10px 30px -18px rgb(0 0 0 / 0.6);
+  backdrop-filter: blur(10px) saturate(1.2);
+}
+
+.gb-as__summary {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+  padding: 3px 6px;
+  border-radius: 4px;
+  overflow: hidden;
+  text-align: left;
+  transition: background-color var(--dur-fast);
+}
+
+.gb-as__summary:hover {
+  background: var(--gb-row-hover);
+}
+
+.gb-as__sumw {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 4px;
+  padding-right: var(--space-3);
+  border-right: 1px solid var(--c-line);
+}
+
+/* 占满剩余宽度：右端的渐隐只在芯片多到溢出时才盖到芯片上 */
+.gb-as__sumchips {
+  display: flex;
+  flex: 1;
+  gap: 4px;
+  min-width: 0;
+  overflow: hidden;
+  mask-image: linear-gradient(90deg, #000 88%, transparent);
+}
+
+.gb-as__sumchip {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 4px;
+  height: 26px;
+  padding: 0 8px 0 5px;
+  border-radius: 4px;
+  background: var(--gb-row);
+  font-size: var(--text-xs);
+  white-space: nowrap;
+}
+
+.gb-as__sumchip b {
+  font-family: var(--font-num);
+  color: var(--gb-gold);
+}
+
+.gb-as__sumchip[data-secret] b {
+  color: var(--gb-secret);
+}
+
+.gb-as__sumchip[data-set] {
+  padding-left: 8px;
+  color: var(--c-text-2);
+}
+
+.gb-as__sumempty {
+  color: var(--c-text-3);
+}
+
+.gb-as__barstate {
+  flex: none;
+  overflow: hidden;
+  font-family: var(--font-num);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--text-xs);
+  color: var(--c-text-3);
+}
+
+.gb-as__bar[data-stale] .gb-as__barstate {
+  color: var(--c-amber);
+}
+
+.gb-as__go {
+  min-width: 7.5rem;
+  height: 38px;
+  font-size: var(--text-md);
+}
+
+/* 条件改了还没重新搜：按钮外圈缓慢呼吸 */
+.gb-as__bar[data-stale] .gb-as__go {
+  animation: gb-as-stale 1.8s var(--ease-standard) infinite;
+}
+
+@keyframes gb-as-stale {
+  50% {
+    box-shadow: 0 0 0 4px var(--c-accent-soft);
+  }
+}
+
+/* 窄屏顶栏会换成两行、高度不定：指令条只贴底部 */
+@media (max-width: 900px) {
+  .gb-as__bar {
+    top: auto;
+  }
+}
+
+@media (max-width: 40rem) {
+  .gb-as__bar {
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  .gb-as__summary {
+    flex-basis: 100%;
+  }
+
+  .gb-as__barstate {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gb-as__bar[data-stale] .gb-as__go {
+    animation: none;
+    box-shadow: 0 0 0 3px var(--c-accent-soft);
+  }
+}
+
+/* ---------- 客制弹窗 ---------- */
+
+.gb-as__dialog {
+  grid-template-rows: auto minmax(0, 1fr);
+  width: min(560px, 100%);
+}
+
+.gb-as__dialog:focus {
+  outline: none;
+}
+
+.gb-as__dialogbody {
+  min-height: 0;
+  padding: var(--space-3) var(--space-4) var(--space-4);
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
 /* 当前武器：图标、名字、主要数值、镶嵌槽与更换按钮；不按武器搜索时变淡 */
 .gb-as__wcard {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: auto minmax(0, 1fr);
   grid-template-areas:
-    'icon info btns'
-    'icon slots btns';
+    'icon info'
+    'icon btns';
   align-items: center;
   gap: 2px var(--space-3);
   padding: var(--space-2) var(--space-3);
@@ -93,8 +461,8 @@
   color: var(--c-text-2);
 }
 
-.gb-as__wcard .gb-as__sloticons {
-  grid-area: slots;
+.gb-as__winfo .gb-as__sloticons {
+  margin-top: 3px;
 }
 
 .gb-as__wbtns {
@@ -133,45 +501,35 @@
   color: var(--c-text-3);
 }
 
-/* 客制：可展开，收起时显示摘要 */
-.gb-as__custom {
-  border-radius: var(--gb-radius);
-  box-shadow: inset 0 0 0 1px var(--c-line);
-}
-
-.gb-as__custom > summary {
+/* 客制：一行摘要，点开弹窗设置 */
+.gb-as__custombtn {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: var(--space-2);
-  padding: var(--space-2) var(--space-3);
-  cursor: pointer;
-  list-style: none;
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: var(--gb-radius);
+  background: var(--gb-row);
+  box-shadow: inset 0 0 0 1px var(--c-line);
+  text-align: left;
+  transition:
+    background-color var(--dur-fast),
+    box-shadow var(--dur-fast);
 }
 
-.gb-as__custom > summary::-webkit-details-marker {
-  display: none;
+.gb-as__custombtn:hover {
+  background: var(--gb-row-hover);
+  box-shadow: inset 0 0 0 1px var(--c-accent);
 }
 
-.gb-as__custom > summary::before {
-  content: '';
-  align-self: center;
-  width: 6px;
-  height: 6px;
-  border-right: 1.5px solid var(--c-text-2);
-  border-bottom: 1.5px solid var(--c-text-2);
-  rotate: -45deg;
-  transition: rotate var(--dur-fast) var(--ease-standard);
-}
-
-.gb-as__custom[open] > summary::before {
-  rotate: 45deg;
-}
-
-.gb-as__custom > summary span {
+.gb-as__custombtn span {
+  flex: none;
   font-weight: 600;
 }
 
-.gb-as__custom > summary small {
+.gb-as__custombtn small {
+  flex: 1;
+  min-width: 0;
   overflow: hidden;
   font-size: var(--text-xs);
   color: var(--gb-gold);
@@ -179,8 +537,13 @@
   white-space: nowrap;
 }
 
-.gb-as__custom > .gb-custom {
-  padding: 0 var(--space-3) var(--space-3);
+.gb-as__custombtn svg {
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .gb-as__weapon {
@@ -388,11 +751,6 @@
   border: 1px dashed var(--c-line);
 }
 
-.gb-as__actions {
-  display: flex;
-  gap: var(--space-2);
-}
-
 /* ---------- 结果列表 ---------- */
 
 .gb-as__results {
@@ -430,8 +788,11 @@
   margin-top: var(--space-4);
 }
 
+/* 方案卡片：宽屏两列（卡片内部按自身宽度排版，见下方容器查询） */
 .gb-plans {
   display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 42rem), 1fr));
+  align-items: start;
   gap: var(--space-3);
 }
 
@@ -480,6 +841,7 @@
 }
 
 .gb-plan {
+  container: plan / inline-size;
   position: relative;
   isolation: isolate;
   display: grid;
@@ -587,7 +949,7 @@
   padding-top: var(--space-1);
 }
 
-@media (min-width: 48rem) {
+@container plan (min-width: 40rem) {
   .gb-plan__body {
     grid-template-columns: 14.5rem minmax(0, 1fr);
     align-items: start;
@@ -684,7 +1046,7 @@
   gap: 4px;
 }
 
-@media (min-width: 40rem) {
+@container plan (min-width: 36rem) {
   .gb-plan__grid,
   .gb-plan__sets {
     grid-template-columns: repeat(2, minmax(0, 1fr));

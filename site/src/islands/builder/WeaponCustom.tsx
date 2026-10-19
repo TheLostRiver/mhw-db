@@ -14,6 +14,7 @@ import {
   augmentCapacity,
   augmentCost,
   augmentLevels,
+  AUGMENT_COLORS,
   partsAvailable,
   awakeningTotal,
   chosenAwakening,
@@ -197,19 +198,9 @@ function CustomHead<T extends string>({
   );
 }
 
-/** 格子栏里各项目的颜色（自定，按项目图标的主色挑选） */
-const AUGMENT_COLORS: Record<AugmentCategory, string> = {
-  attack: '#d65a45',
-  affinity: '#a982e0',
-  element: '#dcae3a',
-  defense: '#c98b46',
-  slot: '#4cb3c9',
-  health: '#6cc36a',
-  extend: '#9aa0a6',
-};
-
 /**
- * 自定义强化的格子栏：仿游戏强化画面的深色底条（两端箭头收口），格子贴图取自游戏（limit_break_EX.gui）。
+ * 自定义强化的格子栏：两端细线箭头、一道细轨贯穿到右端（参照游戏强化画面，不铺底色），
+ * 格子贴图取自游戏（limit_break_EX.gui）。
  * 已占用的格子按占用它的项目着色；要「扩充自定义栏」才开出来的格子半透明，超出上限的占用标红。
  * focus 为鼠标所在的项目：它占的格子高亮，其余变暗。
  */
@@ -232,24 +223,48 @@ function AugmentBar({
       data-focus={focus && fill.includes(focus) ? '' : undefined}
       aria-label={`自定义强化格子：占用 ${fill.length} / ${capacity} 格，全部扩充后 ${full} 格`}
     >
-      {Array.from({ length: cells }, (_, i) => {
-        const c = fill[i];
-        return (
-          <span
-            key={i}
-            className="gb-exbar__cell"
-            data-used={c ? '' : undefined}
-            data-locked={i >= capacity ? '' : undefined}
-            data-hl={c && c === focus ? '' : undefined}
-            style={c ? { ['--hex' as string]: AUGMENT_COLORS[c] } : undefined}
-            title={c ? AUGMENT_NAMES[c] : i >= capacity ? '扩充自定义栏后可用' : '空格'}
-          >
-            <img src={iconUrl.augmentHex(false)} width={28} height={28} alt="" decoding="async" />
-            <i className="gb-exbar__fill" />
-          </span>
-        );
-      })}
+      <BarCap />
+      <span className="gb-exbar__cells">
+        {Array.from({ length: cells }, (_, i) => {
+          const c = fill[i];
+          return (
+            <span
+              key={i}
+              className="gb-exbar__cell"
+              data-used={c ? '' : undefined}
+              data-locked={i >= capacity ? '' : undefined}
+              data-hl={c && c === focus ? '' : undefined}
+              style={c ? { ['--hex' as string]: AUGMENT_COLORS[c] } : undefined}
+              title={c ? AUGMENT_NAMES[c] : i >= capacity ? '扩充自定义栏后可用' : '空格'}
+            >
+              <img src={iconUrl.augmentHex(false)} width={28} height={28} alt="" decoding="async" />
+              <i className="gb-exbar__fill" />
+            </span>
+          );
+        })}
+      </span>
+      <BarCap end />
     </div>
+  );
+}
+
+/** 格子栏两端的细线箭头（自绘，形状参照游戏画面） */
+function BarCap({ end = false }: { end?: boolean }) {
+  return (
+    <svg className="gb-exbar__cap" data-end={end ? '' : undefined} viewBox="0 0 18 24" aria-hidden="true">
+      <path d="M12 5 5 12l7 7M15.5 5v14" />
+      <path d="M9 9.5 6.5 12 9 14.5" />
+    </svg>
+  );
+}
+
+/** 占用格数：项目颜色的小六边形 + 数字（游戏里列在每项右侧） */
+function CostHex({ n }: { n: number }) {
+  return (
+    <span className="gb-aug__cost" title={`占用 ${n} 格`}>
+      <i aria-hidden="true" />
+      <b>{n}</b>
+    </span>
   );
 }
 
@@ -517,14 +532,12 @@ function AugmentPanel({
                   {cur && <b className="gb-aug__lv">Lv{cur.level}</b>}
                 </span>
                 {cur ? (
-                  <span className="gb-aug__fx">
-                    {fxText(cur.level)}
-                    <small>占 {cur.slotCost} 格</small>
-                  </span>
+                  <span className="gb-aug__fx">{fxText(cur.level)}</span>
                 ) : (
                   <span className="gb-aug__fx gb-aug__fx--off">未设定</span>
                 )}
               </span>
+              {cur ? <CostHex n={cur.slotCost} /> : <span />}
               <LevelStepper
                 name={AUGMENT_NAMES[c]}
                 current={cur?.level ?? 0}
@@ -555,6 +568,7 @@ function AugmentPanel({
                 {extend ? `上限 ${base} → ${base + extend} 格` : `最多扩充到 ${full} 格`}
               </span>
             </span>
+            <span />
             <LevelStepper
               name={AUGMENT_NAMES.extend}
               current={extend}
