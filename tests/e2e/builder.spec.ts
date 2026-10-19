@@ -201,8 +201,8 @@ test('自动配装：可以直接选武器并设定自定义强化', async ({ pa
   await page.keyboard.press('Enter');
   await expect(form.locator('.gb-as__wcard')).toContainText('黑龙玄刃');
   await expect(form.getByRole('radio', { name: /用这把武器/ })).toBeChecked();
-  // 客制面板常驻在武器旁边：镶嵌槽强化Ⅰ（3 格）追加一个 1 级槽
-  const custom = form.locator('.gb-as__card--custom');
+  // 客制与武器在同一张卡里：镶嵌槽强化Ⅰ（3 格）追加一个 1 级槽
+  const custom = form.locator('.gb-as__card--weapon .gb-as__cside');
   await expect(custom).toContainText('自定义强化');
   await custom
     .getByRole('radiogroup', { name: '镶嵌槽强化等级' })

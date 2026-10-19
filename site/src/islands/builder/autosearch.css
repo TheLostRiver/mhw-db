@@ -1,6 +1,6 @@
 /* 自动配装（gb-as 前缀）
  * 布局：条件板 → 吸顶指令条 → 整宽结果。
- * 条件板宽屏：第一排武器 + 客制（常驻），下面技能（宽）+ 套装 / 筛选与排除；中屏两栏；窄屏依次堆叠。 */
+ * 条件板：第一排是整宽的武器卡（武器 + 它的客制），下面技能（宽）+ 套装 / 筛选与排除；窄屏依次堆叠。 */
 
 .gb-as {
   display: grid;
@@ -13,7 +13,7 @@
 .gb-as__form {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  grid-template-areas: 'weapon' 'custom' 'skills' 'sets' 'filters';
+  grid-template-areas: 'weapon' 'skills' 'sets' 'filters';
   gap: var(--space-3);
   scroll-margin-top: 72px;
 }
@@ -22,7 +22,7 @@
   .gb-as__form {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     grid-template-areas:
-      'weapon custom'
+      'weapon weapon'
       'skills skills'
       'sets filters';
   }
@@ -33,7 +33,7 @@
     grid-template-columns: minmax(19rem, 0.9fr) minmax(0, 1.75fr) minmax(18rem, 1fr);
     grid-template-rows: auto auto 1fr;
     grid-template-areas:
-      'weapon custom custom'
+      'weapon weapon weapon'
       'skills skills sets'
       'skills skills filters';
   }
@@ -51,17 +51,43 @@
 }
 
 .gb-as__card--weapon {
+  container: wcard / inline-size;
   grid-area: weapon;
 }
 
-.gb-as__card--custom {
-  grid-area: custom;
+/* 武器卡内部：左边武器本身，右边它的客制；卡片窄时上下排 */
+.gb-as__wbody {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.gb-as__wside {
+  display: grid;
+  align-content: start;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.gb-as__cside {
+  min-width: 0;
   transition: opacity var(--dur-base) var(--ease-standard);
 }
 
 /* 不按武器搜索时客制不起作用 */
-.gb-as__card--custom[data-off] {
+.gb-as__cside[data-off] {
   opacity: 0.55;
+}
+
+@container wcard (min-width: 46rem) {
+  .gb-as__wbody {
+    grid-template-columns: minmax(17rem, 22rem) minmax(0, 1fr);
+    gap: var(--space-4);
+  }
+
+  .gb-as__cside {
+    padding-left: var(--space-4);
+    border-left: 1px solid var(--c-line);
+  }
 }
 
 .gb-as__card--skills {
