@@ -28,6 +28,8 @@
   --ui-bracket-br: url('/assets/game/world/ui/bracket-br.webp');
   --ui-pattern: url('/assets/game/world/ui/pattern.webp');
   --ui-diamond: url('/assets/game/world/ui/diamond.webp');
+  /* 自定义强化的实心格（limit_break_EX.gui 的 EXIcon） */
+  --ui-hex-used: url('/assets/game/world/augment/hex-used.webp');
 
   display: grid;
   gap: var(--space-3);
@@ -354,39 +356,205 @@
   color: var(--c-danger);
 }
 
-.gb-aug__levels button:disabled {
-  opacity: 0.35;
-  cursor: not-allowed;
-}
-
-/* 分区切换（自定义强化 / 零件强化）：贴近游戏的页签 */
-.gb-custom__tabs {
-  display: flex;
-  gap: 4px;
-  margin-bottom: var(--space-2);
-}
-
-.gb-custom__tabs .gb-chip {
-  flex: 1;
-  height: 28px;
-}
-
-/* 栏位占用的六角格：与游戏的自定义强化画面一致 */
-.gb-hexrow {
-  display: flex;
+/* 客制面板的页头：标题居中，左右箭头翻页，右侧容量 */
+.gb-cus-head {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) 30px;
   align-items: center;
   gap: var(--space-2);
   margin-bottom: var(--space-2);
+  padding: 4px;
+  border-radius: var(--gb-radius);
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      color-mix(in srgb, var(--gb-gold) 10%, transparent) 30%,
+      color-mix(in srgb, var(--gb-gold) 10%, transparent) 70%,
+      transparent
+    ),
+    var(--gb-row);
+  box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--gb-gold) 40%, transparent);
 }
 
-.gb-hex {
+.gb-cus-head__title {
+  grid-column: 2;
+  grid-row: 1;
+  display: grid;
+  justify-items: center;
+  gap: 3px;
+  font-size: var(--text-md);
+  font-weight: 700;
+  color: var(--gb-gold);
+  letter-spacing: 0.04em;
+}
+
+.gb-cus-head__dots {
+  display: flex;
+  gap: 4px;
+}
+
+.gb-cus-head__dots i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--c-line-strong);
+  transition:
+    background-color var(--dur-base),
+    width var(--dur-base) var(--ease-standard);
+}
+
+.gb-cus-head__dots i[data-on] {
+  width: 14px;
+  border-radius: 3px;
+  background: var(--gb-gold);
+}
+
+.gb-cus-head__nav {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--gb-radius);
+  background: var(--c-surface-3);
+  color: var(--c-text);
+  box-shadow: inset 0 0 0 1px var(--c-line-strong);
+  transition: background-color var(--dur-fast);
+}
+
+.gb-cus-head__nav:first-child {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+}
+
+.gb-cus-head__nav:not(:first-child) {
+  grid-column: 3;
+  grid-row: 1 / span 2;
+}
+
+.gb-cus-head__nav:hover {
+  background: color-mix(in srgb, var(--gb-gold) 22%, var(--c-surface-3));
+}
+
+.gb-cus-head__nav svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.gb-cus-head__extra {
+  grid-column: 2;
+  justify-self: center;
+}
+
+.gb-custom__hint {
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--c-text-3);
+}
+
+/* 自定义强化的格子栏：与游戏强化画面一样是深色底条（两主题都保持深色），两端箭头收口，中间一条细轨 */
+.gb-hexrow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.gb-exbar {
+  position: relative;
   display: inline-flex;
-  gap: 1px;
+  align-items: center;
+  gap: 3px;
+  height: 40px;
+  padding: 0 30px;
+  background:
+    linear-gradient(rgb(255 255 255 / 0.16), rgb(255 255 255 / 0.16)) center / calc(100% - 44px) 1px no-repeat,
+    linear-gradient(180deg, rgb(255 255 255 / 0.07), transparent 45%, rgb(0 0 0 / 0.2)),
+    linear-gradient(90deg, #17181b, #2b2c30 18%, #2b2c30 82%, #17181b);
+  clip-path: polygon(12px 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 12px 100%, 0 50%);
 }
 
-.gb-hex img {
+/* 两端的箭头收口（自绘，形状参照游戏画面） */
+.gb-exbar::before,
+.gb-exbar::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 14px;
+  height: 20px;
+  background: linear-gradient(180deg, #d9d9d4, #8d8d88);
+  clip-path: polygon(100% 0, 25% 50%, 100% 100%, 75% 50%);
+  translate: 0 -50%;
+}
+
+.gb-exbar::before {
+  left: 9px;
+}
+
+.gb-exbar::after {
+  right: 9px;
+  scale: -1 1;
+}
+
+.gb-exbar__cell {
+  position: relative;
+  display: grid;
+  width: 28px;
+  height: 28px;
+}
+
+.gb-exbar__cell img {
+  grid-area: 1 / 1;
   display: block;
-  opacity: 0.9;
+  width: 28px;
+  height: 28px;
+  transition: opacity var(--dur-base) var(--ease-standard);
+}
+
+/* 已占用：游戏的白色实心格按项目颜色正片叠底着色，再用同一张图的形状裁出来 */
+.gb-exbar__fill {
+  grid-area: 1 / 1;
+  background: var(--ui-hex-used) center / contain no-repeat var(--hex, #fff);
+  background-blend-mode: multiply;
+  mask: var(--ui-hex-used) center / contain no-repeat;
+  opacity: 0;
+  scale: 0.55;
+  transition:
+    opacity var(--dur-base) var(--ease-standard),
+    scale var(--dur-base) var(--ease-spring),
+    background-color var(--dur-base) var(--ease-standard),
+    filter var(--dur-base) var(--ease-standard);
+}
+
+.gb-exbar__cell[data-used] .gb-exbar__fill {
+  opacity: 1;
+  scale: 1;
+  filter: drop-shadow(0 0 3px color-mix(in srgb, var(--hex) 60%, transparent));
+}
+
+/* 要扩充自定义栏才开出来的格子 */
+.gb-exbar__cell[data-locked] img {
+  opacity: 0.3;
+}
+
+/* 超出上限的占用 */
+.gb-exbar__cell[data-used][data-locked] .gb-exbar__fill {
+  --hex: #ff3b2f;
+  filter: drop-shadow(0 0 5px rgb(255 60 40 / 0.8));
+}
+
+/* 鼠标所在项目占的格子高亮，其余变暗 */
+.gb-exbar[data-focus] .gb-exbar__cell[data-used]:not([data-hl]) .gb-exbar__fill {
+  opacity: 0.35;
+}
+
+.gb-exbar__cell[data-hl] .gb-exbar__fill {
+  scale: 1.12;
+  filter: drop-shadow(0 0 6px var(--hex)) brightness(1.15);
 }
 
 .gb-hexrow small {
@@ -397,26 +565,51 @@
 
 .gb-aug {
   display: grid;
-  gap: 4px;
+  gap: 2px;
 }
 
 .gb-aug li {
+  position: relative;
   display: grid;
-  grid-template-columns: 22px minmax(0, 1fr) auto;
-  gap: var(--space-2);
+  grid-template-columns: 30px minmax(0, 1fr) auto;
+  gap: var(--space-3);
   align-items: center;
-  min-height: 34px;
+  min-height: 46px;
+  padding: 4px 8px 4px 10px;
+  border-radius: var(--gb-radius);
   font-size: var(--text-sm);
+  transition: background-color var(--dur-fast) var(--ease-standard);
+}
+
+/* 左侧色条：已设定的项目显示该项目的颜色 */
+.gb-aug li::before {
+  content: '';
+  position: absolute;
+  inset: 8px auto 8px 0;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--hex, var(--c-line));
+  opacity: 0;
+  transition: opacity var(--dur-fast);
+}
+
+.gb-aug li[data-on]::before {
+  opacity: 1;
+}
+
+.gb-aug li:hover {
+  background: var(--gb-row-hover);
 }
 
 .gb-aug--extend {
-  margin-top: 2px;
-  padding-top: 6px;
-  border-top: 1px dashed var(--c-line);
+  margin-top: 4px;
 }
 
-.gb-aug__fx--off {
-  color: var(--c-text-3);
+.gb-aug--extend::after {
+  content: '';
+  position: absolute;
+  inset: -3px 8px auto;
+  border-top: 1px dashed var(--c-line);
 }
 
 .gb-aug__label {
@@ -425,60 +618,109 @@
 }
 
 .gb-aug__name {
-  color: var(--c-text-2);
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  color: var(--c-text);
+  font-weight: 600;
 }
 
-/* 等级选择：游戏里的 Ⅰ–Ⅳ 级以分段按钮表示 */
-.gb-aug__levels {
-  display: inline-flex;
-  border-radius: var(--gb-radius);
-  box-shadow: inset 0 0 0 1px var(--c-line-strong);
-  overflow: hidden;
-}
-
-.gb-aug__levels button {
-  min-width: 28px;
-  height: 26px;
-  padding-inline: 6px;
+.gb-aug__lv {
   font-family: var(--font-num);
   font-size: var(--text-xs);
-  color: var(--c-text-3);
-  transition:
-    background-color var(--dur-fast) var(--ease-standard),
-    color var(--dur-fast) var(--ease-standard);
-}
-
-.gb-aug__levels button + button {
-  box-shadow: inset 1px 0 0 var(--c-line);
-}
-
-.gb-aug__levels button:hover {
-  color: var(--c-text);
-}
-
-.gb-aug__levels button[aria-checked='true'] {
-  background: color-mix(in srgb, var(--gb-gold) 22%, transparent);
-  color: var(--c-text);
-  font-weight: 700;
-}
-
-/* 「不强化」选中时不用金色，只是普通的按下状态 */
-.gb-aug__levels button:first-child[aria-checked='true'] {
-  background: var(--c-surface-3);
-  color: var(--c-text-2);
-  font-weight: 400;
+  color: var(--gb-gold);
 }
 
 .gb-aug__fx {
   display: flex;
   gap: var(--space-2);
   font-size: var(--text-xs);
-  color: var(--gb-gold);
+  color: color-mix(in oklab, var(--hex, var(--gb-gold)) 70%, var(--c-text));
 }
 
 .gb-aug__fx small {
   font-family: var(--font-num);
   color: var(--c-text-3);
+}
+
+.gb-aug__fx--off {
+  color: var(--c-text-3);
+}
+
+/* 等级调节：− / 等级格 / ＋ */
+.gb-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.gb-step__btn {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--gb-radius);
+  background: var(--c-surface-3);
+  color: var(--c-text);
+  box-shadow: inset 0 0 0 1px var(--c-line-strong);
+  transition:
+    background-color var(--dur-fast),
+    color var(--dur-fast),
+    opacity var(--dur-fast);
+}
+
+.gb-step__btn svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+}
+
+.gb-step__btn:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--hex, var(--c-accent)) 22%, var(--c-surface-3));
+}
+
+.gb-step__btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.gb-step__pips {
+  display: inline-flex;
+  gap: 3px;
+}
+
+/* 等级格：已到达的等级用项目颜色填满 */
+.gb-step__pips button {
+  width: 14px;
+  height: 18px;
+  border-radius: 2px;
+  background: var(--c-surface-3);
+  box-shadow: inset 0 0 0 1px var(--c-line-strong);
+  transition:
+    background-color var(--dur-fast) var(--ease-standard),
+    box-shadow var(--dur-fast) var(--ease-standard),
+    transform var(--dur-fast) var(--ease-standard);
+}
+
+.gb-step__pips button[data-on] {
+  background: var(--hex, var(--gb-gold));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--hex, var(--gb-gold)) 60%, #000);
+}
+
+.gb-step__pips button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: inset 0 0 0 1.5px var(--hex, var(--gb-gold));
+}
+
+.gb-step__pips button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.gb-step button:focus-visible {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 2px;
 }
 
 .gb-parts {

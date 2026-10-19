@@ -2,16 +2,19 @@ import { describe, expect, it } from 'vitest';
 import {
   augmentCost,
   augmentCapacity,
+  augmentLevels,
   availableConditions,
   awakeningConflict,
   capFor,
   chosenAwakening,
   computeSkills,
   computeStats,
+  customKind,
   emptyBuild,
   fitDecos,
   makeIndex,
   partTotals,
+  partsAvailable,
   chosenParts,
   pruneAugments,
   setAugment,
@@ -190,6 +193,17 @@ const weapons: WeaponData[] = [
 weapons.push(
   { ...weapons[0]!, id: 300, name: '赤龙断绝剑·火', attack: 270, affinity: 5, slots: [4], awakened: true },
   { ...weapons[0]!, id: 301, name: '上位大剑', rarity: 8, slots: [1] },
+  // 拼装外形、支援零件强化的皇金武器；还能继续强化（不是衍生上限）的大师武器
+  { ...weapons[0]!, id: 302, name: '皇金大剑·王', slots: [], customParts: true, kulve: true },
+  {
+    ...weapons[0]!,
+    id: 303,
+    name: '迅雷断裂斧1',
+    rarity: 10,
+    slots: [1],
+    customParts: true,
+    canUpgrade: true,
+  },
 );
 const awakening = [
   awk(1, { effect: { kind: 'attack', amount: 2 } }),
@@ -359,7 +373,7 @@ describe('自定义强化', () => {
 describe('零件强化', () => {
   it('按阶段取零件并合计效果；阶段对不上的忽略', () => {
     const b = emptyBuild();
-    b.weapon = { id: 239, decos: [] };
+    b.weapon = { id: 302, decos: [] };
     b.custom.parts = [1, 3];
     expect(partTotals(chosenParts(b, idx))).toEqual({ attack: 2 });
     b.custom.parts = [2, 2];
@@ -367,6 +381,26 @@ describe('零件强化', () => {
     // 零件的攻击是真实值加值（用户核对：重弩 390 → 392）
     b.custom.parts = [1, 3];
     expect(computeStats(b, idx, computeSkills(b, idx)).attack).toBe(342);
+  });
+
+  it('不支援零件强化的武器（专属外形）不计零件', () => {
+    const b = emptyBuild();
+    b.weapon = { id: 239, decos: [] };
+    b.custom.parts = [1, 3];
+    expect(partsAvailable(idx.weapons.get(239))).toBe(false);
+    expect(chosenParts(b, idx)).toEqual([]);
+    expect(computeStats(b, idx, computeSkills(b, idx)).attack).toBe(340);
+  });
+
+  it('还能继续强化的武器没有任何客制', () => {
+    const b = emptyBuild();
+    b.weapon = { id: 303, decos: [] };
+    b.custom = setAugment(b.custom, idx, 'slot', 1);
+    b.custom.parts = [1];
+    expect(customKind(idx.weapons.get(303))).toBeNull();
+    expect(augmentLevels(b, idx).size).toBe(0);
+    expect(chosenParts(b, idx)).toEqual([]);
+    expect(weaponSlots(b, idx)).toEqual([1]);
   });
 });
 

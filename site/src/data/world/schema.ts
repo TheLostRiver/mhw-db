@@ -359,6 +359,8 @@ export const Weapon = z
     skill: z.number().int().nullable(),
     tree: z.object({ id: z.number().int(), position: z.number().int() }).strict(),
     fixedUpgrade: z.boolean(),
+    /** 支援零件强化（拼装外形的稀有度 10+ 武器，见 docs/DATA.md 3.3） */
+    customParts: z.boolean(),
     cost: z.number().int(),
     sharpness: z
       .object({

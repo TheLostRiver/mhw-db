@@ -1,7 +1,7 @@
 /**
  * 百科列表页共用的显示规则：部位名、属性名、龙封力、物品分类、稀有度颜色、图标路径。
  */
-import type { Item } from '../../data/world/schema';
+import type { Item, Weapon } from '../../data/world/schema';
 
 const BASE = '/assets/game/world';
 
@@ -54,6 +54,23 @@ export const COATING_LABEL = {
   sleep: '睡眠瓶',
   blast: '爆破瓶',
 } as const;
+
+type Coating = keyof typeof COATING_LABEL;
+
+/** 武器专属参数的一行说明：炮击、瓶、猎虫加成、弓的可用瓶（「＋」为强化）；没有时为空串。狩猎笛音色另行绘制 */
+export function weaponSpecialText(sp: Weapon['special']): string {
+  if (!sp) return '';
+  if (sp.shelling) return `${SHELL_LABEL[sp.shelling.type]} Lv${sp.shelling.level}`;
+  if (sp.phial) return `${PHIAL_LABEL[sp.phial.type]}${sp.phial.value ? ` ${sp.phial.value * 10}` : ''}`;
+  if (sp.kinsectBonus != null) return KINSECT_BONUS_LABEL[sp.kinsectBonus] ?? '';
+  const coatings = sp.coatings;
+  if (coatings)
+    return (Object.keys(COATING_LABEL) as Coating[])
+      .filter((k) => coatings[k] > 0)
+      .map((k) => `${COATING_LABEL[k].replace('瓶', '')}${coatings[k] > 1 ? '+' : ''}`)
+      .join('、');
+  return '';
+}
 
 /** 操虫棍的猎虫加成（与游戏文本 cm_status 的 STATUS_ROD_SKILL_01…08 一致） */
 export const KINSECT_BONUS_LABEL = [

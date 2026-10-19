@@ -1,6 +1,8 @@
 /**
  * 每种武器的精简数据（简中）：构建时生成 /data/world/weapons/<种类>.json，配装器按需加载。
  * 含该武器种的零件强化与冥赤龙觉醒能力；同名同数值的重复行（duplicateOf）不输出。
+ * 绚辉龙武器：派生树 0 且说明写着「绚辉龙」（金色 / 铠罗炎 / 皇金系列；派生树 0 里另有 14 把稀有度 11 的
+ * 「大龙颚」等不属于此列）。
  */
 import type { APIRoute, GetStaticPaths } from 'astro';
 import type { WeaponPayload } from '../../../../lib/world/builder';
@@ -31,6 +33,10 @@ export const GET: APIRoute = ({ params }) => {
     skill: w.skill,
     ...(w.sharpness ? { sharpness: w.sharpness.bars, handicraft: w.sharpness.handicraftSteps } : {}),
     ...(w.awakened ? { awakened: true } : {}),
+    ...(w.special ? { special: w.special } : {}),
+    ...(w.upgrade?.to.length ? { canUpgrade: true } : {}),
+    ...(w.customParts ? { customParts: true } : {}),
+    ...(w.tree.id === 0 && pick(w.desc, L).includes('绚辉龙') ? { kulve: true } : {}),
   }));
   const payload: WeaponPayload = {
     weapons,

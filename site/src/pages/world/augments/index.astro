@@ -126,8 +126,8 @@ const hrEffect = (k: keyof typeof HR_LABELS) =>
                               <img
                                 src="/assets/game/world/augment/hex-used.webp"
                                 alt=""
-                                width="12"
-                                height="12"
+                                width="18"
+                                height="18"
                               />
                             ))}
                           </span>
@@ -310,9 +310,14 @@ const hrEffect = (k: keyof typeof HR_LABELS) =>
     font-weight: 700;
   }
 
+  /* 占用格数：游戏的白色实心格放在深色小底条上（与配装器的格子栏一致，两主题都是深色） */
   .au-hex {
     display: inline-flex;
     gap: 1px;
+    padding: 3px 6px;
+    border-radius: 3px;
+    background: linear-gradient(90deg, #1b1c1f, #2b2c30 20%, #2b2c30 80%, #1b1c1f);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.1);
   }
 
   .au-hex img {

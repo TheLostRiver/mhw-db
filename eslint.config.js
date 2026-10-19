@@ -3,7 +3,7 @@ import astro from 'eslint-plugin-astro';
 import reactHooks from 'eslint-plugin-react-hooks';
 
 export default tseslint.config(
-  { ignores: ['**/dist/', '**/.astro/', '**/node_modules/', 'data-raw/', 'pipeline/', 'crates/'] },
+  { ignores: ['**/dist/', '**/.astro/', '**/node_modules/', 'data-raw/', 'pipeline/', 'crates/', '.cache/'] },
   ...tseslint.configs.recommended,
   ...astro.configs.recommended,
   {

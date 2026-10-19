@@ -115,29 +115,102 @@ test('饰品选择器：卡片网格，按单技能 / 复合珠筛选', async ({
 test('自定义强化：攻击力强化计入状态，镶嵌槽强化追加槽，超出格数上限的选项不可选', async ({ page }) => {
   await open(page);
   await pick(page, '.gb-row__piece[aria-label^="武器"]', '黑龙玄刃');
+  const levels = (name: string) => page.getByRole('radiogroup', { name: `${name}等级` });
+  const cost = page.locator('.gb-custom__cost');
   // 稀有度 12 基础 3 格：攻击Ⅱ（5 格）放不下，先选定，扩充后再试
-  await page.getByRole('radio', { name: '攻击力强化1' }).click();
-  await expect(page.locator('.gb-custom__cost')).toContainText('3 / 3');
+  await levels('攻击力强化').getByRole('radio', { name: 'Ⅰ 级' }).click();
+  await expect(cost).toContainText('3 / 3');
   // (340 + 5) × 4.8 = 1656
   await expect(page.locator('section[aria-labelledby="gb-stats-h"]')).toContainText('1656');
-  await expect(page.getByRole('radio', { name: '攻击力强化2' })).toBeDisabled();
-  await expect(page.getByRole('radio', { name: '镶嵌槽强化1' })).toBeDisabled();
-  // 扩充自定义栏：三级各 +1 格，上限 3 → 6（第一级在数据里就叫「扩充自定义栏」，不带数字）
-  const extendBtns = page.locator('.gb-aug--extend button');
-  await extendBtns.nth(1).click();
-  await extendBtns.nth(2).click();
-  await extendBtns.nth(3).click();
-  await expect(page.locator('.gb-custom__cost')).toContainText('3 / 6');
-  await expect(page.getByRole('radio', { name: '攻击力强化2' })).toBeEnabled();
-  await page.getByRole('radio', { name: '镶嵌槽强化1' }).click();
-  await expect(page.locator('.gb-custom__cost')).toContainText('6 / 6');
+  await expect(levels('攻击力强化').getByRole('radio', { name: 'Ⅱ 级' })).toBeDisabled();
+  await expect(page.getByRole('button', { name: '攻击力强化：升一级' })).toBeDisabled();
+  await expect(page.getByRole('button', { name: '攻击力强化：升一级' })).toHaveAttribute('title', /格数不足/);
+  await expect(levels('镶嵌槽强化').getByRole('radio', { name: 'Ⅰ 级' })).toBeDisabled();
+  // 格子栏：3 格都被攻击占用
+  await expect(page.locator('.gb-exbar__cell[data-used]')).toHaveCount(3);
+  // 扩充自定义栏：三级各 +1 格，上限 3 → 6
+  await levels('扩充自定义栏').getByRole('radio', { name: 'Ⅲ 级' }).click();
+  await expect(cost).toContainText('3 / 6');
+  await expect(levels('攻击力强化').getByRole('radio', { name: 'Ⅱ 级' })).toBeEnabled();
+  await levels('镶嵌槽强化').getByRole('radio', { name: 'Ⅰ 级' }).click();
+  await expect(cost).toContainText('6 / 6');
   await expect(page.locator('.gb-row').first().locator('.gb-slot')).toHaveCount(3);
-  await expect(page.getByRole('radio', { name: '攻击力强化2' })).toBeDisabled();
+  await expect(levels('攻击力强化').getByRole('radio', { name: 'Ⅱ 级' })).toBeDisabled();
   // 取消扩充后退回基础 3 格，放不下的强化会被裁掉
-  await page.getByRole('button', { name: '不扩充' }).click();
-  await expect(page.locator('.gb-custom__cost')).toContainText('3 / 3');
+  for (let i = 0; i < 3; i++) await page.getByRole('button', { name: '扩充自定义栏：降一级' }).click();
+  await expect(cost).toContainText('3 / 3');
   await expect(page.locator('.gb-row').first().locator('.gb-slot')).toHaveCount(2);
 });
+
+test('零件强化：只有支援的武器才有零件强化页；没强化到头的武器没有客制', async ({ page }) => {
+  await open(page);
+  // 黑龙玄刃是专属外形，不支援零件强化：没有翻页箭头，显示游戏原文
+  await pick(page, '.gb-row__piece[aria-label^="武器"]', '黑龙玄刃');
+  const custom = page.locator('.gb-detail .gb-custom');
+  await expect(custom).toContainText('此武器不支援零件强化。');
+  await expect(custom.locator('.gb-cus-head__nav')).toHaveCount(0);
+  // 皇金武器（稀有度 12）是拼装外形，可以翻到零件强化页
+  await pick(page, '.gb-row__piece[aria-label^="武器"]', '皇金大剑·王');
+  await expect(custom).not.toContainText('此武器不支援零件强化');
+  await custom.getByRole('button', { name: '下一页：零件强化' }).click();
+  await expect(custom.locator('.gb-cus-head__title')).toContainText('零件强化');
+  await expect(custom.locator('.gb-parts li')).toHaveCount(7);
+  // 迅雷断裂斧1 还能强化成 2：游戏里不能自定义强化
+  await page.locator('.gb-row__piece[aria-label^="武器"]').click();
+  const dialog = page.getByRole('dialog');
+  await dialog.getByRole('searchbox').fill('迅雷断裂斧1');
+  await page.keyboard.press('Enter');
+  await expect(custom).toContainText('还能继续强化');
+  await expect(custom.locator('.gb-aug')).toHaveCount(0);
+});
+
+test('武器选择器：卡片列出数值与斩味，按类别、属性筛选，键盘可选', async ({ page }) => {
+  await open(page);
+  await page.locator('.gb-row__piece[aria-label^="武器"]').click();
+  const dialog = page.getByRole('dialog');
+  await expect(dialog.getByRole('searchbox')).toBeFocused();
+  const cards = dialog.locator('.gb-wcard');
+  await expect(cards.first()).toBeVisible();
+  // 默认大师、按攻击力降序：每张卡都是稀有度 9 以上，带斩味条
+  const rares = await cards.locator('.gb-wcard__rare').allInnerTexts();
+  expect(rares.every((r) => Number(r.replace('RARE ', '')) >= 9)).toBe(true);
+  await expect(cards.first().locator('.gb-wcard__blade i').first()).toBeVisible();
+  // 冥赤龙：全是赤龙系列
+  await dialog.getByRole('radio', { name: '冥赤龙' }).click();
+  const names = await cards.locator('.gb-wcard__name').allInnerTexts();
+  expect(names.length).toBeGreaterThan(0);
+  expect(names.every((n) => n.startsWith('赤龙'))).toBe(true);
+  // 绚辉龙 + 雷属性：只剩皇金 / 铠罗炎 / 金色的雷属性武器
+  await dialog.getByRole('radio', { name: '绚辉龙' }).click();
+  await dialog.getByRole('radio', { name: '雷' }).click();
+  for (const n of await cards.locator('.gb-wcard__name').allInnerTexts()) expect(n).toMatch(/雷$/);
+  // 方向键移动、回车选择
+  await page.keyboard.press('ArrowDown');
+  await page.keyboard.press('Enter');
+  await expect(dialog).toBeHidden();
+  await expect(page.locator('.gb-detail__name')).toContainText('雷');
+});
+
+test('自动配装：可以直接选武器并设定自定义强化', async ({ page }) => {
+  await open(page);
+  await page.getByRole('tab', { name: /自动配装/ }).click();
+  const form = page.locator('.gb-as__form');
+  await form.locator('.gb-as__wpick').click();
+  const dialog = page.getByRole('dialog');
+  await dialog.getByRole('searchbox').fill('黑龙玄刃');
+  await page.keyboard.press('Enter');
+  await expect(form.locator('.gb-as__wcard')).toContainText('黑龙玄刃');
+  await expect(form.getByRole('radio', { name: /用这把武器/ })).toBeChecked();
+  // 展开自定义强化，镶嵌槽强化Ⅰ（3 格）追加一个 1 级槽
+  await form.locator('.gb-as__custom > summary').click();
+  await form.getByRole('radiogroup', { name: '镶嵌槽强化等级' }).getByRole('radio', { name: 'Ⅰ 级' }).click();
+  await expect(form.locator('.gb-as__custom > summary')).toContainText('镶嵌槽强化 Ⅰ');
+  await expect(form.locator('.gb-as__wcard .gb-slot-plus')).toHaveCount(1);
+  // 手动配装里是同一把武器、同样的强化
+  await page.getByRole('tab', { name: '手动配装' }).click();
+  await expect(page.locator('.gb-row').first().locator('.gb-slot')).toHaveCount(3);
+});
+
 test('冥赤龙觉醒：不可重复的能力在选择器里禁用', async ({ page }) => {
   await open(page);
   await pick(page, '.gb-row__piece[aria-label^="武器"]', '赤龙断绝剑·火');

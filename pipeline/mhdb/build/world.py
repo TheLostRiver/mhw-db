@@ -403,6 +403,14 @@ def build_weapons(s: Source) -> dict[str, list[dict]]:
                 "skill": r["skill"] or None,
                 "tree": {"id": r["tree_id"], "position": r["tree_position"]},
                 "fixedUpgrade": bool(r["is_fixed_upgrade"]),
+                # 零件强化（见 docs/DATA.md 3.3）：稀有度 10 以上、外形由底座 + 零件拼成（part_1 ≠ −1）的武器；
+                # unk_2 = 1 的几个系列（冰呪龙、冥灯龙改、魂焰刚剑、狱界断罪斧改）外形也是拼的，但不支援
+                "customParts": (
+                    r["rarity"] + 1 >= 10
+                    and r["part_1"] != -1
+                    and not r["unk_2"]
+                    and r["tree_id"] != AWAKENED_TREE
+                ),
                 "cost": r["cost"],
                 "_src": src(rel, row),
             }

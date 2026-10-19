@@ -1,9 +1,10 @@
 /**
  * 武器客制面板：大师自定义强化（每种选一个等级 + 扩充自定义栏）、零件强化（每阶段一个零件）、冥赤龙觉醒能力（5 栏）、
- * 上位自定义强化（每格选一种，同种可重复）。面板按「自定义强化 / 零件强化」分区切换，容量用游戏里的六角格表示。
+ * 上位自定义强化（每格选一种，同种可重复）。页头左右翻页切换「自定义强化 / 零件强化」，容量用游戏里的六角格表示。
+ * 还能继续强化的武器没有客制；不支援零件强化的武器没有零件强化页（见 lib/world/builder.ts 的 customKind / partsAvailable）。
  * 规则与数值的确认状态见 docs/DATA.md 3.3；未确认的部分只显示、不计入状态。
  */
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import {
   EXTEND_LEVELS,
   HR_AUGMENTS,
@@ -13,6 +14,7 @@ import {
   augmentCapacity,
   augmentCost,
   augmentLevels,
+  partsAvailable,
   awakeningTotal,
   chosenAwakening,
   chosenParts,
@@ -123,60 +125,198 @@ export default function WeaponCustomPanel({
   if (kind === 'hr') return <HrAugmentPanel weapon={weapon} build={build} idx={idx} onCustom={onCustom} />;
   return (
     <section className="gb-custom" aria-label="武器客制">
-      <h3 className="gb-h gb-h--sub">武器客制</h3>
-      <p className="gb-note">这把武器没有自定义强化（上位为稀有度 6–8，大师为稀有度 10–12）。</p>
+      <CustomHead title="武器客制" />
+      <p className="gb-note">
+        {weapon.canUpgrade && weapon.rarity >= 6
+          ? '这把武器还能继续强化。游戏里要强化到衍生上限，才能进行自定义强化。'
+          : '这把武器没有自定义强化（上位为稀有度 6–8，大师为稀有度 10–12）。'}
+      </p>
     </section>
   );
 }
 
-/** 分区切换的按钮组（游戏里也是几个页签来回切） */
-function SectionTabs<T extends string>({
-  tabs,
-  value,
-  onChange,
+/**
+ * 客制面板的页头：标题居中，左右箭头在几页之间切换（游戏的强化画面也是这样翻页），右侧放容量。
+ * pages 少于两页时不显示箭头。
+ */
+function CustomHead<T extends string>({
+  title,
+  pages,
+  page,
+  onPage,
+  extra,
 }: {
-  tabs: { key: T; label: string }[];
-  value: T;
-  onChange: (v: T) => void;
+  title: string;
+  pages?: { key: T; label: string }[] | undefined;
+  page?: T;
+  onPage?: (p: T) => void;
+  extra?: ReactNode;
 }) {
+  const list = pages ?? [];
+  const i = list.findIndex((p) => p.key === page);
+  const at = (d: number) => list[(i + d + list.length) % list.length];
+  const paged = list.length > 1 && i >= 0;
   return (
-    <div className="gb-custom__tabs" role="tablist">
-      {tabs.map((t) => (
+    <header className="gb-cus-head">
+      {paged && (
         <button
-          key={t.key}
           type="button"
-          role="tab"
-          aria-selected={t.key === value}
-          className="gb-chip"
-          onClick={() => onChange(t.key)}
+          className="gb-cus-head__nav"
+          aria-label={`上一页：${at(-1)?.label ?? ''}`}
+          onClick={() => onPage?.(at(-1)!.key)}
         >
-          {t.label}
+          <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true">
+            <path d="M7.5 2 3.5 6l4 4" />
+          </svg>
         </button>
-      ))}
+      )}
+      <h3 className="gb-cus-head__title">
+        {title}
+        {paged && (
+          <span className="gb-cus-head__dots" aria-hidden="true">
+            {list.map((p) => (
+              <i key={p.key} data-on={p.key === page ? '' : undefined} />
+            ))}
+          </span>
+        )}
+      </h3>
+      {paged && (
+        <button
+          type="button"
+          className="gb-cus-head__nav"
+          aria-label={`下一页：${at(1)?.label ?? ''}`}
+          onClick={() => onPage?.(at(1)!.key)}
+        >
+          <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true">
+            <path d="m4.5 2 4 4-4 4" />
+          </svg>
+        </button>
+      )}
+      {extra != null && <span className="gb-cus-head__extra">{extra}</span>}
+    </header>
+  );
+}
+
+/** 格子栏里各项目的颜色（自定，按项目图标的主色挑选） */
+const AUGMENT_COLORS: Record<AugmentCategory, string> = {
+  attack: '#d65a45',
+  affinity: '#a982e0',
+  element: '#dcae3a',
+  defense: '#c98b46',
+  slot: '#4cb3c9',
+  health: '#6cc36a',
+  extend: '#9aa0a6',
+};
+
+/**
+ * 自定义强化的格子栏：仿游戏强化画面的深色底条（两端箭头收口），格子贴图取自游戏（limit_break_EX.gui）。
+ * 已占用的格子按占用它的项目着色；要「扩充自定义栏」才开出来的格子半透明，超出上限的占用标红。
+ * focus 为鼠标所在的项目：它占的格子高亮，其余变暗。
+ */
+function AugmentBar({
+  fill,
+  capacity,
+  full,
+  focus,
+}: {
+  fill: AugmentCategory[];
+  capacity: number;
+  full: number;
+  focus: AugmentCategory | null;
+}) {
+  const cells = Math.max(full, fill.length);
+  return (
+    <div
+      className="gb-exbar"
+      role="img"
+      data-focus={focus && fill.includes(focus) ? '' : undefined}
+      aria-label={`自定义强化格子：占用 ${fill.length} / ${capacity} 格，全部扩充后 ${full} 格`}
+    >
+      {Array.from({ length: cells }, (_, i) => {
+        const c = fill[i];
+        return (
+          <span
+            key={i}
+            className="gb-exbar__cell"
+            data-used={c ? '' : undefined}
+            data-locked={i >= capacity ? '' : undefined}
+            data-hl={c && c === focus ? '' : undefined}
+            style={c ? { ['--hex' as string]: AUGMENT_COLORS[c] } : undefined}
+            title={c ? AUGMENT_NAMES[c] : i >= capacity ? '扩充自定义栏后可用' : '空格'}
+          >
+            <img src={iconUrl.augmentHex(false)} width={28} height={28} alt="" decoding="async" />
+            <i className="gb-exbar__fill" />
+          </span>
+        );
+      })}
     </div>
   );
 }
 
-/** 栏位占用的六角格：实心的为已占用，空心的为剩余格数 */
-function HexTrack({ used, total }: { used: number; total: number }) {
+/** 等级调节：− / 等级格 / ＋。等级格可直接点选；不能选的等级（格数不足等）禁用，原因写在提示里 */
+function LevelStepper({
+  name,
+  levels,
+  current,
+  blocked,
+  onSet,
+}: {
+  name: string;
+  levels: { level: number; title: string }[];
+  current: number;
+  blocked: (level: number) => string | null;
+  onSet: (level: number) => void;
+}) {
+  const next = levels.find((l) => l.level === current + 1);
+  const nextWhy = next ? blocked(next.level) : '已是最高等级';
   return (
-    <span className="gb-hex" aria-hidden="true">
-      {Array.from({ length: total }, (_, i) => (
-        <img
-          key={i}
-          src={iconUrl.augmentHex(i < used)}
-          width={14}
-          height={16}
-          alt=""
-          loading="lazy"
-          decoding="async"
-        />
-      ))}
+    <span className="gb-step" role="group" aria-label={name}>
+      <button
+        type="button"
+        className="gb-step__btn"
+        aria-label={`${name}：降一级`}
+        disabled={current === 0}
+        onClick={() => onSet(current - 1)}
+      >
+        <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true">
+          <path d="M2.5 6h7" />
+        </svg>
+      </button>
+      <span className="gb-step__pips" role="radiogroup" aria-label={`${name}等级`}>
+        {levels.map((l) => {
+          const why = l.level === current ? null : blocked(l.level);
+          return (
+            <button
+              key={l.level}
+              type="button"
+              role="radio"
+              aria-checked={l.level === current}
+              aria-label={`${ROMAN[l.level]} 级`}
+              data-on={l.level <= current ? '' : undefined}
+              disabled={why != null}
+              title={why ?? l.title}
+              onClick={() => onSet(l.level)}
+            />
+          );
+        })}
+      </span>
+      <button
+        type="button"
+        className="gb-step__btn"
+        aria-label={`${name}：升一级`}
+        disabled={nextWhy != null}
+        title={nextWhy ?? next?.title}
+        onClick={() => onSet(current + 1)}
+      >
+        <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true">
+          <path d="M2.5 6h7M6 2.5v7" />
+        </svg>
+      </button>
     </span>
   );
 }
 
-/** 大师自定义强化 + 零件强化：两者都只有大师武器有，用分区切换 */
+/** 大师自定义强化 + 零件强化：页头左右翻页；不支援零件强化的武器只有自定义强化一页 */
 function MrCustomPanel({
   weapon,
   build,
@@ -191,25 +331,44 @@ function MrCustomPanel({
   onCustom: (fn: (c: WeaponCustom) => WeaponCustom) => void;
 }) {
   const [tab, setTab] = useState<'augment' | 'parts'>('augment');
-  const hasParts = idx.parts.size > 0;
+  const hasParts = partsAvailable(weapon) && idx.parts.size > 0;
+  const page = hasParts ? tab : 'augment';
+  const used = augmentCost(build, idx);
+  const capacity = augmentCapacity(weapon, extendLevel(build, idx));
   return (
-    <>
-      {hasParts && (
-        <SectionTabs
-          tabs={[
-            { key: 'augment' as const, label: '自定义强化' },
-            { key: 'parts' as const, label: '零件强化' },
-          ]}
-          value={tab}
-          onChange={setTab}
-        />
-      )}
-      {tab === 'augment' || !hasParts ? (
+    <section className="gb-custom" aria-label={page === 'augment' ? '自定义强化' : '零件强化'}>
+      <CustomHead
+        title={page === 'augment' ? '自定义强化' : '零件强化'}
+        pages={
+          hasParts
+            ? [
+                { key: 'augment' as const, label: '自定义强化' },
+                { key: 'parts' as const, label: '零件强化' },
+              ]
+            : undefined
+        }
+        page={page}
+        onPage={setTab}
+        extra={
+          page === 'augment' ? (
+            <span
+              className="gb-custom__cost"
+              title="上限随扩充自定义栏增加（稀有度 10 / 11 / 12 最大 9 / 8 / 6）"
+            >
+              占用 <b data-over={used > capacity ? '' : undefined}>{used}</b> / {capacity} 格
+            </span>
+          ) : (
+            <span className="gb-custom__cost">{PART_STAGES} 阶段</span>
+          )
+        }
+      />
+      {!hasParts && <p className="gb-custom__hint">此武器不支援零件强化。</p>}
+      {page === 'augment' ? (
         <AugmentPanel weapon={weapon} build={build} idx={idx} onAugment={onAugment} />
       ) : (
         <PartsPanel build={build} idx={idx} onCustom={onCustom} />
       )}
-    </>
+    </section>
   );
 }
 
@@ -255,12 +414,14 @@ function HrAugmentPanel({
 
   return (
     <section className="gb-custom" aria-label="自定义强化">
-      <h3 className="gb-h gb-h--sub">
-        自定义强化
-        <span className="gb-custom__cost" title="上位格数按稀有度 6 / 7 / 8 = 3 / 2 / 1，待确认">
-          {slots} 格
-        </span>
-      </h3>
+      <CustomHead
+        title="自定义强化"
+        extra={
+          <span className="gb-custom__cost" title="上位格数按稀有度 6 / 7 / 8 = 3 / 2 / 1，待确认">
+            {slots} 格
+          </span>
+        }
+      />
       <ol className="gb-parts">
         {Array.from({ length: slots }, (_, i) => (
           <li key={i}>
@@ -303,11 +464,12 @@ function AugmentPanel({
   idx: Index;
   onAugment: (c: AugmentCategory, level: number) => void;
 }) {
+  const [focus, setFocus] = useState<AugmentCategory | null>(null);
   const chosen = augmentLevels(build, idx);
   const extend = extendLevel(build, idx);
   const capacity = augmentCapacity(weapon, extend);
   const base = augmentBase(weapon);
-  // 六角格按「全部扩充后」的总数画，没开出来的格子一眼能看出来
+  // 格子按「全部扩充后」的总数画，没开出来的格子一眼能看出来
   const full = augmentCapacity(weapon, EXTEND_LEVELS);
   const used = augmentCost(build, idx);
   const levels = [...idx.augments.values()];
@@ -318,99 +480,88 @@ function AugmentPanel({
     if (c === 'defense') return `防御 +${fx.defense[lv - 1] ?? 0}`;
     if (c === 'slot') return `追加 ${lv} 级镶嵌槽`;
     if (c === 'element') return `属性 +${fx.element[lv - 1] ?? 0}（真实值，未计入）`;
+    if (c === 'health') return `回复能力 ${ROMAN[lv]}`;
     return null;
   };
+  const shown = PANEL_ORDER.filter((c) => levels.some((a) => a.category === c));
+  // 格子栏：按面板顺序把各项占用的格数依次填进去
+  const fill = shown.flatMap((c) => Array<AugmentCategory>(chosen.get(c)?.slotCost ?? 0).fill(c));
   const extendOpts = levels.filter((a) => a.category === 'extend').sort((a, b) => a.level - b.level);
 
   return (
-    <section className="gb-custom" aria-label="自定义强化">
-      <h3 className="gb-h gb-h--sub">
-        自定义强化
-        <span
-          className="gb-custom__cost"
-          title="上限随扩充自定义栏增加（稀有度 10 / 11 / 12 最大 9 / 8 / 6）"
-        >
-          占用 <b data-over={used > capacity ? '' : undefined}>{used}</b> / {capacity} 格
-        </span>
-      </h3>
+    <>
       <div className="gb-hexrow">
-        <HexTrack used={used} total={full} />
+        <AugmentBar fill={fill} capacity={capacity} full={full} focus={focus} />
         <small>{`基础 ${base} + 扩充 ${extend}`}</small>
       </div>
       <ul className="gb-aug">
-        {PANEL_ORDER.filter((c) => levels.some((a) => a.category === c)).map((c) => {
+        {shown.map((c) => {
           const opts = levels.filter((a) => a.category === c).sort((a, b) => a.level - b.level);
           const cur = chosen.get(c);
+          const free = capacity - used + (cur?.slotCost ?? 0);
+          const fxText = (lv: number) => effectText(c, lv);
           return (
-            <li key={c}>
-              <GameIcon src={iconUrl.augment(c)} size={22} />
+            <li
+              key={c}
+              data-on={cur ? '' : undefined}
+              style={{ ['--hex' as string]: AUGMENT_COLORS[c] }}
+              onPointerEnter={() => setFocus(c)}
+              onPointerLeave={() => setFocus(null)}
+              onFocus={() => setFocus(c)}
+              onBlur={() => setFocus(null)}
+            >
+              <GameIcon src={iconUrl.augment(c)} size={30} />
               <span className="gb-aug__label">
-                <span className="gb-aug__name">{AUGMENT_NAMES[c]}</span>
+                <span className="gb-aug__name">
+                  {AUGMENT_NAMES[c]}
+                  {cur && <b className="gb-aug__lv">Lv{cur.level}</b>}
+                </span>
                 {cur ? (
                   <span className="gb-aug__fx">
-                    {effectText(c, cur.level)}
-                    <small>{cur.slotCost} 格</small>
+                    {fxText(cur.level)}
+                    <small>占 {cur.slotCost} 格</small>
                   </span>
                 ) : (
                   <span className="gb-aug__fx gb-aug__fx--off">未设定</span>
                 )}
               </span>
-              <span className="gb-aug__levels" role="radiogroup" aria-label={AUGMENT_NAMES[c]}>
-                <button
-                  type="button"
-                  role="radio"
-                  aria-checked={!cur}
-                  aria-label="不强化"
-                  onClick={() => onAugment(c, 0)}
-                >
-                  —
-                </button>
-                {opts.map((a) => (
-                  <button
-                    key={a.id}
-                    type="button"
-                    role="radio"
-                    aria-checked={cur?.id === a.id}
-                    aria-label={a.name}
-                    // 换成该等级后超出上限的选项不可选
-                    disabled={cur?.id !== a.id && used - (cur?.slotCost ?? 0) + a.slotCost > capacity}
-                    title={`${a.name}：占用 ${a.slotCost} 格${a.desc ? `\n${a.desc}` : ''}`}
-                    onClick={() => onAugment(c, a.level)}
-                  >
-                    {ROMAN[a.level]}
-                  </button>
-                ))}
-              </span>
+              <LevelStepper
+                name={AUGMENT_NAMES[c]}
+                current={cur?.level ?? 0}
+                levels={opts.map((a) => ({
+                  level: a.level,
+                  title: [`${a.name}：占 ${a.slotCost} 格`, fxText(a.level)].filter(Boolean).join(' · '),
+                }))}
+                blocked={(lv) => {
+                  const a = opts.find((o) => o.level === lv);
+                  if (!a) return null;
+                  return a.slotCost > free ? `格数不足：${a.name}需 ${a.slotCost} 格，可用 ${free} 格` : null;
+                }}
+                onSet={(lv) => onAugment(c, lv)}
+              />
             </li>
           );
         })}
         {/* 扩充自定义栏：本身不占格，只把上限往上抬 */}
         {extendOpts.length > 0 && (
-          <li className="gb-aug--extend">
-            <GameIcon src={iconUrl.augment('slot')} size={22} />
+          <li className="gb-aug--extend" data-on={extend ? '' : undefined}>
+            <GameIcon src={iconUrl.augment('slot')} size={30} />
             <span className="gb-aug__label">
-              <span className="gb-aug__name">{AUGMENT_NAMES.extend}</span>
+              <span className="gb-aug__name">
+                {AUGMENT_NAMES.extend}
+                {extend > 0 && <b className="gb-aug__lv">Lv{extend}</b>}
+              </span>
               <span className="gb-aug__fx gb-aug__fx--off">
-                {extend ? `上限 +${extend} 格` : `上限 ${base} → ${base + EXTEND_LEVELS} 格`}
+                {extend ? `上限 ${base} → ${base + extend} 格` : `最多扩充到 ${full} 格`}
               </span>
             </span>
-            <span className="gb-aug__levels">
-              {/* 扩充只影响上限，与占格无关，所以不做超限判断 */}
-              <button type="button" aria-label="不扩充" onClick={() => onAugment('extend', 0)}>
-                —
-              </button>
-              {extendOpts.map((a) => (
-                <button
-                  key={a.id}
-                  type="button"
-                  aria-label={a.name}
-                  title={`${a.name}：上限 +${a.level} 格`}
-                  onClick={() => onAugment('extend', a.level)}
-                >
-                  {ROMAN[a.level]}
-                </button>
-              ))}
-            </span>
+            <LevelStepper
+              name={AUGMENT_NAMES.extend}
+              current={extend}
+              levels={extendOpts.map((a) => ({ level: a.level, title: `${a.name}：上限 +${a.level} 格` }))}
+              blocked={() => null}
+              onSet={(lv) => onAugment('extend', lv)}
+            />
           </li>
         )}
       </ul>
@@ -418,7 +569,7 @@ function AugmentPanel({
         攻击 / 会心 / 防御的加值取自游戏数据（pl_param），已计入状态；属性强化的换算待确认，未计入。
         未扩充与每级扩充的格数为推断（稀有度 10 / 11 / 12 最大 9 / 8 / 6）。
       </p>
-    </section>
+    </>
   );
 }
 
@@ -443,11 +594,7 @@ function PartsPanel({
     });
 
   return (
-    <section className="gb-custom" aria-label="零件强化">
-      <h3 className="gb-h gb-h--sub">
-        零件强化
-        <span className="gb-custom__cost">{PART_STAGES} 阶段</span>
-      </h3>
+    <>
       <ol className="gb-parts">
         {Array.from({ length: PART_STAGES }, (_, i) => {
           const opts = parts.filter((p) => p.stage === i + 1);
@@ -474,9 +621,9 @@ function PartsPanel({
       </ol>
       <p className="gb-note">
         {Object.keys(totals).length ? `合计：${partEffectText(totals)}。` : ''}
-        零件数值是加值还是等级尚未与游戏核对，暂不计入状态。
+        攻击为真实值加值（已核对）；会心、属性、防御按武器数据的单位计入（推断）；锐利度的单位未确认，未计入。
       </p>
-    </section>
+    </>
   );
 }
 
@@ -502,12 +649,14 @@ function AwakeningPanel({
 
   return (
     <section className="gb-custom" aria-label="觉醒能力">
-      <h3 className="gb-h gb-h--sub">
-        觉醒能力
-        <span className="gb-custom__cost">
-          已设定 {chosen.filter(Boolean).length} / {chosen.length} 栏
-        </span>
-      </h3>
+      <CustomHead
+        title="觉醒能力"
+        extra={
+          <span className="gb-custom__cost">
+            已设定 {chosen.filter(Boolean).length} / {chosen.length} 栏
+          </span>
+        }
+      />
       <ol className="gb-awk">
         {chosen.map((a, i) => (
           <li key={i} data-empty={a ? undefined : ''}>

@@ -144,6 +144,34 @@ def test_awakened_weapons_marked_and_deduplicated() -> None:
     assert sum(1 for w in safi if "duplicateOf" not in w) == 9
 
 
+def test_custom_parts_availability() -> None:
+    """零件强化：拼装外形的稀有度 10+ 武器可以；专属外形、冥赤龙、冰呪龙 / 冥灯龙改 / 魂焰刚剑 / 狱界断罪斧改不行
+    （与公开资料一致，见 docs/DATA.md 3.3）。"""
+    gs = load("weapons/great-sword.json", "weapons")
+
+    def flag(name: str, rarity: int) -> bool:
+        return next(w for w in gs if w["name"]["zh-Hans"] == name and w["rarity"] == rarity)["customParts"]
+
+    for name, rarity in [
+        ("皇金大剑·雷", 12),
+        ("金色的大剑·王", 10),
+        ("铬钢死神镰刀3", 11),
+        ("封龙大剑2", 11),
+    ]:
+        assert flag(name, rarity), name
+    for name, rarity in [
+        ("皇金大剑·雷", 8),
+        ("赤龙断绝剑·火", 12),
+        ("黑龙玄刃", 12),
+        ("辉剑火龙", 12),
+        ("冥灯龙大剑改", 12),
+        ("冰翼灵羽", 12),
+        ("魂焰刚剑·炎妃", 12),
+        ("狱界断罪斧改", 12),
+    ]:
+        assert not flag(name, rarity), name
+
+
 def test_awakening_values_by_weapon() -> None:
     aw = custom()["awakening"]
     atk6 = by_name(aw, "攻击力强化6")["value"]

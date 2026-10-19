@@ -15,7 +15,10 @@
  *   镶嵌槽强化追加一个槽；零件强化的攻击为真实值加值（用户已核对），会心 / 属性 / 防御按同样单位计入（⚠ 推断）。
  *   冥赤龙觉醒：数值取自 em104lbr（攻击、会心、防御、属性 / 状态异常计入状态，镶嵌槽强化追加槽）；
  *   系列技能能力计 1 件（⚠ 推断，同武器的 skill 字段）。
+ *   还能继续强化的武器没有任何客制（教程原文「强化至衍生图终点的武器，可进一步使用[自定义强化]」）；
+ *   零件强化只限拼装外形的武器（weapons.json 的 customParts，判断依据见 docs/DATA.md 3.3）。
  */
+import type { Weapon } from '../../data/world/schema';
 
 export const ARMOR_SLOTS = ['head', 'chest', 'arms', 'waist', 'legs'] as const;
 export type ArmorSlot = (typeof ARMOR_SLOTS)[number];
@@ -99,6 +102,14 @@ export interface WeaponData {
   handicraft?: number;
   /** 冥赤龙武器：用觉醒能力代替自定义强化 */
   awakened?: boolean;
+  /** 还能继续强化（不是衍生上限）：游戏规定强化到衍生上限才能自定义强化 / 零件强化 */
+  canUpgrade?: boolean;
+  /** 支援零件强化（拼装外形的稀有度 10+ 武器，见 docs/DATA.md 3.3） */
+  customParts?: boolean;
+  /** 绚辉龙武器（金色 / 铠罗炎 / 皇金） */
+  kulve?: boolean;
+  /** 专属参数：炮击、瓶、狩猎笛音色、双属性、弓的可用瓶、猎虫加成 */
+  special?: Weapon['special'];
 }
 
 export type AugmentCategory = 'extend' | 'attack' | 'affinity' | 'defense' | 'slot' | 'health' | 'element';
@@ -295,9 +306,12 @@ export function makeIndex(data: BuilderData, payload: WeaponPayload = EMPTY_PAYL
 const weaponOf = (build: Build, idx: Index) =>
   build.weapon.id == null ? undefined : idx.weapons.get(build.weapon.id);
 
-/** 这把武器能用哪种客制：冥赤龙觉醒 / 大师自定义强化 / 上位自定义强化 */
+/**
+ * 这把武器能用哪种客制：冥赤龙觉醒 / 大师自定义强化 / 上位自定义强化。
+ * 还能继续强化的武器没有客制（教程：「强化至衍生图终点的武器，可进一步使用[自定义强化]」）。
+ */
 export function customKind(w: WeaponData | undefined): 'awakening' | 'augment' | 'hr' | null {
-  if (!w) return null;
+  if (!w || w.canUpgrade) return null;
   if (w.awakened) return 'awakening';
   if (w.rarity >= AUGMENT_MIN_RARITY) return 'augment';
   return HR_AUGMENT_SLOTS[w.rarity] ? 'hr' : null;
@@ -433,9 +447,13 @@ export function customBonus(build: Build, idx: Index): CustomBonus {
   return out;
 }
 
-/** 当前武器的零件强化选择（只保留阶段对得上的零件） */
+/** 这把武器能不能零件强化：大师自定义强化可用、且武器支援零件强化（「部分武器不支援《零件强化》」） */
+export const partsAvailable = (w: WeaponData | undefined): boolean =>
+  customKind(w) === 'augment' && w?.customParts === true;
+
+/** 当前武器的零件强化选择（只保留阶段对得上的零件；不支援零件强化的武器为空） */
 export function chosenParts(build: Build, idx: Index): PartData[] {
-  if (customKind(weaponOf(build, idx)) !== 'augment') return [];
+  if (!partsAvailable(weaponOf(build, idx))) return [];
   return build.custom.parts.flatMap((id, i) => {
     const p = id == null ? undefined : idx.parts.get(id);
     return p && p.stage === i + 1 ? [p] : [];

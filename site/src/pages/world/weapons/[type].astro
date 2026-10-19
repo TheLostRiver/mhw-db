@@ -7,15 +7,7 @@ import { loadColors, loadConstants, loadSkills, loadWeapons } from '../../../dat
 import { RANGED, type Weapon, type WeaponType } from '../../../data/world/schema';
 import { SHARPNESS_COLORS, sharpnessBar } from '../../../lib/world/builder';
 import { hornKey } from '../../../lib/world/horn';
-import {
-  COATING_LABEL,
-  ELDERSEAL,
-  ELEMENT_NAMES,
-  KINSECT_BONUS_LABEL,
-  PHIAL_LABEL,
-  SHELL_LABEL,
-  socketIconUrl,
-} from '../../../lib/world/encyclopedia';
+import { ELDERSEAL, ELEMENT_NAMES, socketIconUrl, weaponSpecialText } from '../../../lib/world/encyclopedia';
 import { WEAPON_ORDER, WEAPON_TYPE_NAMES, weaponIconUrl } from '../../../lib/world/weapons';
 
 export function getStaticPaths() {
@@ -42,21 +34,7 @@ const SPECIAL_HEAD: Partial<Record<WeaponType, string>> = {
   bow: '可用瓶',
 };
 const specialHead = SPECIAL_HEAD[type];
-type Coating = keyof typeof COATING_LABEL;
-const specialText = (w: Weapon): string => {
-  const sp = w.special;
-  if (!sp) return '';
-  if (sp.shelling) return `${SHELL_LABEL[sp.shelling.type]} Lv${sp.shelling.level}`;
-  if (sp.phial) return `${PHIAL_LABEL[sp.phial.type]}${sp.phial.value ? ` ${sp.phial.value * 10}` : ''}`;
-  if (sp.kinsectBonus != null) return KINSECT_BONUS_LABEL[sp.kinsectBonus] ?? '';
-  const coatings = sp.coatings;
-  if (coatings)
-    return (Object.keys(COATING_LABEL) as Coating[])
-      .filter((k) => coatings[k] > 0)
-      .map((k) => `${COATING_LABEL[k].replace('瓶', '')}${coatings[k] > 1 ? '+' : ''}`)
-      .join('、');
-  return '';
-};
+const specialText = (w: Weapon): string => weaponSpecialText(w.special);
 const nameOf = (id: number) => weapons.find((x) => x.id === id)?.name['zh-Hans'] ?? `#${id}`;
 const elementsOf = (w: Weapon) => w.special?.elements ?? (w.element ? [w.element] : []);
 ---

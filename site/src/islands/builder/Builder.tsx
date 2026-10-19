@@ -29,12 +29,14 @@ import {
   type Index,
   type Piece,
   type SkillTotal,
+  type WeaponData,
   type WeaponPayload,
 } from '../../lib/world/builder';
 import type { SearchResult } from '../../lib/world/search';
 import { buildFromHash, shareUrl } from '../../lib/world/share';
 import AutoSearch from './AutoSearch';
-import Picker, { type PickerSort } from './Picker';
+import Picker from './Picker';
+import WeaponPicker from './WeaponPicker';
 import WeaponCustomPanel, { AWAKENING_GROUPS, ROMAN, awakeningMeta } from './WeaponCustom';
 import { GameIcon, iconUrl, LevelBoxes } from './icons';
 import './builder.css';
@@ -369,29 +371,6 @@ export default function Builder() {
           })),
       };
     }
-    if (t.kind === 'weapon')
-      return {
-        title: `选择${WEAPON_TYPE_NAMES[build.weaponType] ?? '武器'}`,
-        current: build.weapon.id,
-        rarityFilter: true,
-        defaultRarities: [10, 11, 12],
-        sorts: weaponSorts(idx, build.weaponType),
-        items: payload.weapons.map((w) => ({
-          id: w.id,
-          name: w.name,
-          rarity: w.rarity,
-          icon: <GameIcon src={iconUrl.weapon(build.weaponType, w.rarity)} size={28} />,
-          meta: (
-            <>
-              {w.awakened ? '冥赤龙武器 · ' : ''}攻击{' '}
-              {Math.round(w.attack * (idx.bloat[build.weaponType] ?? 1))} · 会心 {w.affinity}%
-              {w.element ? ` · ${ELEMENT_NAMES[w.element.type] ?? ''} ${w.element.value * 10}` : ''}
-              {w.defense ? ` · 防御 +${w.defense}` : ''}
-            </>
-          ),
-          side: <SlotDots slots={w.slots} />,
-        })),
-      };
     if (t.kind === 'armor')
       return {
         title: `选择${SLOT_NAMES[t.slot]}防具`,
@@ -449,6 +428,8 @@ export default function Builder() {
           meta: <SkillRows refs={c.skills} idx={idx} />,
         })),
       };
+    // 武器本身由 WeaponPicker 负责，这里只剩衣装
+    if (t.kind !== 'mantle') return { title: '', current: null, items: [] };
     return {
       title: '选择衣装',
       current: build.mantles[t.index].id,
@@ -474,6 +455,26 @@ export default function Builder() {
 
   // 稀有度颜色取自游戏的 ui_colortable（--gb-rarity-1 … 12）
   const rarityVars = Object.fromEntries(data.colors.rarity.map((c, i) => [`--gb-rarity-${i + 1}`, c]));
+
+  /** 武器客制面板：手动配装的详情栏与自动配装的武器栏共用 */
+  const customPanel = (w: WeaponData) => (
+    <WeaponCustomPanel
+      weapon={w}
+      build={build}
+      idx={idx}
+      onAugment={(category, level) =>
+        update((b) => {
+          b.custom = setAugment(b.custom, idx, category, level);
+          // 取消扩充后可能超上限，按当前格数裁一遍
+          b.custom = pruneAugments(b.custom, idx, idx.weapons.get(b.weapon.id ?? -1));
+          b.weapon.decos = fitDecos(weaponSlots(b, idx), b.weapon.decos, idx);
+          return b;
+        })
+      }
+      onCustom={(fn) => update((b) => ({ ...b, custom: fn(b.custom) }))}
+      onPickAwakening={(slot) => setPicking({ target: { kind: 'weapon' }, awakening: slot })}
+    />
+  );
 
   /** 把自动配装的方案写回手动配装：替换防具、护石与饰品，武器与衣装保留 */
   const applyPlan = (plan: SearchResult) => {
@@ -625,6 +626,9 @@ export default function Builder() {
           build={build}
           weaponTypeName={WEAPON_TYPE_NAMES[build.weaponType] ?? '武器'}
           onApply={applyPlan}
+          onPickWeapon={() => setPicking({ target: { kind: 'weapon' } })}
+          onClearWeapon={() => setPiece({ kind: 'weapon' }, null)}
+          renderCustom={customPanel}
         />
       )}
 
@@ -661,24 +665,7 @@ export default function Builder() {
               build={build}
               idx={idx}
               onChange={() => setPicking({ target: selected })}
-              custom={(w) => (
-                <WeaponCustomPanel
-                  weapon={w}
-                  build={build}
-                  idx={idx}
-                  onAugment={(category, level) =>
-                    update((b) => {
-                      b.custom = setAugment(b.custom, idx, category, level);
-                      // 取消扩充后可能超上限，按当前格数裁一遍
-                      b.custom = pruneAugments(b.custom, idx, idx.weapons.get(b.weapon.id ?? -1));
-                      b.weapon.decos = fitDecos(weaponSlots(b, idx), b.weapon.decos, idx);
-                      return b;
-                    })
-                  }
-                  onCustom={(fn) => update((b) => ({ ...b, custom: fn(b.custom) }))}
-                  onPickAwakening={(slot) => setPicking({ target: { kind: 'weapon' }, awakening: slot })}
-                />
-              )}
+              custom={customPanel}
             />
           </section>
 
@@ -717,7 +704,21 @@ export default function Builder() {
         自定义强化与觉醒能力；零件强化、锐利度修正、动作值与道具增益尚未计入。
       </p>
 
-      {picking && (
+      {picking && isWeaponPick(picking) && (
+        <WeaponPicker
+          title={`选择${WEAPON_TYPE_NAMES[build.weaponType] ?? '武器'}`}
+          weaponType={build.weaponType}
+          weapons={payload.weapons}
+          idx={idx}
+          current={build.weapon.id}
+          onClose={() => setPicking(null)}
+          onPick={(id) => {
+            setPiece({ kind: 'weapon' }, id);
+            setPicking(null);
+          }}
+        />
+      )}
+      {picking && !isWeaponPick(picking) && (
         <Picker
           {...pickerFor(picking)}
           onClose={() => setPicking(null)}
@@ -733,22 +734,13 @@ export default function Builder() {
   );
 }
 
+/** 选的是武器本身（不是武器上的饰品或觉醒能力） */
+const isWeaponPick = (p: NonNullable<Picking>) =>
+  p.target.kind === 'weapon' && p.deco == null && p.awakening == null;
+
 /** 镶嵌槽排序用的分数：先比最高等级，再比个数（4·4 > 4·1 > 3·3·3） */
 const slotScore = (slots: number[]) =>
   [...slots].sort((a, b) => b - a).reduce((n, s, i) => n + s * 10 ** (4 - i * 2), 0);
-
-function weaponSorts(idx: Index, weaponType: string): PickerSort[] {
-  const w = (id: number) => idx.weapons.get(id);
-  return [
-    { key: 'default', label: '默认（游戏内顺序）', value: () => 0 },
-    { key: 'rarity', label: '稀有度', value: (id) => w(id)?.rarity ?? 0 },
-    { key: 'attack', label: '攻击力', value: (id) => (w(id)?.attack ?? 0) * (idx.bloat[weaponType] ?? 1) },
-    { key: 'affinity', label: '会心率', value: (id) => w(id)?.affinity ?? 0 },
-    { key: 'element', label: '属性 / 状态异常值', value: (id) => w(id)?.element?.value ?? 0 },
-    { key: 'slots', label: '镶嵌槽', value: (id) => slotScore(w(id)?.slots ?? []) },
-    { key: 'defense', label: '防御力加成', value: (id) => w(id)?.defense ?? 0 },
-  ];
-}
 
 // ---------- 子组件 ----------
 

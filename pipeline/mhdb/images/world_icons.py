@@ -59,8 +59,9 @@ GLYPH = {
     "mechanics": 195, "status": 113, "blight": 208, "elderseal": 175, "blessing": 204, "evade": 107,
     "guard": 203, "kinsect-data": 233, "frostcraft": 208,
 }  # fmt: skip
-# equip_egc：大师自定义强化的格数六边形（已用 / 空），坐标为 (左, 上, 右, 下)
-AUGMENT_HEX = {"used": (5, 2, 59, 62), "empty": (199, 3, 249, 60)}
+# 大师自定义强化的格子（equip_egc）：矩形取自 limit_break_EX.gui——
+# 已占用 = EXIcon 的 tex_EXSlot（白色实心格），空格 = EXSlot 的 tex_base（暗色底格，描边浅灰）
+AUGMENT_HEX = {"used": ("EXIcon", "tex_EXSlot"), "empty": ("EXSlot", "tex_base")}
 # cmn_status00 里自定义强化各项的图标（攻击↑、会心↑、防御↑、镶嵌槽＋、回复、属性↑），按图形核对
 AUGMENT_ICON = {"attack": 16, "affinity": 51, "defense": 17, "slot": 55, "health": 54, "element": 67}
 # common00 里的镶嵌槽（列表用小图标）与宝石，坐标为 (左, 上, 右, 下)
@@ -215,10 +216,17 @@ def build(raw: Path, data: Path, out: Path, log=print) -> int:
                 f"weapon/{key}-c{c}.webp",
             )
 
-    # 自定义强化：格数六边形与各项图标
-    egc = _atlas(raw, "ui/equip/tex/equip_egc_ID.tex")
-    for name, box in AUGMENT_HEX.items():
-        save(_square(egc.crop(box)), f"augment/hex-{name}.webp")
+    # 自定义强化：格子（按布局文件里的矩形裁切）与各项图标
+    from mhdb.formats import gui as guifmt
+
+    lb = guifmt.parse((raw / "ui/equip/limit_break_EX.gui").read_bytes())
+    for name, (anim, obj) in AUGMENT_HEX.items():
+        init = next(o.init for o in lb.animations[anim].objects if o.name == obj)
+        tex = lb.textures[init["Texture"]].path.replace("\\", "/")
+        save(
+            _atlas(raw, f"{tex}.tex").crop(tuple(int(v) for v in init["mTextureRect"])),
+            f"augment/hex-{name}.webp",
+        )
     for name, cell in AUGMENT_ICON.items():
         save(grid_cell(status, cell), f"augment/{name}.webp")
 
@@ -256,8 +264,6 @@ def build(raw: Path, data: Path, out: Path, log=print) -> int:
         save(part, f"ui/bracket-t{side}.webp")
 
     # 地区徽章（白色剪影，前端按需着色）：矩形直接取自 map.gui
-    from mhdb.formats import gui as guifmt
-
     map_gui = guifmt.parse((raw / "ui/map/map.gui").read_bytes())
     icons = {o.name: o.init for o in map_gui.animations["searchinfo"].objects}
     for stage, k in STAGE_EMBLEM.items():

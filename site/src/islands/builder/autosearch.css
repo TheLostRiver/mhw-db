@@ -37,6 +37,152 @@
   font-size: var(--text-xs);
 }
 
+/* 当前武器：图标、名字、主要数值、镶嵌槽与更换按钮；不按武器搜索时变淡 */
+.gb-as__wcard {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    'icon info btns'
+    'icon slots btns';
+  align-items: center;
+  gap: 2px var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--gb-radius);
+  background: var(--gb-row);
+  box-shadow: inset 3px 0 0 var(--c-accent);
+  transition: opacity var(--dur-base) var(--ease-standard);
+}
+
+.gb-as__wcard[data-off] {
+  opacity: 0.55;
+  box-shadow: inset 3px 0 0 var(--c-line-strong);
+}
+
+.gb-as__wicon {
+  grid-area: icon;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--rar) 26%, transparent), transparent 68%);
+}
+
+.gb-as__winfo {
+  grid-area: info;
+  display: grid;
+  min-width: 0;
+}
+
+.gb-as__wname {
+  overflow: hidden;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gb-as__wname small {
+  margin-right: 6px;
+  font-family: var(--font-num);
+  font-size: 10.5px;
+  color: color-mix(in oklab, var(--rar) 70%, var(--c-text));
+}
+
+.gb-as__wstats {
+  font-size: var(--text-xs);
+  color: var(--c-text-2);
+}
+
+.gb-as__wcard .gb-as__sloticons {
+  grid-area: slots;
+}
+
+.gb-as__wbtns {
+  grid-area: btns;
+  display: flex;
+  gap: 4px;
+}
+
+/* 还没选武器：整行是一个大按钮 */
+.gb-as__wpick {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-3);
+  border-radius: var(--gb-radius);
+  background: var(--gb-row);
+  outline: 1px dashed var(--c-line-strong);
+  outline-offset: -1px;
+  text-align: left;
+  font-weight: 600;
+  transition:
+    background-color var(--dur-fast),
+    outline-color var(--dur-fast);
+}
+
+.gb-as__wpick:hover {
+  background: var(--gb-row-hover);
+  outline-color: var(--c-accent);
+}
+
+.gb-as__wpick small {
+  display: block;
+  font-size: var(--text-xs);
+  font-weight: 400;
+  color: var(--c-text-3);
+}
+
+/* 客制：可展开，收起时显示摘要 */
+.gb-as__custom {
+  border-radius: var(--gb-radius);
+  box-shadow: inset 0 0 0 1px var(--c-line);
+}
+
+.gb-as__custom > summary {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  cursor: pointer;
+  list-style: none;
+}
+
+.gb-as__custom > summary::-webkit-details-marker {
+  display: none;
+}
+
+.gb-as__custom > summary::before {
+  content: '';
+  align-self: center;
+  width: 6px;
+  height: 6px;
+  border-right: 1.5px solid var(--c-text-2);
+  border-bottom: 1.5px solid var(--c-text-2);
+  rotate: -45deg;
+  transition: rotate var(--dur-fast) var(--ease-standard);
+}
+
+.gb-as__custom[open] > summary::before {
+  rotate: 45deg;
+}
+
+.gb-as__custom > summary span {
+  font-weight: 600;
+}
+
+.gb-as__custom > summary small {
+  overflow: hidden;
+  font-size: var(--text-xs);
+  color: var(--gb-gold);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gb-as__custom > .gb-custom {
+  padding: 0 var(--space-3) var(--space-3);
+}
+
 .gb-as__weapon {
   display: grid;
   gap: var(--space-2);

@@ -1,0 +1,404 @@
+/*
+ * 武器选择器（gb-wp / gb-wcard）：卡片网格，一行多把。外框沿用选择器（gb-picker）的弹窗；
+ * 卡片按游戏装备列表的结构排版：左栏图标 + 稀有度 + 镶嵌槽，右栏名牌、数值、锐利度。
+ */
+
+.gb-picker:has(.gb-wp) {
+  padding-top: 4vh;
+}
+
+/* 比通用选择器（.gb-picker__card）更宽更高 */
+.gb-picker__card.gb-wp {
+  grid-template-rows: auto auto auto minmax(0, 1fr);
+  width: min(1240px, 100%);
+  max-height: 90vh;
+}
+
+/* ---------- 筛选 ---------- */
+
+.gb-wp__tools {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--c-line);
+}
+
+.gb-wp__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+}
+
+.gb-wp__groups {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* 类别：两端削角的页签，选中为金色（冥赤龙为赤色） */
+.gb-wp__group {
+  --tab: var(--gb-gold);
+  height: 32px;
+  padding: 0 18px;
+  clip-path: polygon(9px 0, calc(100% - 9px) 0, 100% 50%, calc(100% - 9px) 100%, 9px 100%, 0 50%);
+  background: var(--c-surface-3);
+  color: var(--c-text-2);
+  font-weight: 600;
+  transition:
+    background-color var(--dur-fast) var(--ease-standard),
+    color var(--dur-fast) var(--ease-standard);
+}
+
+.gb-wp__group[data-kind='awakened'] {
+  --tab: #d0463c;
+}
+
+.gb-wp__group:hover {
+  background: color-mix(in srgb, var(--tab) 18%, var(--c-surface-3));
+  color: var(--c-text);
+}
+
+.gb-wp__group[aria-checked='true'] {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--tab) 92%, #fff), var(--tab));
+  color: #1b1408;
+}
+
+.gb-wp__group:focus-visible {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 2px;
+}
+
+.gb-wp__el {
+  padding-inline: 6px;
+}
+
+.gb-wp__el[aria-checked='true'] {
+  background: var(--c-accent-soft);
+}
+
+/* ---------- 卡片网格 ---------- */
+
+.gb-wp__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
+  /* 卡片 overflow: hidden，自动行高在定高容器里会被压成 0，按内容定高 */
+  grid-auto-rows: max-content;
+  align-content: start;
+  gap: 10px;
+  min-height: 0;
+  margin: 0;
+  padding: var(--space-3) var(--space-4) var(--space-4);
+  overflow: auto;
+  overscroll-behavior: contain;
+  list-style: none;
+}
+
+.gb-wcard {
+  position: relative;
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr);
+  border-radius: 6px;
+  background: var(--gb-row);
+  box-shadow: inset 0 0 0 1px var(--c-line);
+  overflow: hidden;
+  cursor: pointer;
+  transition:
+    background-color var(--dur-fast) var(--ease-standard),
+    box-shadow var(--dur-fast) var(--ease-standard),
+    transform var(--dur-fast) var(--ease-standard);
+}
+
+/* 左边一道稀有度色条 */
+.gb-wcard::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: var(--rar);
+}
+
+.gb-wcard[aria-selected='true'] {
+  background: var(--gb-row-hover);
+  box-shadow: inset 0 0 0 1.5px var(--c-accent);
+  transform: translateY(-1px);
+}
+
+.gb-wcard[data-current] {
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--gb-gold) 14%, transparent), transparent 55%),
+    var(--gb-row);
+  box-shadow: inset 0 0 0 1.5px var(--gb-gold);
+}
+
+.gb-wcard__side {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 4px;
+  padding: 10px 4px;
+  border-right: 1px solid var(--c-line);
+  background: color-mix(in srgb, var(--c-text) 5%, transparent);
+}
+
+.gb-wcard__icon {
+  display: grid;
+  place-items: center;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--rar) 26%, transparent), transparent 68%);
+}
+
+.gb-wcard__rare {
+  font-family: var(--font-num);
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  color: color-mix(in oklab, var(--rar) 72%, var(--c-text));
+}
+
+.gb-wcard__slots {
+  display: flex;
+  gap: 2px;
+  height: 16px;
+}
+
+/* 空槽：一道短横线 */
+.gb-wcard__slots i {
+  display: grid;
+  place-items: center;
+  width: 16px;
+}
+
+.gb-wcard__slots i::after {
+  content: '';
+  width: 7px;
+  height: 1.5px;
+  border-radius: 1px;
+  background: var(--c-text-3);
+  opacity: 0.6;
+}
+
+.gb-wcard__main {
+  display: grid;
+  align-content: start;
+  gap: 7px;
+  min-width: 0;
+  padding: 0 12px 10px;
+}
+
+/* 名牌：稀有度色淡淡铺底 */
+.gb-wcard__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0 -12px;
+  padding: 7px 12px 6px;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--rar) 16%, transparent), transparent 85%);
+  box-shadow: inset 0 -1px 0 var(--c-line);
+}
+
+.gb-wcard__name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gb-wcard__tags {
+  display: flex;
+  flex: none;
+  gap: 3px;
+}
+
+.gb-wcard__tags em {
+  padding: 0 5px;
+  border-radius: 3px;
+  font-size: 10.5px;
+  font-style: normal;
+  line-height: 17px;
+  color: var(--c-text-3);
+  box-shadow: inset 0 0 0 1px var(--c-line-strong);
+}
+
+.gb-wcard__tags em[data-tag='current'] {
+  color: #1b1408;
+  background: var(--gb-gold);
+  box-shadow: none;
+}
+
+.gb-wcard__tags em[data-tag='awakened'] {
+  color: #e2675e;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, #d0463c 60%, transparent);
+}
+
+.gb-wcard__tags em[data-tag='kulve'] {
+  color: var(--gb-gold);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--gb-gold) 60%, transparent);
+}
+
+.gb-wcard__tags em[data-tag='more'] {
+  opacity: 0.8;
+  box-shadow: inset 0 0 0 1px var(--c-line);
+}
+
+/* 数值：三列（攻击 / 属性 / 龙封力，会心 / 防御 / 专属参数） */
+.gb-wcard__stats {
+  display: grid;
+  grid-template-columns: max-content max-content auto;
+  gap: 5px 14px;
+  margin: 0;
+}
+
+.gb-wcard__stats > div {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+}
+
+.gb-wcard__stats dt {
+  display: flex;
+  flex: none;
+}
+
+.gb-wcard__stats dd {
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+  min-width: 0;
+  margin: 0;
+  font-family: var(--font-num);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.gb-wcard__stats dd b {
+  font-weight: 600;
+}
+
+.gb-wcard__stats dd small {
+  font-size: 11px;
+  color: var(--c-text-3);
+}
+
+.gb-wcard__stats dd[data-hidden] b {
+  font-weight: 500;
+  color: var(--c-text-3);
+}
+
+.gb-wcard__stats dd[data-neg] b {
+  color: var(--c-danger);
+}
+
+.gb-wcard__special {
+  grid-column: span 2;
+}
+
+.gb-wcard__special dd {
+  overflow: hidden;
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--c-text-2);
+  text-overflow: ellipsis;
+}
+
+.gb-wcard__none {
+  color: var(--c-text-3);
+}
+
+.gb-wcard__sep {
+  color: var(--c-text-3);
+}
+
+.gb-wcard__off {
+  opacity: 0.25;
+  filter: grayscale(1);
+}
+
+.gb-wcard__els {
+  display: flex;
+}
+
+.gb-wcard__els .gb-icon + .gb-icon {
+  margin-left: -5px;
+}
+
+.gb-wp__delta {
+  font-family: var(--font-num);
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.gb-wp__delta[data-sign='up'] {
+  color: var(--c-accent);
+}
+
+.gb-wp__delta[data-sign='down'] {
+  color: var(--c-danger);
+}
+
+/* 锐利度：剑柄（自绘）+ 刀身；淡色为匠 5 时能延长的部分 */
+.gb-wcard__sharp {
+  display: flex;
+  align-items: center;
+  height: 14px;
+}
+
+.gb-wcard__hilt {
+  flex: none;
+  width: 24px;
+  height: 14px;
+  background:
+    radial-gradient(circle at 2.5px 50%, var(--c-text-2) 2.5px, transparent 3px),
+    linear-gradient(var(--c-text-2), var(--c-text-2)) 3px 50% / 13px 4px no-repeat,
+    linear-gradient(var(--c-text-2), var(--c-text-2)) 16px 50% / 3px 14px no-repeat,
+    linear-gradient(var(--c-text-3), var(--c-text-3)) 19px 50% / 5px 10px no-repeat;
+}
+
+.gb-wcard__blade {
+  display: flex;
+  flex: 1;
+  height: 10px;
+  padding: 1px 0;
+  background: color-mix(in srgb, var(--c-text) 12%, transparent);
+  clip-path: polygon(0 0, calc(100% - 7px) 0, 100% 50%, calc(100% - 7px) 100%, 0 100%);
+}
+
+.gb-wcard__blade i {
+  height: 100%;
+}
+
+.gb-wcard__blade i[data-extra] {
+  opacity: 0.3;
+}
+
+.gb-wcard__skill {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 0;
+  font-size: 12px;
+  color: var(--c-text-2);
+}
+
+@media (max-width: 640px) {
+  .gb-picker:has(.gb-wp) {
+    padding-top: 0;
+  }
+
+  .gb-picker__card.gb-wp {
+    max-height: 92vh;
+  }
+
+  .gb-wp__tools {
+    padding-inline: var(--space-3);
+  }
+
+  .gb-wp__grid {
+    padding-inline: var(--space-3);
+  }
+}
