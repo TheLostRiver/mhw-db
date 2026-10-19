@@ -13,8 +13,8 @@ export const iconUrl = {
   status: (i: number) => `${BASE}/status/${i}.webp`,
   /** 自定义强化项目的图标（gen_pre_icon 里的头像） */
   augment: (name: string) => `${BASE}/augment/${name}.webp`,
-  /** 自定义强化栏位的六角格：已用 / 空 */
-  augmentHex: (used: boolean) => `${BASE}/augment/hex-${used ? 'used' : 'empty'}.webp`,
+  /** 自定义强化的格子：已用 / 空（2026-10-19 起改名 cell-*：旧名 hex-* 的图被浏览器缓存了 7 天，换内容后看不到） */
+  augmentHex: (used: boolean) => `${BASE}/augment/cell-${used ? 'used' : 'empty'}.webp`,
   /** 未装备时的灰色占位图标 */
   empty: {
     weapon: (type: string) => `${BASE}/weapon/${type}-0.webp`,

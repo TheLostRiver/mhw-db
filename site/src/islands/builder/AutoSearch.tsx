@@ -2,19 +2,16 @@
  * 自动配装：选武器（可直接在这里选、设定客制）或只指定镶嵌槽，选技能（含套装技能）与排除项，
  * 在后台线程里搜索所有能凑出这些技能的配装，
  * 结果以游戏式的方案卡片列出，点「应用此方案」写回手动配装。
- * 布局：上方条件板（武器 / 技能 / 套装 / 筛选与排除，宽屏三栏），中间吸顶的指令条（条件摘要 + 搜索），下方整宽结果。
+ * 布局：上方条件板（第一排武器与常驻的客制面板，其下技能 / 套装 / 筛选与排除），中间吸顶的指令条
+ * （条件摘要 + 搜索），下方整宽结果。
  * 搜索算法见 lib/world/search.ts；条件保存在本机浏览器。
  */
 import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from 'react';
 import {
   ARMOR_SLOTS,
-  augmentLevels,
   chosenAwakening,
-  chosenParts,
   computeSkills,
   customBonus,
-  customKind,
-  hrCounts,
   weaponSlots,
   type ArmorSlot,
   type Build,
@@ -27,7 +24,6 @@ import { toSearchIndex, type SearchQuery, type SearchResult, type SearchStats } 
 import Dropdown, { type DropdownOption } from './Dropdown';
 import Picker, { type PickerItem } from './Picker';
 import { GameIcon, iconUrl } from './icons';
-import { AUGMENT_NAMES, ROMAN } from './WeaponCustom';
 import { ELEMENT_NAMES } from '../../lib/world/encyclopedia';
 import type { WorkerRequest, WorkerResponse } from './search.worker';
 import './autosearch.css';
@@ -120,26 +116,6 @@ interface Props {
   renderCustom: (w: WeaponData) => ReactNode;
 }
 
-const HR_SHORT: Record<string, string> = {
-  attack: '攻击',
-  affinity: '会心',
-  defense: '防御',
-  slot: '镶嵌槽',
-  health: '回复',
-};
-
-/** 客制的一行摘要：攻击力强化 Ⅱ · 镶嵌槽强化 Ⅰ · 零件 3 阶段 */
-function customSummaryOf(build: Build, idx: Index): string {
-  const out: string[] = [];
-  for (const [c, a] of augmentLevels(build, idx))
-    if (c !== 'extend') out.push(`${AUGMENT_NAMES[c]} ${ROMAN[a.level]}`);
-  const parts = chosenParts(build, idx).length;
-  if (parts) out.push(`零件 ${parts} 阶段`);
-  for (const [a, n] of hrCounts(build, idx)) out.push(`${HR_SHORT[a] ?? a} ×${n}`);
-  for (const a of chosenAwakening(build, idx)) if (a) out.push(a.name);
-  return out.join(' · ');
-}
-
 export default function AutoSearch({
   data,
   idx,
@@ -165,7 +141,6 @@ export default function AutoSearch({
   const runId = useRef(0);
   const pendingQuery = useRef<SearchQuery | null>(null);
   const board = useRef<HTMLElement>(null);
-  const [customOpen, setCustomOpen] = useState(false);
   const [recent, setRecent] = useState<number[]>(loadRecent);
 
   useEffect(() => {
@@ -181,7 +156,6 @@ export default function AutoSearch({
   const weapon = build.weapon.id == null ? undefined : idx.weapons.get(build.weapon.id);
   const useWeapon = cond.useWeapon && weapon != null;
   const bonus = customBonus(build, idx);
-  const customSummary = customSummaryOf(build, idx);
   // 手动指定的槽：按内容缓存，避免每次渲染都变成新数组
   const slotKey = cond.weaponSlots.join(',');
   const manualSlots = useMemo(
@@ -533,15 +507,6 @@ export default function AutoSearch({
               </span>
             </button>
           )}
-          {weapon && customKind(weapon) && (
-            <button type="button" className="gb-as__custombtn" onClick={() => setCustomOpen(true)}>
-              <span>{customKind(weapon) === 'awakening' ? '觉醒能力' : '自定义强化'}</span>
-              <small>{customSummary || '未设定，点这里设置'}</small>
-              <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true">
-                <path d="m4.5 2 4 4-4 4" />
-              </svg>
-            </button>
-          )}
           <div className="gb-as__weapon" role="radiogroup" aria-label="搜索时的武器">
             <label className="gb-as__radio" data-disabled={weapon ? undefined : ''}>
               <input
@@ -587,6 +552,23 @@ export default function AutoSearch({
               </span>
             </label>
           </div>
+        </div>
+
+        {/* 武器客制：常驻显示，宽屏时与武器卡并排；不按武器搜索时变淡 */}
+        <div className="gb-as__card gb-as__card--custom" data-off={useWeapon ? undefined : ''}>
+          {weapon ? (
+            renderCustom(weapon)
+          ) : (
+            <>
+              <header className="gb-as__cardhead">
+                <h3>自定义强化</h3>
+              </header>
+              <p className="gb-as__hint">
+                选好武器后在这里设定自定义强化、零件强化或冥赤龙的觉醒能力；镶嵌槽强化追加的槽、
+                觉醒的系列技能都会计入搜索。
+              </p>
+            </>
+          )}
         </div>
 
         {/* 技能：主栏。输入即搜，回车添加，可以连续添加 */}
@@ -909,11 +891,6 @@ export default function AutoSearch({
       </section>
 
       {pp && <Picker {...pp} onPick={onPick} onClose={() => setPicking(null)} />}
-      {customOpen && weapon && (
-        <CustomDialog title={`${weapon.name} · 客制`} onClose={() => setCustomOpen(false)}>
-          {renderCustom(weapon)}
-        </CustomDialog>
-      )}
     </div>
   );
 }
@@ -1085,48 +1062,6 @@ function InlineSearch({
           })}
         </div>
       )}
-    </div>
-  );
-}
-
-/** 弹窗：武器客制（自定义强化 / 零件强化 / 觉醒）在这里设置，条件板保持紧凑 */
-function CustomDialog({
-  title,
-  onClose,
-  children,
-}: {
-  title: string;
-  onClose: () => void;
-  children: ReactNode;
-}) {
-  const titleId = useId();
-  const card = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    card.current?.focus();
-  }, []);
-  return (
-    <div
-      className="gb-picker"
-      role="presentation"
-      onMouseDown={(e) => e.target === e.currentTarget && onClose()}
-    >
-      <div
-        ref={card}
-        tabIndex={-1}
-        className="gb-picker__card gb-as__dialog"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-        onKeyDown={(e) => e.key === 'Escape' && onClose()}
-      >
-        <header className="gb-picker__head">
-          <h2 id={titleId}>{title}</h2>
-          <button type="button" className="gb-btn gb-btn--primary" onClick={onClose}>
-            完成
-          </button>
-        </header>
-        <div className="gb-as__dialogbody">{children}</div>
-      </div>
     </div>
   );
 }

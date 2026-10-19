@@ -201,16 +201,14 @@ test('自动配装：可以直接选武器并设定自定义强化', async ({ pa
   await page.keyboard.press('Enter');
   await expect(form.locator('.gb-as__wcard')).toContainText('黑龙玄刃');
   await expect(form.getByRole('radio', { name: /用这把武器/ })).toBeChecked();
-  // 打开客制弹窗，镶嵌槽强化Ⅰ（3 格）追加一个 1 级槽
-  await form.locator('.gb-as__custombtn').click();
-  const custom = page.getByRole('dialog', { name: /客制/ });
+  // 客制面板常驻在武器旁边：镶嵌槽强化Ⅰ（3 格）追加一个 1 级槽
+  const custom = form.locator('.gb-as__card--custom');
+  await expect(custom).toContainText('自定义强化');
   await custom
     .getByRole('radiogroup', { name: '镶嵌槽强化等级' })
     .getByRole('radio', { name: 'Ⅰ 级' })
     .click();
-  await custom.getByRole('button', { name: '完成' }).click();
-  await expect(custom).toBeHidden();
-  await expect(form.locator('.gb-as__custombtn')).toContainText('镶嵌槽强化 Ⅰ');
+  await expect(custom.locator('.gb-exbar__cell[data-used]')).toHaveCount(3);
   await expect(form.locator('.gb-as__wcard .gb-slot-plus')).toHaveCount(1);
   // 手动配装里是同一把武器、同样的强化
   await page.getByRole('tab', { name: '手动配装' }).click();

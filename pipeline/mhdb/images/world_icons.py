@@ -59,7 +59,7 @@ GLYPH = {
     "mechanics": 195, "status": 113, "blight": 208, "elderseal": 175, "blessing": 204, "evade": 107,
     "guard": 203, "kinsect-data": 233, "frostcraft": 208,
 }  # fmt: skip
-# 大师自定义强化的格子（equip_egc）：矩形取自 limit_break_EX.gui——
+# 大师自定义强化的格子（equip_egc，输出 augment/cell-*；旧名 hex-* 已停用，避免浏览器缓存旧图）：矩形取自 limit_break_EX.gui——
 # 已占用 = EXIcon 的 tex_EXSlot（白色实心格），空格 = EXSlot 的 tex_base（暗色底格，描边浅灰）
 AUGMENT_HEX = {"used": ("EXIcon", "tex_EXSlot"), "empty": ("EXSlot", "tex_base")}
 # cmn_status00 里自定义强化各项的图标（攻击↑、会心↑、防御↑、镶嵌槽＋、回复、属性↑），按图形核对
@@ -225,7 +225,7 @@ def build(raw: Path, data: Path, out: Path, log=print) -> int:
         tex = lb.textures[init["Texture"]].path.replace("\\", "/")
         save(
             _atlas(raw, f"{tex}.tex").crop(tuple(int(v) for v in init["mTextureRect"])),
-            f"augment/hex-{name}.webp",
+            f"augment/cell-{name}.webp",
         )
     for name, cell in AUGMENT_ICON.items():
         save(grid_cell(status, cell), f"augment/{name}.webp")

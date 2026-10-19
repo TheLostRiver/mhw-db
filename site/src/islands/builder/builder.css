@@ -29,7 +29,7 @@
   --ui-pattern: url('/assets/game/world/ui/pattern.webp');
   --ui-diamond: url('/assets/game/world/ui/diamond.webp');
   /* 自定义强化的实心格（limit_break_EX.gui 的 EXIcon） */
-  --ui-hex-used: url('/assets/game/world/augment/hex-used.webp');
+  --ui-hex-used: url('/assets/game/world/augment/cell-used.webp');
 
   display: grid;
   gap: var(--space-3);
@@ -562,6 +562,19 @@
 .gb-aug {
   display: grid;
   gap: 2px;
+}
+
+/* 客制面板按自身宽度排版：宽时（自动配装里与武器并排）强化项与零件阶段排成两列 */
+.gb-custom {
+  container: custom / inline-size;
+}
+
+@container custom (min-width: 44rem) {
+  .gb-aug,
+  .gb-parts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: var(--space-4);
+  }
 }
 
 .gb-aug li {
